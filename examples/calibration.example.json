@@ -1,0 +1,12 @@
+{
+  "method": "Schema example only; replace with a measured calibration",
+  "image_size": [484, 366],
+  "intrinsics": {
+    "distortion_model": "k1-k2",
+    "camera_matrix": [[232.0, 0.0, 243.5], [0.0, 225.0, 183.0], [0.0, 0.0, 1.0]],
+    "distortion_coefficients": [-0.05, 0.13, 0.0, 0.0]
+  },
+  "extrinsics": {
+    "transform_lidar_to_camera": [[0.0, 0.0, -1.0, 0.06], [0.0, 1.0, 0.0, -0.008], [1.0, 0.0, 0.0, -0.02], [0.0, 0.0, 0.0, 1.0]]
+  }
+}

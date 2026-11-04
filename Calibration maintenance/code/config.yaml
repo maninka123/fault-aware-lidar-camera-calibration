@@ -1,0 +1,26 @@
+# Calibration maintenance: check an existing calibration on new captures, refine it, and decide
+# whether the change is real and worth an update. Overlaid on ../../Targetless calibration/code/config.yaml
+# (LiDAR / image edge settings); only maintenance settings live here.
+
+refine:
+  # "extrinsic": R, t only (vibration / knocks move the mount; the lens itself rarely changes)
+  # "full": also fx, fy, cx, cy, k1 (k2 if the existing calibration has it)
+  mode: extrinsic
+  gates_px: [10, 6, 4, 3, 2, 2]           # drift up to ~2 deg is followed; more -> "large change"
+  passes: 4
+  search_starts: 3                        # starts per proposal score from the local search around the existing calibration
+  principal_point_sigma_px: 3.0           # full mode: cx, cy pulled to the EXISTING values
+
+decision:
+  negligible_px: 1.0                      # median shift below this: no update needed, whatever the statistics
+  large_px: 5.0                           # median shift above this: large change - check the mounting
+  significant_z: 3.0                      # shift / its uncertainty
+  borderline_z: 2.0
+  heldout_majority: 0.66                  # share of left-out image regions the refined calibration must fit better
+  regions: 9                              # image regions for leave-one-region-out (8 sectors + centre)
+  min_region_matches: 30                  # regions with fewer edge matches are not used as evidence
+  min_matches: 1000                       # below: not enough scene structure to judge
+  min_lift: 1.3
+  comparison_min_gain: 0.01              # paired held-out gain: at least 1 percentage point to justify an update
+  probe_range_m: [1.5, 10.0]              # LiDAR points used to measure the shift
+  report_range_m: 3.0                     # parameter "pixel effect" of a translation change at this range

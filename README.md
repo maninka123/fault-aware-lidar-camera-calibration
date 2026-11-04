@@ -90,4 +90,3 @@ The optimizer uses an OpenCV fisheye model internally. The upstream device uses 
 Tests cover update decisions, fixed parameter groups, pose geometry and shared controls. A recorded three-capture check also exercised the full comparison pipeline. See [validation notes](docs/VALIDATION.md) for scope and limits. Live-device writes were not exercised as part of that recorded-data check.
 
 Recordings, device credentials and machine-specific settings are not included.
-
