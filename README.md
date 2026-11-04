@@ -8,7 +8,7 @@ A Windows desktop tool for the **FLIR Blackfly S + Livox Avia** rig running [Sen
 
 ## What it does
 
-- Captures live data or opens recorded captures; no checkerboard is needed for maintenance checks.
+- Captures live data or opens image/PCD pairs, recorded bags or stacked captures; no checkerboard is needed for maintenance checks.
 - Compares **keep current**, **alignment only**, **camera settings only**, and **both**.
 - Shows parameter changes, uncertainty, image overlays and a rotatable sensor-pose diagram.
 - Saves a candidate calibration. Device writes require review, confirmation and a backup.
@@ -75,7 +75,7 @@ Use several still captures with structure at different distances. Repeated views
 ## Inputs and outputs
 
 - Calibration: JSON containing `intrinsics.camera_matrix`, `distortion_coefficients`, and `extrinsics.transform_lidar_to_camera`. See [the example](examples/calibration.example.json).
-- Recorded data: a folder of `capture_*/rig_0.bag`, or stacked `.npz` captures. See [data format](docs/DATA_FORMAT.md).
+- Capture data: image/PCD pairs in two folders or one folder per capture, `capture_*/rig_0.bag`, or stacked `.npz` captures. Folder names can vary. See [data format](docs/DATA_FORMAT.md).
 - Results: candidate calibration, evidence summary, report and plots under `Calibration maintenance/results/<run>/`. The app’s source cards open the inputs and results directly.
 
 The transform convention is `p_camera = R @ p_lidar + t`, with translation in metres. The 3D diagram shows the camera centre in the LiDAR frame, `-R.T @ t`; sensor shapes are schematic.
@@ -92,3 +92,5 @@ The optimizer uses an OpenCV fisheye model internally. The upstream device uses 
 Tests cover update decisions, fixed parameter groups, pose geometry and shared controls. A recorded three-capture check also exercised the full comparison pipeline. See [validation notes](docs/VALIDATION.md) for scope and limits. Live-device writes were not exercised as part of that recorded-data check.
 
 Recordings, device credentials and machine-specific settings are not included.
+
+PCD input defaults to **metres**, with millimetres selectable. **View pairs** shows matches, point counts and distance ranges. Missing partners are reported, ambiguous names are rejected, and unreadable files or inconsistent image resolutions block the check. Coordinate ranges can flag likely unit mistakes; they cannot prove physical units or capture synchronization.

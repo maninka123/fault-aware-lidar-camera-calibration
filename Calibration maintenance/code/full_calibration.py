@@ -34,14 +34,22 @@ def main():
     ap.add_argument("--data", required=True)
     ap.add_argument("--name", required=True)
     ap.add_argument("--device")
+    ap.add_argument('--cloud-units', choices=['m', 'mm'], default='m')
+    ap.add_argument('--confirm-cloud-units', action='store_true')
     a = ap.parse_args()
     out = results_dir() / a.name
     out.mkdir(parents=True, exist_ok=True)
     data = Path(a.data).resolve()
+    original_data = data
     stage(out, "calibrating from scratch on the captures (targetless: no target and no starting values; the camera "
                "mounting is found automatically). This takes a few minutes")
     import step1_calibrate  # Targetless calibration (read-only)
     cfg = copy.deepcopy(load_config())
+    if not next(data.glob('*.npz'), None):
+        frames, _ = maintain.get_frames(data, out, cfg, a.cloud_units, a.confirm_cloud_units)
+        from paired_data import save_stacked
+        data = out / 'captures'
+        save_stacked(frames, data)
     cfg["stacked_dir"] = str(data.parent)
     cfg["output_dir"] = str(out / "from_scratch")
     cfg["prior"]["rotation_lidar_to_camera"] = "auto"
@@ -56,7 +64,8 @@ def main():
                + (f" ({'; '.join(conf['failed'])})" if conf.get("failed") else "")
                + ". It is now refined and compared with the existing calibration like a normal check",
           sorted(res.glob("captures/*/edge_alignment.png")))
-    maintain.run(a.calibration, str(data), a.name, "full", a.device, [("calibration from scratch", str(res / "calibration.json"))])
+    maintain.run(a.calibration, str(original_data), a.name, "full", a.device,
+                 [("calibration from scratch", str(res / "calibration.json"))], a.cloud_units, a.confirm_cloud_units)
 
 
 if __name__ == "__main__":

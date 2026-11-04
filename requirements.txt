@@ -6,6 +6,7 @@ PyYAML>=6,<7
 matplotlib>=3.7,<4
 Pillow>=9.4
 rosbags>=0.10,<0.12
+pypcd4>=1.5,<2
 paramiko>=3
 websocket-client>=1.6
 websockets>=12

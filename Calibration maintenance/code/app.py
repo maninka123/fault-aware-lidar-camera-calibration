@@ -70,7 +70,7 @@ class StepHeader(QtWidgets.QWidget):
 
 
 class SetupPage(QtWidgets.QWidget):
-    run_requested = QtCore.pyqtSignal(str, str, str, str)
+    run_requested = QtCore.pyqtSignal(str, str, str, str, str, bool)
 
     def __init__(self):
         super().__init__()
@@ -104,7 +104,7 @@ class SetupPage(QtWidgets.QWidget):
 
         # 2. new captures
         c2, l2 = card()
-        self.h2 = StepHeader(2, "New captures", "Choose recorded or stacked captures")
+        self.h2 = StepHeader(2, "New captures", "Choose image + PCD pairs, recorded bags or stacked captures")
         self.capture_format_button = button('Capture format', 'link', self.show_capture_format)
         self.capture_format_button.setAccessibleName('Show accepted capture folder layouts')
         l2.addWidget(hbox(self.h2, self.capture_format_button, stretch_at=1))
@@ -119,6 +119,26 @@ class SetupPage(QtWidgets.QWidget):
         l2.addWidget(self.data_err)
         self.data_box = QtWidgets.QVBoxLayout()
         l2.addLayout(self.data_box)
+        self.pair_options = QtWidgets.QWidget()
+        pair_layout = QtWidgets.QVBoxLayout(self.pair_options)
+        pair_layout.setContentsMargins(0, 4, 0, 0)
+        pair_layout.setSpacing(6)
+        self.pair_units = QtWidgets.QComboBox()
+        self.pair_units.addItem('Metres (m)', 'm')
+        self.pair_units.addItem('Millimetres (mm)', 'mm')
+        self.pair_units.setAccessibleName('Coordinate units in PCD files')
+        self.pair_units.setMinimumWidth(180)
+        self.pair_report_button = button('View pairs', 'link', self.show_pair_report)
+        pair_layout.addWidget(hbox(label('PCD units', 'h3'), self.pair_units, self.pair_report_button, stretch_at=3))
+        self.pair_status = label('', 'small', wrap=True)
+        self.pair_status.setToolTip('File names, readability, XYZ fields, image dimensions and coordinate ranges are checked. '
+                                    'PCD has no standard unit declaration; ranges are a sanity check, not proof of units.')
+        pair_layout.addWidget(self.pair_status)
+        self.units_confirm = QtWidgets.QCheckBox('I confirm these coordinate units')
+        self.units_confirm.hide()
+        pair_layout.addWidget(self.units_confirm)
+        self.pair_options.hide()
+        l2.addWidget(self.pair_options)
         v.addWidget(c2)
 
         # 3. calculate
@@ -149,6 +169,8 @@ class SetupPage(QtWidgets.QWidget):
         lay = QtWidgets.QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(scroll(page))
+        self.pair_units.currentIndexChanged.connect(self.validate_paired_data)
+        self.units_confirm.toggled.connect(self.update_ready)
         self.update_ready()
 
     # ---- previous calibration
@@ -186,7 +208,9 @@ class SetupPage(QtWidgets.QWidget):
             self.data_err.hide()
             clear(self.data_box)
             d = self.data
-            kind = "raw captures, decoded during the check" if d["kind"] == "raw" else "stacked captures"
+            kind = {'raw': 'raw captures, decoded during the check', 'stacked': 'stacked captures',
+                    'paired': 'image + PCD pairs'}[d['kind']]
+            self.pair_options.setVisible(d['kind'] == 'paired')
             head = label(f"<b>{len(d['captures'])} {kind}</b> &nbsp; <span style='color:{MUTED}; font-family:Consolas'>{d['name']}</span>", rich=True)
             self.data_box.addWidget(head)
             row = QtWidgets.QHBoxLayout()
@@ -194,8 +218,8 @@ class SetupPage(QtWidgets.QWidget):
             for c in d["captures"][:6]:
                 box = QtWidgets.QVBoxLayout()
                 box.setSpacing(2)
-                if c["npz"]:
-                    iv = ImageView(pixmap=np_to_pixmap(core.capture_image(c["npz"])), caption=c["name"])
+                if c["npz"] or c.get('image'):
+                    iv = ImageView(pixmap=np_to_pixmap(core.capture_image(c['npz'] or c['image'])), caption=c["name"])
                 else:
                     iv = label(f"raw bag\n{c['size_mb']:.0f} MB")
                     iv.setAlignment(Qt.AlignCenter)
@@ -208,12 +232,16 @@ class SetupPage(QtWidgets.QWidget):
                 row.addLayout(box)
             row.addStretch(1)
             self.data_box.addLayout(row)
+            if d['kind'] == 'paired':
+                self.validate_paired_data()
         except (ValueError, OSError, KeyError) as err:
             self.data = None
+            self.pair_options.hide()
             self.data_err.setText(str(err))
             self.data_err.show()
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+        self.pair_report_button.setEnabled(bool(self.data and self.data.get('paired_validation')))
         self.update_ready()
 
     def open_data(self):
@@ -227,32 +255,108 @@ class SetupPage(QtWidgets.QWidget):
         if CaptureFormatDialog(self).exec_() == QtWidgets.QDialog.Accepted:
             self.open_data()
 
+    def validate_paired_data(self):
+        if not self.data or self.data['kind'] != 'paired':
+            return
+        from paired_data import validate_pairs
+        from settings import load_config
+        self.data.pop('paired_validation', None)
+        self.units_confirm.setChecked(False)
+        QtWidgets.QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            checked = validate_pairs(self.data['path'], self.pair_units.currentData(), load_config()['decision']['probe_range_m'])
+            self.data['paired_validation'] = checked
+            self.data['cloud_units'] = checked['units']
+            self.units_confirm.setVisible(checked['units_review'])
+            if checked['units_review']:
+                text = next(row['message'] for row in checked['reports'] if row['units_review'])
+                colour = WARN
+            elif not checked['analysis_usable']:
+                lo, hi = checked['probe_range_m']
+                text, colour = f'Too few points at {lo:g}–{hi:g} m. Check units or use nearer scene structure.', BAD
+            else:
+                median = sorted(row['median_range_m'] for row in checked['reports'])[len(checked['reports']) // 2]
+                text = f'{len(checked["captures"])} pairs checked · files readable · typical range {median:.2f} m'
+                if checked['warnings']:
+                    text += f' · {len(checked["warnings"])} notes in View pairs'
+                colour = GOOD
+            self.pair_status.setText(text)
+            self.pair_status.setStyleSheet(f'color: {colour};')
+        except (ValueError, OSError) as error:
+            self.pair_status.setText(str(error))
+            self.pair_status.setStyleSheet(f'color: {BAD};')
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        self.pair_report_button.setEnabled(bool(self.data.get('paired_validation')))
+        self.update_ready()
+
+    def show_pair_report(self):
+        checked = self.data and self.data.get('paired_validation')
+        if not checked:
+            return
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle('Pair checks')
+        dialog.resize(1000, 500)
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setContentsMargins(22, 20, 22, 20)
+        layout.addWidget(label('Matched image + PCD files', 'h2'))
+        layout.addWidget(label('PCD units: ' + ('metres' if checked['units'] == 'm' else 'millimetres'), 'small'))
+        root = Path(self.data['path'])
+        rows = [[str(Path(row['image']).relative_to(root)), str(Path(row['cloud']).relative_to(root)),
+                 f'{row["points"]:,}', f'{row["median_range_m"]:.2f} m',
+                 f'{row["range_5_95_m"][0]:.2f}–{row["range_5_95_m"][1]:.2f} m',
+                 'Check units' if row['units_review'] else 'Readable'] for row in checked['reports']]
+        content = QtWidgets.QWidget()
+        details = QtWidgets.QVBoxLayout(content)
+        details.addWidget(table(['Image', 'PCD', 'Points', 'Median range', '90% range', 'Check'], rows, numeric=(2, 3, 4), stretch=(0, 1)))
+        for note in checked['warnings']:
+            details.addWidget(label(note, 'small', wrap=True))
+        details.addWidget(label('Use synchronized pairs in the LiDAR coordinate frame. Ranges cannot prove the units.', 'small', wrap=True))
+        layout.addWidget(scroll(content))
+        layout.addWidget(hbox(button('Done', slot=dialog.accept), stretch_at=0))
+        dialog.exec_()
+
     # ---- calculate
     def update_ready(self):
         self.h1.set_done(bool(self.cal))
-        self.h2.set_done(bool(self.data))
+        checked = self.data and self.data.get('paired_validation')
+        paired_ready = bool(checked and checked['analysis_usable'] and
+                            (not checked['units_review'] or self.units_confirm.isChecked()))
+        inputs_ready = bool(self.data and (self.data['kind'] != 'paired' or paired_ready))
+        self.h2.set_done(inputs_ready)
         ready = bool(self.cal and self.data)
+        reason = ''
+        if self.data and self.data['kind'] == 'paired':
+            ready = ready and paired_ready
+            if not paired_ready:
+                reason = 'Review the image/PCD checks and coordinate units above.'
+            if checked and self.cal and self.cal['intrinsics'].get('image_size'):
+                if list(self.cal['intrinsics']['image_size']) != checked['image_size']:
+                    ready = False
+                    reason = 'Image resolution differs from this calibration. Choose a calibration for this resolution.'
         self.go.setEnabled(ready)
         self.hint.setText(("Tests four update choices. Allow a few minutes." if self.update_choice.currentData() == 'compare'
                            else f"Checks {len(self.data['captures'])} captures.") if ready
-                          else "Choose a calibration and captures to continue.")
+                          else reason or "Choose a calibration and captures to continue.")
 
     def calculate(self):
         self.run_requested.emit(self.cal["path"], self.data["path"], self.update_choice.currentData(),
-                                self.device.text().strip() or "rig")
+                                self.device.text().strip() or "rig", self.pair_units.currentData(), self.units_confirm.isChecked())
 
-    def prefill(self, cal, data, device=None):
+    def prefill(self, cal, data, device=None, cloud_units='m', allow_unusual_units=False):
         if cal and Path(cal).exists():
             self.load_cal(cal)
         if data and Path(data).exists():
             self.load_data(data)
+            self.pair_units.setCurrentIndex(max(0, self.pair_units.findData(cloud_units)))
+            self.units_confirm.setChecked(allow_unusual_units)
         if device:
             self.device.setText(device)
 
 
 # ================================================================== page: a run
 class RunPage(QtWidgets.QWidget):
-    check_again = QtCore.pyqtSignal(str, str, str)
+    check_again = QtCore.pyqtSignal(str, str, str, str, bool)
     accepted_run = QtCore.pyqtSignal()
 
     def __init__(self, main):
@@ -600,7 +704,8 @@ class RunPage(QtWidgets.QWidget):
                           button("Open results folder", slot=lambda: os.startfile(str(out))),
                           button("Show report", slot=lambda: self.show_report(out)),
                           button("Check again with these inputs", slot=lambda: self.check_again.emit(
-                              info["inputs"].get("calibration", ""), info["inputs"].get("data", ""), info["inputs"].get("device", ""))),
+                              info["inputs"].get("calibration", ""), info["inputs"].get("data", ""), info["inputs"].get("device", ""),
+                              info['inputs'].get('cloud_units', 'm'), info['inputs'].get('allow_unusual_units', False))),
                           stretch_at=5))
         extra = []
         if info.get("device"):
@@ -736,8 +841,8 @@ class Main(QtWidgets.QMainWindow):
         p = self.procs.get(name)
         return None if p is None else p.poll()
 
-    def start_run(self, cal, data, mode, device):
-        name, out, args = core.new_run(cal, data, mode, device)
+    def start_run(self, cal, data, mode, device, cloud_units='m', allow_unusual_units=False):
+        name, out, args = core.new_run(cal, data, mode, device, cloud_units=cloud_units, allow_unusual_units=allow_unusual_units)
         self.launch(name, args)
 
     def launch_scratch(self, info):
@@ -752,7 +857,8 @@ class Main(QtWidgets.QMainWindow):
         out.mkdir(parents=True, exist_ok=True)
         if info.get("device"):
             shutil.copyfile(info["out"] / "device.json", out / "device.json")
-        _, _, args = core.new_run(inp["calibration"], inp["data"], "full", dev, name=name, script="full_calibration.py")
+        _, _, args = core.new_run(inp["calibration"], inp["data"], "full", dev, name=name, script="full_calibration.py",
+                                cloud_units=inp.get('cloud_units', 'm'), allow_unusual_units=inp.get('allow_unusual_units', False))
         self.launch(name, args)
 
     def launch(self, name, args):
@@ -824,9 +930,9 @@ class Main(QtWidgets.QMainWindow):
     def new_check(self):
         self.nav(self.setup)
 
-    def check_again(self, cal, data, device):
+    def check_again(self, cal, data, device, cloud_units='m', allow_unusual_units=False):
         self.new_check()
-        self.setup.prefill(cal, data, device)
+        self.setup.prefill(cal, data, device, cloud_units, allow_unusual_units)
 
     def closeEvent(self, e):
         running = [n for n in self.procs if self.is_running(n)]

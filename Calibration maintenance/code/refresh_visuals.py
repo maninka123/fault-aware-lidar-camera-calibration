@@ -22,7 +22,11 @@ def refresh(out):
     data = out / 'stacked' / 'data'
     if not data.is_dir():
         data = (code / summary['data']).resolve()
-    frames = load_stacked(data)
+    if (out / 'paired_input.json').exists():
+        from paired_data import load_pairs
+        frames, _ = load_pairs(data, summary.get('cloud_units', 'm'), summary.get('allow_unusual_units', False))
+    else:
+        frames = load_stacked(data)
     if not frames:
         log(f'Skipped {out.name}: stacked captures are unavailable')
         return False

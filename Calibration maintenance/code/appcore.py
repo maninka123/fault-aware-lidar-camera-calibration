@@ -177,6 +177,9 @@ def data_kind(folder):
             return "raw"
         if next(folder.glob("*.npz"), None) is not None:
             return "stacked"
+        from paired_data import has_pairs
+        if has_pairs(folder):
+            return 'paired'
     except OSError:
         pass
     return None
@@ -190,13 +193,20 @@ def inspect_data(folder):
                 for p in sorted(folder.glob("capture_*")) if (p / "rig_0.bag").exists()]
     elif kind == "stacked":
         caps = [dict(name=p.stem, size_mb=p.stat().st_size / 1e6, npz=str(p)) for p in sorted(folder.glob("*.npz"))]
+    elif kind == 'paired':
+        from paired_data import discover_pairs
+        paired = discover_pairs(folder)
+        return dict(path=str(folder.resolve()), name=short(folder), kind=kind, **paired)
     else:
-        raise ValueError("No captures in this folder: expected capture_*/rig_0.bag (raw) or *.npz (stacked).")
+        raise ValueError('No captures found. Choose image/PCD pairs, capture_*/rig_0.bag, or stacked .npz files. See Capture format.')
     return dict(path=str(folder.resolve()), name=short(folder), kind=kind, captures=caps)
 
 
 def capture_image(npz):
     """The stacked camera image of a capture (uint8, gray or BGR)."""
+    if Path(npz).suffix.lower() != '.npz':
+        from paired_data import read_image
+        return read_image(npz)
     img = np.load(npz)["image"]
     if img.dtype != np.uint8:
         img = (255 * (img - img.min()) / max(float(np.ptp(img)), 1e-9)).astype(np.uint8)
@@ -220,7 +230,7 @@ def suggestions():
     data = [p for p in sorted((TARGETLESS / "stacked_data").glob("*")) + sorted((TARGETLESS / "Testing datasets").glob("*"))
             if p.is_dir() and data_kind(p)]
     return (dict(calibrations=[(label(p), str(p)) for p in cals if p.exists()],
-                 data=[(f"{'Raw' if data_kind(p) == 'raw' else 'Stacked'}: {p.name.replace('_', ' ')}", str(p)) for p in data]))
+                 data=[(f"{ {'raw': 'Raw', 'stacked': 'Stacked', 'paired': 'Image + PCD'}[data_kind(p)]}: {p.name.replace('_', ' ')}", str(p)) for p in data]))
 
 
 # ------------------------------------------------------------------ runs
@@ -233,7 +243,7 @@ def run_name(device, suffix=""):
     return re.sub(r"[^A-Za-z0-9_-]+", "_", (device or "rig").strip()) + suffix + f"_{datetime.now():%Y%m%d_%H%M%S}"
 
 
-def new_run(calibration, data, mode, device, name=None, script="maintain.py"):
+def new_run(calibration, data, mode, device, name=None, script="maintain.py", cloud_units='m', allow_unusual_units=False):
     """Prepare results/<run>/ and return (name, folder, script arguments). script: maintain.py, or
     full_calibration.py (calibration from scratch first)."""
     device = (device or "rig").strip()
@@ -241,10 +251,14 @@ def new_run(calibration, data, mode, device, name=None, script="maintain.py"):
     out = RESULTS / name
     out.mkdir(parents=True, exist_ok=True)
     (out / "progress.json").write_text(json.dumps(dict(run=name, finished=False, stages=[])))
-    (out / "inputs.json").write_text(json.dumps(dict(calibration=str(calibration), data=str(data), mode=mode, device=device, script=script)))
+    (out / "inputs.json").write_text(json.dumps(dict(calibration=str(calibration), data=str(data), mode=mode, device=device,
+                                                       script=script, cloud_units=cloud_units, allow_unusual_units=allow_unusual_units)))
     args = [str(CODE / script), "--calibration", str(calibration), "--data", str(data), "--name", name, "--device", device]
     if script == "maintain.py":
         args += ["--mode", mode]
+    args += ['--cloud-units', cloud_units]
+    if allow_unusual_units:
+        args.append('--confirm-cloud-units')
     return name, out, args
 
 
@@ -291,7 +305,8 @@ def run_info(name):
     s = read_json(out / "summary.json") if prog.get("finished") else None
     inputs = read_json(out / "inputs.json") or {}
     if s:
-        inputs = dict(calibration=str(resolve(s["existing"])), data=str(resolve(s["data"])), mode=s["mode"], device=s["device"])
+        inputs = dict(inputs, calibration=str(resolve(s["existing"])), data=str(resolve(s["data"])), mode=s["mode"], device=s["device"],
+                      cloud_units=s.get('cloud_units', 'm'), allow_unusual_units=s.get('allow_unusual_units', False))
     log = out / "run.log"
     info = dict(name=name, out=out, finished=bool(prog.get("finished")), stages=stages, inputs=inputs,
                 log=log.read_text(errors="replace").splitlines()[-40:] if log.exists() else [], summary=s,

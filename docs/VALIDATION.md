@@ -19,12 +19,14 @@ Alignment here means the share of visible LiDAR edges associated with a parallel
 
 ## Automated and visual checks
 
-- 17 automated checks: update selection, insufficient evidence, invalid lens fits, fixed parameter groups, inverse-pose geometry, dropdown consistency, source opening, table alignment, responsive pose layout, capture folder/array formats and unclipped help tabs.
+- 28 automated checks: update selection, insufficient evidence, invalid lens fits, fixed parameter groups, inverse-pose geometry, dropdown consistency, source opening, table alignment, responsive pose layout, capture folder/array formats and unclipped help tabs. Paired imports also cover both folder layouts, nested/incomplete captures, unmatched files, ambiguous names, all three standard PCD encodings, missing intensity, unreadable files, image resolution, unit checks, UI gating and solver input preparation.
 - Native Windows application/window icons and explicit taskbar identity checked.
 - Full app startup, screenshot capture and clean shutdown checked.
 - Saved-run views rendered and inspected; older comparison plots refreshed.
 
 No calibration was applied to live hardware during these checks. SSH write, backup and restore operations require a connected device and explicit review.
+
+The same three recorded captures were also exported to PNG and binary-compressed PCD in metres, then run through paired import and the complete comparison pipeline. The check completed with the same **Borderline** verdict and 1.41 px median candidate shift. This verifies the import route; it is not an independent calibration accuracy benchmark.
 
 ## Decision limits
 

@@ -43,11 +43,17 @@ FIELD_ANGLE = np.radians(35.0)
 
 
 # ------------------------------------------------------------------ data
-def get_frames(data, out, cfg):
+def get_frames(data, out, cfg, cloud_units='m', allow_unusual_units=False):
     """Stacked captures from a folder of *.npz, or decoded from capture_*/rig_0.bag."""
     data = Path(data)
     bags = sorted(p for p in data.glob("capture_*") if (p / "rig_0.bag").exists())
     if not bags:
+        from paired_data import has_pairs, load_pairs
+        if not next(data.glob('*.npz'), None) and has_pairs(data):
+            frames, verification = load_pairs(data, cloud_units, allow_unusual_units, cfg['decision']['probe_range_m'])
+            write_json(out / 'paired_input.json', verification)
+            log(f'data: {len(frames)} image/PCD pairs; units {cloud_units}; all files checked')
+            return frames, None
         frames = load_stacked(data)
         if not frames:
             raise SystemExit(f"no stacked captures (*.npz) or raw captures (capture_*/rig_0.bag) in {data}")
@@ -151,7 +157,7 @@ def decide(dc, shift, z, improved, n_loo, new, old):
 KEEP = ("run.log", "inputs.json", "progress.json", "captures", "from_scratch")     # + device*: the connected-device files
 
 
-def run(calibration, data, name, mode=None, device=None, starts=()):
+def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units='m', allow_unusual_units=False):
     """starts: extra (label, calibration.json) refinement starts, e.g. a calibration from scratch."""
     starts_extra = list(starts)
     calibration, data = str(Path(calibration).resolve()), str(Path(data).resolve())
@@ -180,7 +186,12 @@ def run(calibration, data, name, mode=None, device=None, starts=()):
     cal = load_calibration(calibration)
     log(f"existing calibration: {calibration} ({cal.model})")
     stage("start", f"existing calibration {calibration} ({cal.model}); mode: {mode}")
-    frames, decode_rows = get_frames(data, out, cfg)
+    frames, decode_rows = get_frames(data, out, cfg, cloud_units, allow_unusual_units)
+    if (out / 'paired_input.json').exists() and cal.raw.get('image_size'):
+        expected = list(cal.raw['image_size'])
+        actual = list(frames[0].image.shape[1::-1])
+        if expected != actual:
+            raise ValueError(f'Image resolution {actual} differs from the existing calibration {expected}. Use the matching calibration.')
     from common import image_circle  # Targetless common (read-only)
     circle = image_circle(frames)
     st = out / "stages"
@@ -193,11 +204,13 @@ def run(calibration, data, name, mode=None, device=None, starts=()):
           + f"; LiDAR points per capture {npts}", imgs)
     rng = np.random.default_rng(cfg["seed"])
     caps, imgs = [], []
+    has_reflectivity = all(np.ptp(frame.intensity) > 0 for frame in frames)
     for f in frames:
         edges, aux = le.extract(f, cfg["lidar"], cfg["seed"])
         ied = ie.extract(f.image, circle, cfg["image"])
         c = cb.from_edges(f.short, edges, ied)
-        cb.prepare_nid(c, f, cfg["calib"]["nid"]["points_per_capture"], cfg["calib"]["nid"]["bins"], rng)
+        if has_reflectivity:
+            cb.prepare_nid(c, f, cfg["calib"]["nid"]["points_per_capture"], cfg["calib"]["nid"]["bins"], rng)
         caps.append(c)
         imgs += [figures.save(st / f"lidar_edges_{f.short}.png", figures.lidar_edge_map(edges, aux)),
                  figures.save(st / f"image_edges_{f.short}.png", figures.image_edge_map(f.image, ied))]
@@ -381,6 +394,7 @@ def run(calibration, data, name, mode=None, device=None, starts=()):
     write_json(out / "refined_calibration.json", refined)
     summary = dict(run=name, device=device or "", date=datetime.now().isoformat(timespec="seconds"), existing=str(calibration),
                    data=str(data), mode=mode, requested_mode=requested_mode, strategy_comparison=strategy_comparison,
+                   cloud_units=cloud_units, allow_unusual_units=allow_unusual_units,
                    captures=[c.name for c in caps], verdict=verdict, reason=reason,
                    shift_median_px=shift, shift_p90_px=float(np.percentile(d[ok], 90)), shift_by_range_px=bands,
                    shift_uncertainty_px=sd_shift, uncertainty_captures_px=sd_cap, uncertainty_regions_px=sd_blk,
@@ -480,8 +494,11 @@ def main():
     ap.add_argument("--mode", choices=["extrinsic", "intrinsic", "full", "compare"])
     ap.add_argument("--device", help="device label for the history")
     ap.add_argument("--start", action="append", default=[], help="extra refinement start: another calibration.json (repeatable)")
+    ap.add_argument('--cloud-units', choices=['m', 'mm'], default='m', help='Coordinate units in paired PCD files (default: metres)')
+    ap.add_argument('--confirm-cloud-units', action='store_true', help='Explicitly confirm unusual PCD coordinate ranges')
     a = ap.parse_args()
-    run(a.calibration, a.data, a.name, a.mode, a.device, [("calibration from scratch", s) for s in a.start])
+    run(a.calibration, a.data, a.name, a.mode, a.device, [("calibration from scratch", s) for s in a.start],
+        a.cloud_units, a.confirm_cloud_units)
 
 
 def read_progress(out):
