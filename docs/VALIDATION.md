@@ -1,6 +1,12 @@
 # Validation scope
 
-Developed for the FLIR Blackfly S + Livox Avia rig and ROS 1 topics supplied by [Sensor_Computer](https://github.com/maninka123/Sensor_Computer). The desktop checks were run on Windows with Python 3.10. Other hardware, ROS 2 and general camera models are unvalidated.
+Recorded checks used the included camera–LiDAR integration for [Sensor_Computer](https://github.com/maninka123/Sensor_Computer), with ROS 1 topics on Windows and Python 3.10. Configure the topics, camera model, frames and device integration for another setup.
+
+## Updated results and interface preview
+
+[The ten-capture example](RESULTS.md) includes all-edge RMSE, per-option projection movement, matrix previews and compact evidence tables. RMSE fell from **20.54 px to 14.78 px** with alignment only; the final verdict was still **Large change**.
+
+The new screenshots and RMSE calculation come from the updated development build. This documentation update leaves the published application source unchanged. The three-capture evaluation below describes the earlier source revision.
 
 ## Recorded-data check — 4 November 2026
 
