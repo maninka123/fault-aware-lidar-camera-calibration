@@ -13,6 +13,7 @@ from PyQt5 import QtCore, QtWidgets, QtSvg, QtTest
 from ui_common import QSS, CHEVRON_DOWN, table
 from ui_widgets import SourceStrip, UpdateChoice
 from pose_view import ComparisonColumns, CalibrationPosePanel
+from capture_help import CaptureFormatDialog
 import numpy as np
 
 APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -21,6 +22,21 @@ APP.setStyleSheet(QSS)
 
 
 class InterfaceTests(unittest.TestCase):
+    def test_capture_help_tab_labels_fit(self):
+        dialog = CaptureFormatDialog()
+        dialog.show()
+        APP.processEvents()
+        bar = dialog.tabs.tabBar()
+        for index in range(bar.count()):
+            option = QtWidgets.QStyleOptionTab()
+            option.initFrom(bar)
+            option.rect = bar.tabRect(index)
+            option.text = bar.tabText(index)
+            option.shape = QtWidgets.QTabBar.RoundedNorth
+            text_rect = bar.style().subElementRect(QtWidgets.QStyle.SE_TabBarTabText, option, bar)
+            self.assertGreaterEqual(text_rect.width(), bar.fontMetrics().horizontalAdvance(option.text))
+        dialog.close()
+
     def test_dropdown_arrow_is_shared_in_normal_editable_and_disabled_controls(self):
         self.assertTrue(QtSvg.QSvgRenderer(CHEVRON_DOWN).isValid())
         controls = [UpdateChoice(), QtWidgets.QComboBox(), QtWidgets.QComboBox()]

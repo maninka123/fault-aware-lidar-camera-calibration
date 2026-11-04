@@ -19,7 +19,7 @@ Alignment here means the share of visible LiDAR edges associated with a parallel
 
 ## Automated and visual checks
 
-- 14 automated checks: update selection, insufficient evidence, invalid lens fits, fixed parameter groups, inverse-pose geometry, dropdown consistency, source opening, table alignment and responsive pose layout.
+- 17 automated checks: update selection, insufficient evidence, invalid lens fits, fixed parameter groups, inverse-pose geometry, dropdown consistency, source opening, table alignment, responsive pose layout, capture folder/array formats and unclipped help tabs.
 - Native Windows application/window icons and explicit taskbar identity checked.
 - Full app startup, screenshot capture and clean shutdown checked.
 - Saved-run views rendered and inspected; older comparison plots refreshed.

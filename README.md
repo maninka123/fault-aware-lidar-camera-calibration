@@ -37,6 +37,8 @@ After setup, double-click **start_app.bat**.
 
 **Live:** choose a device or add its ROS master / ROSBridge address, connect, then **Capture and check**. **Manual:** choose the current calibration and a capture folder, then **Check calibration**. The default **Compare update options** evaluates all four choices.
 
+Use **New captures → Capture format** to see which folder to choose and how its recordings should be arranged.
+
 ## Live-data source
 
 The acquisition and sensor-processing software lives in [Sensor_Computer](https://github.com/maninka123/Sensor_Computer). This optimizer consumes its raw topics:

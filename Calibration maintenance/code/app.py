@@ -29,6 +29,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402
 from PyQt5.QtCore import Qt  # noqa: E402
 from pose_view import CalibrationPosePanel, ComparisonColumns  # noqa: E402
 from ui_widgets import MODE_NAMES, OptionsResults, SourceStrip, UpdateChoice  # noqa: E402
+from capture_help import CaptureFormatDialog  # noqa: E402
 
 from ui_common import (BAD, BAD_SOFT, BG, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, MONO, ORANGE, PARAMS, QSS,  # noqa: E402
                        STAGES, VERDICT, WARN, WARN_SOFT, Gauge, ImageView, ManualDialog, StepTracker, app_icon, badge_icon, button, calibration_view,
@@ -104,7 +105,9 @@ class SetupPage(QtWidgets.QWidget):
         # 2. new captures
         c2, l2 = card()
         self.h2 = StepHeader(2, "New captures", "Choose recorded or stacked captures")
-        l2.addWidget(self.h2)
+        self.capture_format_button = button('Capture format', 'link', self.show_capture_format)
+        self.capture_format_button.setAccessibleName('Show accepted capture folder layouts')
+        l2.addWidget(hbox(self.h2, self.capture_format_button, stretch_at=1))
         self.data_combo = QtWidgets.QComboBox()
         self.data_combo.addItem("Choose a suggested capture folder…", None)
         for name, path in sug["data"]:
@@ -219,6 +222,10 @@ class SetupPage(QtWidgets.QWidget):
         if p:
             self.data_combo.setCurrentIndex(0)
             self.load_data(p)
+
+    def show_capture_format(self):
+        if CaptureFormatDialog(self).exec_() == QtWidgets.QDialog.Accepted:
+            self.open_data()
 
     # ---- calculate
     def update_ready(self):
