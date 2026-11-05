@@ -19,6 +19,11 @@ for _n in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
 from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
+# Reuse the maintenance app's calibration loading, suggestions, entry dialog and viewer.
+sys.path.insert(0, str(ROOT / "Calibration maintenance" / "code"))
+import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy loads)
+from ui_common import ManualDialog, calibration_view  # noqa: E402
+
 STRATEGIES = [
     ("Fault-aware (recommended)", "fault_aware"),
     ("Joint optimisation", "joint"),
@@ -71,6 +76,16 @@ QFrame#card {{ background: white; border: 1px solid {LINE}; border-radius: 16px;
 QFrame#source {{ background: {SOFT['grey']}; border: 1px solid {LINE}; border-radius: 12px; }}
 QFrame#option {{ background: white; border: 1px solid {LINE}; border-radius: 12px; }}
 QFrame#optionBest {{ background: white; border: 2px solid {BLUE}; border-radius: 12px; }}
+QLabel#err {{ color: {BAD}; background: {SOFT['bad']}; border-radius: 6px; padding: 6px 10px; font-size: 13px; }}
+QLabel#small {{ font-size: 12px; color: {MUTED}; }}
+QLabel#caps {{ font-size: 12px; font-weight: 600; color: {MUTED}; }}
+QLabel#h3 {{ font-size: 14px; font-weight: 600; }}
+QFrame#subtle {{ background: #f8f9fb; border: 1px solid {LINE}; border-radius: 8px; }}
+QDialog {{ background: {BG}; }}
+QGroupBox {{ background: white; border: 1px solid {LINE}; border-radius: 12px; margin-top: 16px; padding: 16px 12px 12px; font-weight: 600; }}
+QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 4px; }}
+QTabBar::tab {{ padding: 6px 16px; border-radius: 8px; color: {MUTED}; }}
+QTabBar::tab:selected {{ background: #e9e9ee; color: {INK}; }}
 QFrame#tile {{ background: white; border: 1px solid {LINE}; border-radius: 12px; }}
 QPushButton {{ background: white; border: 1px solid #dcdce2; border-radius: 9px; padding: 0 16px;
     min-height: 36px; font-weight: 600; }}
@@ -135,31 +150,48 @@ def fmt(v):
 
 
 class Source(QtWidgets.QFrame):
-    """Top step card: title, action link, current value (as in the maintenance app)."""
+    """Step card like the maintenance app: title, suggested-item list, link buttons, summary."""
 
-    def __init__(self, title, placeholder, action, parent=None):
+    def __init__(self, title, subtitle, combo_hint, items, parent=None):
         super().__init__(parent)
         self.setObjectName("source")
-        self.placeholder = placeholder
         lay = QtWidgets.QVBoxLayout(self)
         lay.setContentsMargins(16, 12, 16, 12)
-        lay.setSpacing(4)
-        row = QtWidgets.QHBoxLayout()
-        row.addWidget(label(title, "headline"), 1)
-        self.link = QtWidgets.QPushButton(action)
-        self.link.setObjectName("link")
-        self.link.setCursor(QtCore.Qt.PointingHandCursor)
-        row.addWidget(self.link)
-        lay.addLayout(row)
-        self.value = label(placeholder, "muted", wrap=False)
-        lay.addWidget(self.value)
+        lay.setSpacing(8)
+        lay.addWidget(label(title, "headline"))
+        lay.addWidget(label(subtitle, "footnote"))
+        self.combo = QtWidgets.QComboBox()
+        self.combo.addItem(combo_hint, None)
+        for name, path in items:
+            self.combo.addItem(name, path)
+        self.combo.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Fixed)
+        self.combo.setMaxVisibleItems(16)
+        lay.addWidget(self.combo)
+        self.buttons = QtWidgets.QHBoxLayout()
+        self.buttons.setSpacing(8)
+        self.buttons.addStretch(1)
+        lay.addLayout(self.buttons)
+        self.summary = label("", "muted")
+        self.summary.hide()
+        lay.addWidget(self.summary)
+        self.error = label("", "err")
+        self.error.hide()
+        lay.addWidget(self.error)
+        self.extra = QtWidgets.QVBoxLayout()
+        lay.addLayout(self.extra)
         self.path = ""
 
-    def set_path(self, p):
-        self.path = p
-        text = Path(p).name or p
-        self.value.setText(text)
-        self.value.setToolTip(p)
+    def add_button(self, text, slot):
+        b = QtWidgets.QPushButton(text)
+        b.setObjectName("link")
+        b.setCursor(QtCore.Qt.PointingHandCursor)
+        b.clicked.connect(slot)
+        self.buttons.insertWidget(self.buttons.count() - 1, b)
+        return b
+
+    def show_error(self, msg):
+        self.error.setText(msg)
+        self.error.setVisible(bool(msg))
 
 
 class Pager(QtWidgets.QFrame):
@@ -210,24 +242,45 @@ class MainWindow(QtWidgets.QMainWindow):
         outer.addLayout(top)
 
         # source cards
+        try:
+            sug = core.suggestions()
+        except Exception:  # noqa: BLE001 - suggestions are optional
+            sug = dict(calibrations=[], data=[])
+        # Recordings of this research checkout (research_data/manifest.json), when present on this machine.
+        try:
+            man = json.loads((ROOT / "research_data" / "manifest.json").read_text(encoding="utf-8"))
+            base = (ROOT / man["workspace_root_relative_to_repository"]).resolve()
+            seen_c = {p for _, p in sug["calibrations"]}
+            seen_d = {p for _, p in sug["data"]}
+            for d in man["datasets"]:
+                cal = base / d["reference_calibration"]["path"]
+                dat = base / d["data_directory"]
+                if cal.is_file() and str(cal) not in seen_c:
+                    sug["calibrations"].append((f"Reference: {d['id'].replace('_', ' ')}", str(cal)))
+                    seen_c.add(str(cal))
+                if dat.is_dir() and str(dat) not in seen_d:
+                    sug["data"].append((f"Stacked: {d['id'].replace('_', ' ')}", str(dat)))
+                    seen_d.add(str(dat))
+        except Exception:  # noqa: BLE001
+            pass
         src = QtWidgets.QHBoxLayout()
         src.setSpacing(8)
-        self.cal = Source("Existing calibration", "Choose a calibration .json", "Open")
-        self.cap = Source("Captures", "Choose a folder of captures", "Open")
-        self.meth = Source("Method", "", "")
-        self.meth.link.hide()
+        src.setAlignment(QtCore.Qt.AlignTop)
+        self.cal = Source("Existing calibration", "The camera settings and alignment in use now",
+                          "Choose a suggested calibration…", sug["calibrations"])
+        self.cap = Source("Captures", "Stacked captures (.npz) recorded with this rig",
+                          "Choose a suggested capture folder…", sug["data"])
+        self.cal.combo.activated.connect(lambda k: self.cal.combo.itemData(k) and self.load_cal(self.cal.combo.itemData(k)))
+        self.cap.combo.activated.connect(lambda k: self.cap.combo.itemData(k) and self.load_data(self.cap.combo.itemData(k)))
+        self.cal.add_button("Open file…", self.open_cal)
+        self.cal.add_button("Enter values…", self.enter_cal)
+        self.cap.add_button("Choose folder…", self.open_data)
+        self.cal_details = None
         self.strategy = QtWidgets.QComboBox()
         for name, key in STRATEGIES:
             self.strategy.addItem(name, key)
-        self.meth.layout().removeWidget(self.meth.value)
-        self.meth.value.hide()
-        self.meth.layout().addWidget(self.strategy)
-        self.cal.link.clicked.connect(self.pick_cal)
-        self.cap.link.clicked.connect(self.pick_cap)
-        for i, w in enumerate((self.cal, self.cap, self.meth)):
-            src.addWidget(w, 1)
-            if i < 2:
-                src.addWidget(label("→", "muted", wrap=False))
+        for w in (self.cal, self.cap):
+            src.addWidget(w, 1, QtCore.Qt.AlignTop)
         outer.addLayout(src)
 
         self.progress = QtWidgets.QProgressBar()
@@ -239,6 +292,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pager = Pager(["Result", "Report", "Log"])
         bar.addWidget(self.pager)
         bar.addStretch()
+        bar.addWidget(label("Method", "muted", wrap=False))
+        self.strategy.setMinimumWidth(220)
+        bar.addWidget(self.strategy)
         self.prev_btn = QtWidgets.QPushButton("Open earlier result…")
         self.prev_btn.clicked.connect(self.open_previous)
         self.run_btn = QtWidgets.QPushButton("Run assessment")
@@ -355,16 +411,86 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cards_frame.hide()
         self.table_frame.hide()
 
-    def pick_cal(self):
-        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Choose calibration", self.cal.path or str(ROOT),
-                                                     "Calibration (*.json)")
-        if p:
-            self.cal.set_path(p)
+    # ---- existing calibration (same choices as the maintenance app)
+    def load_cal(self, path):
+        try:
+            info = core.calibration_info(path)
+        except (ValueError, KeyError, TypeError, OSError) as err:
+            self.cal.path = ""
+            return self.cal.show_error(str(err))
+        self.cal.show_error("")
+        self.cal.path = info["path"]
+        self.cal_info = info
+        i = info["intrinsics"]
+        size = f" · {i['image_size'][0]}×{i['image_size'][1]}" if i.get("image_size") else ""
+        p = Path(info["path"])
+        self.cal.summary.setText(f"<b>{p.parent.name}/{p.name}</b><br>fx {core.fmt(i['fx'])} · fy {core.fmt(i['fy'])}{size}"
+                                 f" · {info['extrinsics']['mounting_label']}")
+        self.cal.summary.setTextFormat(QtCore.Qt.RichText)
+        self.cal.summary.show()
+        while self.cal.extra.count():
+            w = self.cal.extra.takeAt(0).widget()
+            if w:
+                w.hide()
+                w.deleteLater()
+        self.cal.extra.addWidget(self.make_details_toggle(info))
 
-    def pick_cap(self):
+    def make_details_toggle(self, info):
+        box = QtWidgets.QWidget()
+        lay = QtWidgets.QVBoxLayout(box)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(8)
+        toggle = QtWidgets.QPushButton("Show all values")
+        toggle.setObjectName("link")
+        toggle.setCursor(QtCore.Qt.PointingHandCursor)
+        view = calibration_view(info)
+        view.hide()
+        toggle.clicked.connect(lambda: (view.setVisible(not view.isVisible()),
+                                        toggle.setText("Hide values" if view.isVisible() else "Show all values")))
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(toggle)
+        row.addStretch(1)
+        lay.addLayout(row)
+        lay.addWidget(view)
+        return box
+
+    def open_cal(self):
+        start = str(Path(self.cal.path).parent) if self.cal.path else str(core.PROJECT)
+        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Existing calibration", start, "Calibration (*.json)")
+        if p:
+            self.cal.combo.setCurrentIndex(0)
+            self.load_cal(p)
+
+    def enter_cal(self):
+        prefill = getattr(self, "cal_info", None) if self.cal.path else None
+        d = ManualDialog(self, prefill)
+        if d.exec_() == QtWidgets.QDialog.Accepted:
+            self.cal.combo.setCurrentIndex(0)
+            self.load_cal(d.path)
+
+    # ---- captures
+    def load_data(self, path):
+        try:
+            info = core.inspect_data(path)
+        except (ValueError, OSError) as err:
+            self.cap.path = ""
+            return self.cap.show_error(str(err))
+        self.cap.path = info["path"]
+        kind = {"raw": "raw bags", "stacked": "stacked captures", "paired": "image + PCD pairs"}[info["kind"]]
+        n = len(info["captures"])
+        self.cap.summary.setText(f"<b>{n} {kind}</b><br>{Path(info['path']).name}")
+        self.cap.summary.setTextFormat(QtCore.Qt.RichText)
+        self.cap.summary.show()
+        if info["kind"] != "stacked":
+            self.cap.show_error("The research assessment currently needs stacked captures (.npz).")
+        else:
+            self.cap.show_error("")
+
+    def open_data(self):
         p = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose captures folder", self.cap.path or str(ROOT))
         if p:
-            self.cap.set_path(p)
+            self.cap.combo.setCurrentIndex(0)
+            self.load_data(p)
 
     def warn(self, msg):
         QtWidgets.QMessageBox.information(self, "Missing input", msg)
