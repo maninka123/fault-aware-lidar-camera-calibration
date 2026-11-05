@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parent
 # Reuse the maintenance app's calibration loading, suggestions, entry dialog and viewer.
 sys.path.insert(0, str(ROOT / "Calibration maintenance" / "code"))
 import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy loads)
-from ui_common import ManualDialog, calibration_view  # noqa: E402
+from ui_common import ManualDialog  # noqa: E402
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
 CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
@@ -299,6 +299,64 @@ class Source(QtWidgets.QFrame):
         self.error.setVisible(bool(msg))
 
 
+class CalibrationDialog(QtWidgets.QDialog):
+    """Read-only view of a calibration's values (HIG sizes: 14 px values, 12 px captions)."""
+
+    def __init__(self, parent, info, shown):
+        super().__init__(parent)
+        self.setWindowTitle("Calibration values")
+        lay = QtWidgets.QVBoxLayout(self)
+        lay.setContentsMargins(24, 24, 24, 24)
+        lay.setSpacing(16)
+        lay.addWidget(label(f"{Path(shown).parent.name}/{Path(shown).name}", "headline"))
+        if info.get("method"):
+            lay.addWidget(label(info["method"], "footnote"))
+        i, e = info["intrinsics"], info["extrinsics"]
+        size = f"{i['image_size'][0]} × {i['image_size'][1]}" if i.get("image_size") else "–"
+        lay.addWidget(self.group("Intrinsics", [
+            ("fx (px)", core.fmt(i["fx"])), ("fy (px)", core.fmt(i["fy"])), ("Image size", size),
+            ("cx (px)", core.fmt(i["cx"])), ("cy (px)", core.fmt(i["cy"])), ("Distortion", str(i["model"])),
+            ("k1", core.fmt(i["k1"], 4)), ("k2", core.fmt(i["k2"], 4)), ("", "")]))
+        lay.addWidget(self.group("Extrinsics (LiDAR → camera)", [
+            ("Translation x (mm)", core.fmt(e["tx"], 1)), ("Translation y (mm)", core.fmt(e["ty"], 1)),
+            ("Translation z (mm)", core.fmt(e["tz"], 1)), ("Tilt (°)", core.fmt(e["tilt"], 3)),
+            ("Pan (°)", core.fmt(e["pan"], 3)), ("Roll (°)", core.fmt(e["roll"], 3))],
+            note="Mounting: " + e["mounting_label"]))
+        mat = QtWidgets.QPlainTextEdit("\n".join("  ".join(f"{x:>11.6f}" for x in row) for row in e["matrix"]))
+        mat.setReadOnly(True)
+        mat.setFixedHeight(112)
+        lay.addWidget(label("4 × 4 transform", "headline"))
+        lay.addWidget(mat)
+        close = QtWidgets.QPushButton("Done")
+        close.setObjectName("primary")
+        close.clicked.connect(self.accept)
+        row = QtWidgets.QHBoxLayout()
+        row.addStretch(1)
+        row.addWidget(close)
+        lay.addLayout(row)
+        self.setMinimumWidth(620)
+
+    @staticmethod
+    def group(title, items, note=None):
+        f, lay = frame("card", (20, 16, 20, 16), 8)
+        lay.addWidget(label(title, "headline"))
+        if note:
+            lay.addWidget(label(note, "footnote"))
+        grid = QtWidgets.QGridLayout()
+        grid.setHorizontalSpacing(24)
+        grid.setVerticalSpacing(12)
+        for k, (cap, val) in enumerate(items):
+            box = QtWidgets.QVBoxLayout()
+            box.setSpacing(2)
+            box.addWidget(label(cap, "footnote"))
+            v = label(val, wrap=False)
+            v.setStyleSheet("font-size:14px; font-weight:600;")
+            box.addWidget(v)
+            grid.addLayout(box, k // 3, k % 3)
+        lay.addLayout(grid)
+        return f
+
+
 class Pager(QtWidgets.QFrame):
     changed = QtCore.pyqtSignal(int)
 
@@ -541,25 +599,18 @@ class MainWindow(QtWidgets.QMainWindow):
             if w:
                 w.hide()
                 w.deleteLater()
-        self.cal.extra.addWidget(self.make_details_toggle(info))
+        self.cal.extra.addWidget(self.make_details_toggle(info, shown))
 
-    def make_details_toggle(self, info):
+    def make_details_toggle(self, info, shown):
+        link = QtWidgets.QPushButton("View all values…")
+        link.setObjectName("link")
+        link.setCursor(QtCore.Qt.PointingHandCursor)
+        link.clicked.connect(lambda: CalibrationDialog(self, info, shown).exec_())
         box = QtWidgets.QWidget()
-        lay = QtWidgets.QVBoxLayout(box)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.setSpacing(8)
-        toggle = QtWidgets.QPushButton("Show all values")
-        toggle.setObjectName("link")
-        toggle.setCursor(QtCore.Qt.PointingHandCursor)
-        view = calibration_view(info)
-        view.hide()
-        toggle.clicked.connect(lambda: (view.setVisible(not view.isVisible()),
-                                        toggle.setText("Hide values" if view.isVisible() else "Show all values")))
-        row = QtWidgets.QHBoxLayout()
-        row.addWidget(toggle)
+        row = QtWidgets.QHBoxLayout(box)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.addWidget(link)
         row.addStretch(1)
-        lay.addLayout(row)
-        lay.addWidget(view)
         return box
 
     def open_cal(self):
