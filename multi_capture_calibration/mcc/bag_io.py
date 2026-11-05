@@ -46,6 +46,15 @@ class Capture:
         return self.xyz[keep], self.intensity[keep]
 
 
+_BAYER = {"bayer_rggb8": 46, "bayer_bggr8": 48, "bayer_gbrg8": 47, "bayer_grbg8": 49}  # filled with cv2 codes below
+try:
+    import cv2 as _cv2
+    _BAYER = {"bayer_rggb8": _cv2.COLOR_BayerBG2BGR, "bayer_bggr8": _cv2.COLOR_BayerRG2BGR,
+              "bayer_gbrg8": _cv2.COLOR_BayerGR2BGR, "bayer_grbg8": _cv2.COLOR_BayerGB2BGR}
+except ImportError:  # pragma: no cover - OpenCV is a hard requirement elsewhere
+    _BAYER = {}
+
+
 def _decode_image(msg) -> np.ndarray:
     data = np.frombuffer(msg.data, np.uint8)
     enc = msg.encoding.lower()
@@ -55,7 +64,17 @@ def _decode_image(msg) -> np.ndarray:
     if enc in ("mono8", "8uc1"):
         gray = data.reshape(msg.height, msg.step)[:, : msg.width]
         return np.repeat(gray[:, :, None], 3, axis=2)
-    raise ValueError(f"Unsupported image encoding {msg.encoding}")
+    if enc in _BAYER:
+        # Raw colour-filter mosaic (e.g. FLIR cameras): demosaic to BGR. The OpenCV code names follow the
+        # pixel pair that *starts the second row*, hence the cv_bridge mapping below.
+        import cv2
+        mosaic = np.ascontiguousarray(data.reshape(msg.height, msg.step)[:, : msg.width])
+        return cv2.cvtColor(mosaic, _BAYER[enc])
+    if enc in ("bgra8", "rgba8"):
+        img = data.reshape(msg.height, msg.step)[:, : msg.width * 4].reshape(msg.height, msg.width, 4)
+        return img[:, :, [2, 1, 0]] if enc == "rgba8" else img[:, :, :3]
+    raise ValueError(f"Unsupported image encoding {msg.encoding} (supported: rgb8, bgr8, rgba8, bgra8, mono8, "
+                     "bayer_rggb8, bayer_bggr8, bayer_gbrg8, bayer_grbg8)")
 
 
 def _decode_cloud(msg) -> np.ndarray:
