@@ -111,7 +111,7 @@ def fit_hypothesis(caps,model,baseline,hypothesis,cfg,strategy):
                                                   rank_rtol=cfg.rank_rtol,minimum_singular=cfg.minimum_singular))
 
 
-def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None,cloud_units='m',progress=None,_bundle=None):
+def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None,cloud_units='m',allow_unusual_units=False,progress=None,_bundle=None):
     cfg=config if isinstance(config,ResearchConfig) else ResearchConfig(**(config or {}))
     if strategy not in STRATEGIES:
         raise ValueError('Unknown strategy: '+strategy)
@@ -122,7 +122,7 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
     original=read_calibration(calibration)
     if strategy=='legacy':
         return _legacy_assess(original,calibration,captures,output)
-    bundle=_bundle or load_capture_bundle(captures,output/'inputs',cfg.max_features_per_capture,cfg.seed,cloud_units)
+    bundle=_bundle or load_capture_bundle(captures,output/'inputs',cfg.max_features_per_capture,cfg.seed,cloud_units,allow_unusual_units)
     if original.get('image_size') and list(original['image_size'])!=list(bundle.size):
         raise ValueError('Calibration and capture image resolutions differ')
     model=ProjectionModel(original,bundle.size,bundle.circle,cfg.max_angle_rad)
@@ -250,7 +250,12 @@ def calibrate_from_scratch(captures,*,output=None,config=None):
     settings=copy.deepcopy(legacy.settings.load_config())
     source=Path(captures).resolve()
     if not next(source.glob('*.npz'),None):
-        raise ValueError('Scratch initialization currently requires existing stacked NPZ captures; decode using the input adapter first')
+        # Raw capture_*/rig_0.bag folders are decoded by the existing decoder into stacked captures first.
+        if not any((p/'rig_0.bag').exists() for p in source.glob('capture_*')):
+            raise ValueError('Calibration from scratch needs stacked captures (.npz) or raw capture_*/rig_0.bag folders; image + PCD pairs are only supported for checking an existing calibration')
+        legacy.maintain.get_frames(source,output/'decoded',legacy.settings.load_config())
+        source=output/'decoded'/'stacked'/'data'
+        captures=source
     settings['stacked_dir']=str(source.parent)
     settings['output_dir']=str(io_path(output/'initialization'))
     settings['prior']['rotation_lidar_to_camera']='auto'

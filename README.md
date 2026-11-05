@@ -16,7 +16,7 @@ Built on the existing [Calibration optimizer](docs/ORIGINAL_APP_README.md) (edge
 
 ## Quick start
 
-Python 3.10/3.11, `pip install -r requirements.txt`.`n`nDesktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Pick a calibration and captures, run, and read the verdict, per-hypothesis scores and parameter table.
+Python 3.10/3.11, `pip install -r requirements.txt`.`n`nDesktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Same inputs as the maintenance app: calibration as `.json`, exported/targetless `.txt`, or typed values; captures as raw `capture_*/rig_0.bag`, stacked `.npz`, or image + PCD pairs (with PCD units). Check an existing calibration or calibrate from scratch (raw/stacked); past checks are listed in the sidebar.
 
 ```powershell
 python -B verify_research.py                     # 28 baseline + 37 research tests

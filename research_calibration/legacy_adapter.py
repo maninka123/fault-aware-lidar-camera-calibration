@@ -52,14 +52,14 @@ def read_calibration(value):
     return calibration
 
 
-def load_capture_bundle(captures, output, max_features=1600, seed=0, cloud_units='m'):
+def load_capture_bundle(captures, output, max_features=1600, seed=0, cloud_units='m', allow_unusual_units=False):
     legacy = legacy_modules()
     cfg = legacy.settings.load_config()
     from .resources import check_resources
     check_resources()
     folder = Path(captures).resolve()
     try:
-        frames, _ = legacy.maintain.get_frames(folder,Path(output),cfg,cloud_units)
+        frames, _ = legacy.maintain.get_frames(folder,Path(output),cfg,cloud_units,allow_unusual_units)
     except SystemExit as error:
         raise ValueError(str(error)) from error
     if not frames:
