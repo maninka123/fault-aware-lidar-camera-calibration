@@ -1,5 +1,7 @@
 # Capture inputs
 
+For the new offline research backend, see [RESEARCH_README.md](../RESEARCH_README.md). Existing readers are reused; stacked recordings are the inputs exercised in the recorded research comparisons. The research desktop button currently enables stacked captures only. Research results use a predeclared camera domain and separate fitting/test captures; imported files are never modified.
+
 In **New captures**, click **Capture format** for a visual guide, a copyable folder layout and the stacked-array fields.
 
 For live operation, use the camera and LiDAR topics from [Sensor_Computer](https://github.com/maninka123/Sensor_Computer). Defaults are `/camera/image_raw` and `/livox/lidar`.

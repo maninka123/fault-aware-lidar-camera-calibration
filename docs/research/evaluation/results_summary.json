@@ -1,0 +1,2140 @@
+{
+  "primary_dataset": "enclosure_off_ten",
+  "configuration": {
+    "seed": 7,
+    "max_features_per_capture": 1200,
+    "max_association_rows": 1800,
+    "association_gates": [
+      6.0,
+      9.0,
+      12.0
+    ],
+    "iterations": 2,
+    "max_nfev": 50,
+    "training_budget": 4,
+    "selection_strategy": "contrast",
+    "outer_fraction": 0.3,
+    "min_capture_blocks": 4,
+    "min_relative_gain": 0.01,
+    "minimum_singular": 0.02,
+    "rank_rtol": 1e-05,
+    "support_floor": 0.98,
+    "evaluation_cap_px": 30.0,
+    "min_coverage": 0.9,
+    "max_angle_rad": 1.0,
+    "bootstrap_reps": 500
+  },
+  "environment": {
+    "python": "3.10.14 | packaged by Anaconda, Inc. | (main, Mar 21 2024, 16:20:14) [MSC v.1916 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "numpy": "1.26.4",
+    "scipy": "1.10.1",
+    "opencv": "4.8.1",
+    "threads": "Sequential; OMP/MKL/OpenBLAS/OpenCV limited to one thread",
+    "source_sha256": {
+      "Calibration maintenance\\code\\accept.py": "af5aa9b5f813c2204fc30e53b705f043190e81b444665d809a88195b37f1ca03",
+      "Calibration maintenance\\code\\app.py": "898d748d2c2e14037d8561c74bcf4a192e6fd9f60b8df645c271d622947c2547",
+      "Calibration maintenance\\code\\appcore.py": "bda807aa0f70981fff47748ba94690ccf1ea22689bac3743fc92cd80e9462fa8",
+      "Calibration maintenance\\code\\capture_help.py": "037117efe68a1d7a9cf911631594f536208b639e5bf6e4aeddd4495abf2876bb",
+      "Calibration maintenance\\code\\config.yaml": "b1a69c8c37cdaf6abfeeccef5e32d51200717211b15cb9fed8cbfdfb420a9320",
+      "Calibration maintenance\\code\\device_capture.py": "2b98643794fed9cfdfe71c9e94e5d49b54c489d1d851d2a69e24306d421d0438",
+      "Calibration maintenance\\code\\device_model.py": "86a4bcbb6d7a8bcc6af189511fed33501a7f437c7732a934214d99910cb90a84",
+      "Calibration maintenance\\code\\device_ssh.py": "ac085375664e8e91e83fa11b111a92b8a133fe0010cb1f5e9b755d19c9015410",
+      "Calibration maintenance\\code\\device_ui.py": "6456ca2133d52c30763f44aee995370b36098fc8841f95790009becd1f33fc58",
+      "Calibration maintenance\\code\\device_yaml.py": "7352516ffb51af0d521fb48e998ce9382246f153285524f1b7dec6c3066eb9b4",
+      "Calibration maintenance\\code\\devices.py": "27fe0e74ba2f35d0015cd3747df8ba3f64ff6aeb83c2336fe64a4023067fc673",
+      "Calibration maintenance\\code\\figures.py": "9b590a6d7ac9fd2e692a5c59503be458ed8cabbebeec9cb396207eba888adecc",
+      "Calibration maintenance\\code\\full_calibration.py": "a91931dfda9d768690d68f4c2bbe8d662db256a9a2533e3a62f07573280f43f6",
+      "Calibration maintenance\\code\\maintain.py": "d526ab52e20c4bfe2b93de33b5181b8ee6af9ee6acff501e15a3d234ee4ca805",
+      "Calibration maintenance\\code\\paired_data.py": "31aee04603050d9ca6a6006ad02d1d93ac043a2c88c363d5602e83eb446c5072",
+      "Calibration maintenance\\code\\pose_view.py": "e66febe5ada9999e1b0c1da810abf0d4424a9cea3cde30b5ef0d3f218216c6d3",
+      "Calibration maintenance\\code\\refresh_visuals.py": "8911aebcfe5f5ff0bc6eeccae27e686e6c35ab7ab137c70ab2adaa35e7079bf5",
+      "Calibration maintenance\\code\\research_dialog.py": "7e344985057e6d5011aa1632515fcba8beb967a6c4d42cf607f16fbf12326d67",
+      "Calibration maintenance\\code\\ros_link.py": "bf3e2540ade1faf4b1431b71b622ea3a34e14f0608374da3a2c9f4b993314434",
+      "Calibration maintenance\\code\\settings.py": "6416a28d2efcbc894c6233a0339c2e17d1d50e5cd893cfa1757c8effcd1e2215",
+      "Calibration maintenance\\code\\sim_device.py": "3847f76f06b0284959f9bf3a031447bb1eefd1a2ba0191c71973d5df2cdac434",
+      "Calibration maintenance\\code\\simulate_drift.py": "eef057dcd0670d7768cf709ba40dc117d15e039d5cd1b739fb72ef1f3e041852",
+      "Calibration maintenance\\code\\ui_common.py": "5521e42303a0a2dbec466117a0e70f37ad078c7310a47999bbf4ba314c4bb165",
+      "Calibration maintenance\\code\\ui_widgets.py": "2ba8626ab4745334cccede737930c358536924a054af4f0c83b79eb7a9795c75",
+      "Calibration maintenance\\code\\update_options.py": "50fcc6182bffbc4792cf4c445539aa60f99c7e48c14460cfc0206c2f7dbf5c73",
+      "research_calibration\\__init__.py": "f7b6be53b91b4454451ca4a795b5f270047e06e3c8e5599cf87836435f57c728",
+      "research_calibration\\__main__.py": "6a3754179a263c6d7f62a77b7afc52f24af77193704e7c8c8ae095cb84d51ec9",
+      "research_calibration\\benchmark.py": "d4a40641aa9442a1d463344b5b8fd9e6a3e8b05bd7a5a379bb7922a093203ab2",
+      "research_calibration\\calibration_pipeline.py": "096814df04f3173d05a28967f7836660ff10e4d1bd2ef3203dec047db5d21e97",
+      "research_calibration\\config.py": "4c1bb4136a4dd2a9492b30aeb864d3b309ce452f0cf667b444d33c131d9fa49a",
+      "research_calibration\\decision_policy.py": "fd483a614341f024e9199ae17b8a901777a90636640c0137cb7d05fa810979f5",
+      "research_calibration\\evidence_selection.py": "22366504467d8685a82f84c40c37e93a845d65f0a748ec7da32f0b5a18ddc944",
+      "research_calibration\\geometry.py": "17ab503c7d968f648d091a687213a1b88b6e5c3c4f8cb7777953a047c65a199c",
+      "research_calibration\\legacy_adapter.py": "2f398087f54e675d9e00c97939774e9add85382be697c62fced66ad62db6dcc9",
+      "research_calibration\\observability.py": "7c43b709f5a5bc1fa59ff54b2ed03246d753be24372ea58b4841927e4498b313",
+      "research_calibration\\parameter_hypotheses.py": "dba3d2e752771a111de2d25c2e1ee04d3e009622f80b07122b9af0163c24247e",
+      "research_calibration\\reporting.py": "938f5deba7631f9cd35ad812acdf36d4c213ad1b1fbdf4f1bc49651e9a1a5306",
+      "research_calibration\\residuals.py": "33627e8bb6ca72954b2cc4ef746c4a223c20ee2bb07658c0c30bebf222f59bfb",
+      "research_calibration\\resources.py": "1d0f40b7a5ddbca3d6123dab558510857abe7f4dff82bc880db42cbbdf412e90",
+      "research_calibration\\selective_optimizer.py": "085cd4d5fa0edb1a2f36ef126181ade0d62d6f37318e55682aba4a91dad19156",
+      "research_calibration\\uncertainty.py": "3e3a77302ca6d0855cf1895ca12b34590dd09bf87ab3ca1fb2c73cf9b51ddd61",
+      "Targetless calibration\\code\\calib.py": "1a67418426330b57fe4c34dfbe1ad4662cb612825e788236eb16155cd306340a",
+      "Targetless calibration\\code\\common.py": "010d9e1e5adbb7812b4e5b27c74fd00b1b32087c050f18bc615a735d2b1c48be",
+      "Targetless calibration\\code\\config.yaml": "aadabbfa0c723ca8b284a896f568cd979ac8e3c40a8d3a9a609199944c0a80ad",
+      "Targetless calibration\\code\\decode_bags.py": "d2ec65b7e33da8e6896ec3dd7e24f874eddc939facd10dc8dacf0cecda32f6f7",
+      "Targetless calibration\\code\\evaluate.py": "fbc5fe41f9201a1b75769335463a306a1531b9909164f6480507e14cecfad3e5",
+      "Targetless calibration\\code\\image_edges.py": "d98eeb7cb86db840fb8f99f6be50a17b30bb19b74e2304e62a9818ce055759d9",
+      "Targetless calibration\\code\\lidar_edges.py": "c2a4397ed44b90427fd26d859b5d16dac098c7d5eb4232be8942bea564249360",
+      "Targetless calibration\\code\\step1_calibrate.py": "e70e18d3610f52f566a2b007cef985a295025dddc1a37aee6bea0ae84b7485de",
+      "Targetless calibration\\code\\step2_compare.py": "b5ddadca0ed241a033c4f0ba355f6841c1bb6d886fd8dc9acc483c803b619796",
+      "Targetless calibration\\code\\step4_images.py": "55eab8f0e36353e8362de334f18f67256459d3e941cec032bd4b33c0a74a96c7"
+    },
+    "memory": {
+      "available_mb": 20636.06640625,
+      "process_mb": 67.30859375
+    }
+  },
+  "methods": [
+    {
+      "method": "legacy_optimizer",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Comparison refused: failed or nonfinite fold; no folds were dropped.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.26646152328384226,
+          "pooled_capped_edge_rmse_px": 15.485973361576535,
+          "minimum_rank": 1
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.27222096748716995,
+          "pooled_capped_edge_rmse_px": 15.652439769520054,
+          "minimum_rank": 7
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.26782035580078717,
+          "pooled_capped_edge_rmse_px": 15.525408858407191,
+          "minimum_rank": 7
+        },
+        "RTI": {
+          "complete": false,
+          "mean_loss": null,
+          "pooled_capped_edge_rmse_px": null,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "164411_450626",
+          "164446_617061",
+          "164528_587972",
+          "164617_573884",
+          "164652_717058",
+          "164727_286206",
+          "165012_890546"
+        ],
+        "test_ids": [
+          "164327_828105",
+          "164819_212871",
+          "164921_130392"
+        ],
+        "metrics": [
+          {
+            "id": "164327_828105",
+            "baseline": {
+              "valid": true,
+              "loss": 0.2598062807382966,
+              "capped_edge_rmse_px": 15.29135875795434,
+              "median_edge_distance_px": 6.434317632281193,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.259703996015997,
+              "capped_edge_rmse_px": 15.288348387396109,
+              "median_edge_distance_px": 6.372737689880971,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164819_212871",
+            "baseline": {
+              "valid": true,
+              "loss": 0.27513065751217364,
+              "capped_edge_rmse_px": 15.73586959023734,
+              "median_edge_distance_px": 5.868066684752533,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.27501302489194346,
+              "capped_edge_rmse_px": 15.732505280556847,
+              "median_edge_distance_px": 5.872166012164691,
+              "edge_match_share": 0.2775,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164921_130392",
+            "baseline": {
+              "valid": true,
+              "loss": 0.3029686971722778,
+              "capped_edge_rmse_px": 16.512777702586867,
+              "median_edge_distance_px": 8.453557301416966,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.30278020948459217,
+              "capped_edge_rmse_px": 16.50764030793417,
+              "median_edge_distance_px": 8.377412375697656,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          }
+        ],
+        "relative_gain": 0.0004874117238864923,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 4.341605300000083,
+      "memory": {
+        "available_mb": 20743.921875,
+        "process_mb": 150.3828125
+      }
+    },
+    {
+      "method": "joint",
+      "status": "KEEP_CURRENT",
+      "selected": "KEEP",
+      "candidate": "KEEP",
+      "reason": "No candidate clears the declared practical loss-improvement threshold.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.2666144754421587,
+          "pooled_capped_edge_rmse_px": 15.490417292569713,
+          "minimum_rank": 1
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.27208828824014325,
+          "pooled_capped_edge_rmse_px": 15.648624841056447,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "164411_450626",
+          "164446_617061",
+          "164528_587972",
+          "164617_573884",
+          "164652_717058",
+          "164727_286206",
+          "165012_890546"
+        ],
+        "test_ids": [
+          "164327_828105",
+          "164819_212871",
+          "164921_130392"
+        ],
+        "metrics": [
+          {
+            "id": "164327_828105",
+            "baseline": {
+              "valid": true,
+              "loss": 0.2598062807382966,
+              "capped_edge_rmse_px": 15.29135875795434,
+              "median_edge_distance_px": 6.434317632281193,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.2597745392624418,
+              "capped_edge_rmse_px": 15.290424629034918,
+              "median_edge_distance_px": 6.4318790825969625,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164819_212871",
+            "baseline": {
+              "valid": true,
+              "loss": 0.27513065751217364,
+              "capped_edge_rmse_px": 15.73586959023734,
+              "median_edge_distance_px": 5.868066684752533,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.2751097238928358,
+              "capped_edge_rmse_px": 15.735270938358584,
+              "median_edge_distance_px": 5.847761312674694,
+              "edge_match_share": 0.2775,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164921_130392",
+            "baseline": {
+              "valid": true,
+              "loss": 0.3029686971722778,
+              "capped_edge_rmse_px": 16.512777702586867,
+              "median_edge_distance_px": 8.453557301416966,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.3029228284899315,
+              "capped_edge_rmse_px": 16.51152765921247,
+              "median_edge_distance_px": 8.422621818174045,
+              "edge_match_share": 0.2575,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          }
+        ],
+        "relative_gain": 0.00011760724999677902,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 1.6112450000000536,
+      "memory": {
+        "available_mb": 20693.5078125,
+        "process_mb": 148.09765625
+      }
+    },
+    {
+      "method": "fault_aware",
+      "status": "KEEP_CURRENT",
+      "selected": "KEEP",
+      "candidate": "R",
+      "reason": "No candidate clears the declared practical loss-improvement threshold.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.2666014892803862,
+          "pooled_capped_edge_rmse_px": 15.490040037144757,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.2649371667958423,
+          "pooled_capped_edge_rmse_px": 15.441614232853315,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.26850924775161555,
+          "pooled_capped_edge_rmse_px": 15.545363391585736,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.2724609144784717,
+          "pooled_capped_edge_rmse_px": 15.659336608893256,
+          "minimum_rank": 6
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.2689808139020769,
+          "pooled_capped_edge_rmse_px": 15.55900808251828,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.2726082084766675,
+          "pooled_capped_edge_rmse_px": 15.663568802447312,
+          "minimum_rank": 7
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.27137444936226707,
+          "pooled_capped_edge_rmse_px": 15.62808383731161,
+          "minimum_rank": 9
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.2714799415648862,
+          "pooled_capped_edge_rmse_px": 15.631121118089949,
+          "minimum_rank": 10
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "164411_450626",
+          "164446_617061",
+          "164528_587972",
+          "164617_573884",
+          "164652_717058",
+          "164727_286206",
+          "165012_890546"
+        ],
+        "test_ids": [
+          "164327_828105",
+          "164819_212871",
+          "164921_130392"
+        ],
+        "metrics": [
+          {
+            "id": "164327_828105",
+            "baseline": {
+              "valid": true,
+              "loss": 0.2598062807382966,
+              "capped_edge_rmse_px": 15.29135875795434,
+              "median_edge_distance_px": 6.434317632281193,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.258382615847648,
+              "capped_edge_rmse_px": 15.249405046193875,
+              "median_edge_distance_px": 6.430354727138896,
+              "edge_match_share": 0.27666666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164819_212871",
+            "baseline": {
+              "valid": true,
+              "loss": 0.27513065751217364,
+              "capped_edge_rmse_px": 15.73586959023734,
+              "median_edge_distance_px": 5.868066684752533,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.27369738259943743,
+              "capped_edge_rmse_px": 15.6948285858589,
+              "median_edge_distance_px": 5.943114865959368,
+              "edge_match_share": 0.2783333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164921_130392",
+            "baseline": {
+              "valid": true,
+              "loss": 0.3029686971722778,
+              "capped_edge_rmse_px": 16.512777702586867,
+              "median_edge_distance_px": 8.453557301416966,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.3009064225307166,
+              "capped_edge_rmse_px": 16.456481406353088,
+              "median_edge_distance_px": 8.419302314675644,
+              "edge_match_share": 0.265,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          }
+        ],
+        "relative_gain": 0.005870845399511123,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 5.039180100000067,
+      "memory": {
+        "available_mb": 20604.171875,
+        "process_mb": 152.7265625
+      }
+    },
+    {
+      "method": "no_observability",
+      "status": "KEEP_CURRENT",
+      "selected": "KEEP",
+      "candidate": "R",
+      "reason": "No candidate clears the declared practical loss-improvement threshold.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.2666014892803862,
+          "pooled_capped_edge_rmse_px": 15.490040037144757,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.26493716667397005,
+          "pooled_capped_edge_rmse_px": 15.44161422930171,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.2685092470185515,
+          "pooled_capped_edge_rmse_px": 15.545363370365338,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.2726714910800999,
+          "pooled_capped_edge_rmse_px": 15.665386748244996,
+          "minimum_rank": 7
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.2689808161558066,
+          "pooled_capped_edge_rmse_px": 15.559008147700993,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.27172413494171965,
+          "pooled_capped_edge_rmse_px": 15.638149553177564,
+          "minimum_rank": 10
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.2716241226366297,
+          "pooled_capped_edge_rmse_px": 15.635271355910865,
+          "minimum_rank": 10
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.27087046146607247,
+          "pooled_capped_edge_rmse_px": 15.613565106005266,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "164411_450626",
+          "164446_617061",
+          "164528_587972",
+          "164617_573884",
+          "164652_717058",
+          "164727_286206",
+          "165012_890546"
+        ],
+        "test_ids": [
+          "164327_828105",
+          "164819_212871",
+          "164921_130392"
+        ],
+        "metrics": [
+          {
+            "id": "164327_828105",
+            "baseline": {
+              "valid": true,
+              "loss": 0.2598062807382966,
+              "capped_edge_rmse_px": 15.29135875795434,
+              "median_edge_distance_px": 6.434317632281193,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.25838261726318157,
+              "capped_edge_rmse_px": 15.249405087965348,
+              "median_edge_distance_px": 6.4303554457045715,
+              "edge_match_share": 0.27666666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164819_212871",
+            "baseline": {
+              "valid": true,
+              "loss": 0.27513065751217364,
+              "capped_edge_rmse_px": 15.73586959023734,
+              "median_edge_distance_px": 5.868066684752533,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.2736973828299174,
+              "capped_edge_rmse_px": 15.69482859246719,
+              "median_edge_distance_px": 5.943114711948047,
+              "edge_match_share": 0.2783333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164921_130392",
+            "baseline": {
+              "valid": true,
+              "loss": 0.3029686971722778,
+              "capped_edge_rmse_px": 16.512777702586867,
+              "median_edge_distance_px": 8.453557301416966,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.3009064243819522,
+              "capped_edge_rmse_px": 16.456481456974846,
+              "median_edge_distance_px": 8.419301047620365,
+              "edge_match_share": 0.265,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          }
+        ],
+        "relative_gain": 0.005870841225712775,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 5.22177529999999,
+      "memory": {
+        "available_mb": 20902.40625,
+        "process_mb": 152.05859375
+      }
+    },
+    {
+      "method": "no_selection",
+      "status": "KEEP_CURRENT",
+      "selected": "KEEP",
+      "candidate": "R",
+      "reason": "No candidate clears the declared practical loss-improvement threshold.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.2666144754421587,
+          "pooled_capped_edge_rmse_px": 15.490417292569713,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.26493987727077567,
+          "pooled_capped_edge_rmse_px": 15.441693221395706,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.26845944501868874,
+          "pooled_capped_edge_rmse_px": 15.543921658218041,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.2724634000821214,
+          "pooled_capped_edge_rmse_px": 15.659408037148442,
+          "minimum_rank": 6
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.2681780210835876,
+          "pooled_capped_edge_rmse_px": 15.535772236204703,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.27268444425401034,
+          "pooled_capped_edge_rmse_px": 15.665758833475298,
+          "minimum_rank": 7
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.27181263122293003,
+          "pooled_capped_edge_rmse_px": 15.640695895663884,
+          "minimum_rank": 9
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.27211845809317936,
+          "pooled_capped_edge_rmse_px": 15.649492397003213,
+          "minimum_rank": 10
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "164411_450626",
+          "164446_617061",
+          "164528_587972",
+          "164617_573884",
+          "164652_717058",
+          "164727_286206",
+          "165012_890546"
+        ],
+        "test_ids": [
+          "164327_828105",
+          "164819_212871",
+          "164921_130392"
+        ],
+        "metrics": [
+          {
+            "id": "164327_828105",
+            "baseline": {
+              "valid": true,
+              "loss": 0.2598062807382966,
+              "capped_edge_rmse_px": 15.29135875795434,
+              "median_edge_distance_px": 6.434317632281193,
+              "edge_match_share": 0.2708333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.25836399022540896,
+              "capped_edge_rmse_px": 15.248855406320438,
+              "median_edge_distance_px": 6.440980731049619,
+              "edge_match_share": 0.2783333333333333,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164819_212871",
+            "baseline": {
+              "valid": true,
+              "loss": 0.27513065751217364,
+              "capped_edge_rmse_px": 15.73586959023734,
+              "median_edge_distance_px": 5.868066684752533,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.27366109044377657,
+              "capped_edge_rmse_px": 15.693787987589195,
+              "median_edge_distance_px": 5.933124280039281,
+              "edge_match_share": 0.2791666666666667,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          },
+          {
+            "id": "164921_130392",
+            "baseline": {
+              "valid": true,
+              "loss": 0.3029686971722778,
+              "capped_edge_rmse_px": 16.512777702586867,
+              "median_edge_distance_px": 8.453557301416966,
+              "edge_match_share": 0.25833333333333336,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            },
+            "candidate": {
+              "valid": true,
+              "loss": 0.3007809390314301,
+              "capped_edge_rmse_px": 16.453049721200234,
+              "median_edge_distance_px": 8.456931420925883,
+              "edge_match_share": 0.265,
+              "coverage": 1.0,
+              "points": 1200,
+              "lost_projections": 0,
+              "cap_px": 30.0,
+              "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+            }
+          }
+        ],
+        "relative_gain": 0.006086145630897332,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 5.406557200000179,
+      "memory": {
+        "available_mb": 21459.90625,
+        "process_mb": 150.390625
+      }
+    }
+  ],
+  "additional_ablations": [
+    {
+      "label": "single_variant",
+      "configuration": {
+        "seed": 7,
+        "max_features_per_capture": 1200,
+        "max_association_rows": 1800,
+        "association_gates": [
+          6.0,
+          9.0,
+          12.0
+        ],
+        "iterations": 2,
+        "max_nfev": 50,
+        "training_budget": 4,
+        "selection_strategy": "contrast",
+        "outer_fraction": 0.3,
+        "min_capture_blocks": 4,
+        "min_relative_gain": 0.01,
+        "minimum_singular": 0.02,
+        "rank_rtol": 1e-05,
+        "support_floor": 0.98,
+        "evaluation_cap_px": 30.0,
+        "min_coverage": 0.9,
+        "max_angle_rad": 1.0,
+        "bootstrap_reps": 500
+      },
+      "result": {
+        "method": "single_variant",
+        "status": "KEEP_CURRENT",
+        "selected": "KEEP",
+        "candidate": "R",
+        "reason": "No candidate clears the declared practical loss-improvement threshold.",
+        "comparison": {
+          "KEEP": {
+            "complete": true,
+            "mean_loss": 0.2666014892803862,
+            "pooled_capped_edge_rmse_px": 15.490040037144757,
+            "minimum_rank": 1
+          },
+          "R": {
+            "complete": true,
+            "mean_loss": 0.26493716683649227,
+            "pooled_capped_edge_rmse_px": 15.441614234037937,
+            "minimum_rank": 4
+          },
+          "T": {
+            "complete": true,
+            "mean_loss": 0.26850924504826545,
+            "pooled_capped_edge_rmse_px": 15.545363313330407,
+            "minimum_rank": 4
+          },
+          "I": {
+            "complete": true,
+            "mean_loss": 0.27246096567761996,
+            "pooled_capped_edge_rmse_px": 15.65933808019541,
+            "minimum_rank": 6
+          },
+          "RT": {
+            "complete": true,
+            "mean_loss": 0.2689808105625389,
+            "pooled_capped_edge_rmse_px": 15.559007985931656,
+            "minimum_rank": 7
+          },
+          "RI": {
+            "complete": true,
+            "mean_loss": 0.2726109088426415,
+            "pooled_capped_edge_rmse_px": 15.663646381298875,
+            "minimum_rank": 7
+          },
+          "TI": {
+            "complete": true,
+            "mean_loss": 0.27137446393163667,
+            "pooled_capped_edge_rmse_px": 15.62808425682665,
+            "minimum_rank": 9
+          },
+          "RTI": {
+            "complete": true,
+            "mean_loss": 0.2714701661467125,
+            "pooled_capped_edge_rmse_px": 15.630839693760578,
+            "minimum_rank": 10
+          }
+        },
+        "outer_test": {
+          "training_ids": [
+            "164411_450626",
+            "164446_617061",
+            "164528_587972",
+            "164617_573884",
+            "164652_717058",
+            "164727_286206",
+            "165012_890546"
+          ],
+          "test_ids": [
+            "164327_828105",
+            "164819_212871",
+            "164921_130392"
+          ],
+          "metrics": [
+            {
+              "id": "164327_828105",
+              "baseline": {
+                "valid": true,
+                "loss": 0.2598062807382966,
+                "capped_edge_rmse_px": 15.29135875795434,
+                "median_edge_distance_px": 6.434317632281193,
+                "edge_match_share": 0.2708333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.2583826161464446,
+                "capped_edge_rmse_px": 15.249405055011167,
+                "median_edge_distance_px": 6.430354866846798,
+                "edge_match_share": 0.27666666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164819_212871",
+              "baseline": {
+                "valid": true,
+                "loss": 0.27513065751217364,
+                "capped_edge_rmse_px": 15.73586959023734,
+                "median_edge_distance_px": 5.868066684752533,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.2736973826744402,
+                "capped_edge_rmse_px": 15.694828588009369,
+                "median_edge_distance_px": 5.943114828554815,
+                "edge_match_share": 0.2783333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164921_130392",
+              "baseline": {
+                "valid": true,
+                "loss": 0.3029686971722778,
+                "capped_edge_rmse_px": 16.512777702586867,
+                "median_edge_distance_px": 8.453557301416966,
+                "edge_match_share": 0.25833333333333336,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.3009064228031085,
+                "capped_edge_rmse_px": 16.456481413801605,
+                "median_edge_distance_px": 8.419301950036864,
+                "edge_match_share": 0.265,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            }
+          ],
+          "relative_gain": 0.005870844628312983,
+          "passed": false,
+          "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+        },
+        "seconds": 3.366301999999905,
+        "memory": {
+          "available_mb": 24783.5703125,
+          "process_mb": 150.98828125
+        }
+      }
+    },
+    {
+      "label": "selection_random",
+      "configuration": {
+        "seed": 7,
+        "max_features_per_capture": 1200,
+        "max_association_rows": 1800,
+        "association_gates": [
+          6.0,
+          9.0,
+          12.0
+        ],
+        "iterations": 2,
+        "max_nfev": 50,
+        "training_budget": 4,
+        "selection_strategy": "random",
+        "outer_fraction": 0.3,
+        "min_capture_blocks": 4,
+        "min_relative_gain": 0.01,
+        "minimum_singular": 0.02,
+        "rank_rtol": 1e-05,
+        "support_floor": 0.98,
+        "evaluation_cap_px": 30.0,
+        "min_coverage": 0.9,
+        "max_angle_rad": 1.0,
+        "bootstrap_reps": 500
+      },
+      "result": {
+        "method": "fault_aware",
+        "status": "KEEP_CURRENT",
+        "selected": "KEEP",
+        "candidate": "R",
+        "reason": "No candidate clears the declared practical loss-improvement threshold.",
+        "comparison": {
+          "KEEP": {
+            "complete": true,
+            "mean_loss": 0.2666843605338514,
+            "pooled_capped_edge_rmse_px": 15.4924473367014,
+            "minimum_rank": 1
+          },
+          "R": {
+            "complete": true,
+            "mean_loss": 0.26463016572363635,
+            "pooled_capped_edge_rmse_px": 15.432665004828968,
+            "minimum_rank": 4
+          },
+          "T": {
+            "complete": true,
+            "mean_loss": 0.26839039197816345,
+            "pooled_capped_edge_rmse_px": 15.541922428719912,
+            "minimum_rank": 4
+          },
+          "I": {
+            "complete": true,
+            "mean_loss": 0.2738230776833758,
+            "pooled_capped_edge_rmse_px": 15.69843208460763,
+            "minimum_rank": 6
+          },
+          "RT": {
+            "complete": true,
+            "mean_loss": 0.2687998964473584,
+            "pooled_capped_edge_rmse_px": 15.55377468020617,
+            "minimum_rank": 7
+          },
+          "RI": {
+            "complete": true,
+            "mean_loss": 0.2740711289559202,
+            "pooled_capped_edge_rmse_px": 15.705540934979862,
+            "minimum_rank": 7
+          },
+          "TI": {
+            "complete": true,
+            "mean_loss": 0.27443292163318284,
+            "pooled_capped_edge_rmse_px": 15.715903711523069,
+            "minimum_rank": 9
+          },
+          "RTI": {
+            "complete": true,
+            "mean_loss": 0.27472888587246336,
+            "pooled_capped_edge_rmse_px": 15.724375894935132,
+            "minimum_rank": 10
+          }
+        },
+        "outer_test": {
+          "training_ids": [
+            "164411_450626",
+            "164446_617061",
+            "164528_587972",
+            "164617_573884",
+            "164652_717058",
+            "164727_286206",
+            "165012_890546"
+          ],
+          "test_ids": [
+            "164327_828105",
+            "164819_212871",
+            "164921_130392"
+          ],
+          "metrics": [
+            {
+              "id": "164327_828105",
+              "baseline": {
+                "valid": true,
+                "loss": 0.2598062807382966,
+                "capped_edge_rmse_px": 15.29135875795434,
+                "median_edge_distance_px": 6.434317632281193,
+                "edge_match_share": 0.2708333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.25727860866329266,
+                "capped_edge_rmse_px": 15.216791639401633,
+                "median_edge_distance_px": 6.444349369269576,
+                "edge_match_share": 0.27166666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164819_212871",
+              "baseline": {
+                "valid": true,
+                "loss": 0.27513065751217364,
+                "capped_edge_rmse_px": 15.73586959023734,
+                "median_edge_distance_px": 5.868066684752533,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.2727413992140444,
+                "capped_edge_rmse_px": 15.667394783199917,
+                "median_edge_distance_px": 5.947316967633519,
+                "edge_match_share": 0.2775,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164921_130392",
+              "baseline": {
+                "valid": true,
+                "loss": 0.3029686971722778,
+                "capped_edge_rmse_px": 16.512777702586867,
+                "median_edge_distance_px": 8.453557301416966,
+                "edge_match_share": 0.25833333333333336,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.299499216951503,
+                "capped_edge_rmse_px": 16.417956488441327,
+                "median_edge_distance_px": 8.492023168400518,
+                "edge_match_share": 0.2683333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            }
+          ],
+          "relative_gain": 0.010008776930682412,
+          "passed": true,
+          "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+        },
+        "seconds": 4.872386900000038,
+        "memory": {
+          "available_mb": 24801.33984375,
+          "process_mb": 153.546875
+        }
+      }
+    },
+    {
+      "label": "selection_feature_count",
+      "configuration": {
+        "seed": 7,
+        "max_features_per_capture": 1200,
+        "max_association_rows": 1800,
+        "association_gates": [
+          6.0,
+          9.0,
+          12.0
+        ],
+        "iterations": 2,
+        "max_nfev": 50,
+        "training_budget": 4,
+        "selection_strategy": "feature_count",
+        "outer_fraction": 0.3,
+        "min_capture_blocks": 4,
+        "min_relative_gain": 0.01,
+        "minimum_singular": 0.02,
+        "rank_rtol": 1e-05,
+        "support_floor": 0.98,
+        "evaluation_cap_px": 30.0,
+        "min_coverage": 0.9,
+        "max_angle_rad": 1.0,
+        "bootstrap_reps": 500
+      },
+      "result": {
+        "method": "fault_aware",
+        "status": "KEEP_CURRENT",
+        "selected": "KEEP",
+        "candidate": "R",
+        "reason": "No candidate clears the declared practical loss-improvement threshold.",
+        "comparison": {
+          "KEEP": {
+            "complete": true,
+            "mean_loss": 0.2666575776430227,
+            "pooled_capped_edge_rmse_px": 15.491669370300942,
+            "minimum_rank": 1
+          },
+          "R": {
+            "complete": true,
+            "mean_loss": 0.2645803693653583,
+            "pooled_capped_edge_rmse_px": 15.431212927985356,
+            "minimum_rank": 4
+          },
+          "T": {
+            "complete": true,
+            "mean_loss": 0.2685998260900586,
+            "pooled_capped_edge_rmse_px": 15.547985190404987,
+            "minimum_rank": 4
+          },
+          "I": {
+            "complete": true,
+            "mean_loss": 0.27429276649947487,
+            "pooled_capped_edge_rmse_px": 15.711890078839254,
+            "minimum_rank": 6
+          },
+          "RT": {
+            "complete": true,
+            "mean_loss": 0.26920753941726483,
+            "pooled_capped_edge_rmse_px": 15.565564091144863,
+            "minimum_rank": 7
+          },
+          "RI": {
+            "complete": true,
+            "mean_loss": 0.2745414712913876,
+            "pooled_capped_edge_rmse_px": 15.719011551692708,
+            "minimum_rank": 7
+          },
+          "TI": {
+            "complete": true,
+            "mean_loss": 0.2744393356043978,
+            "pooled_capped_edge_rmse_px": 15.716087364352429,
+            "minimum_rank": 9
+          },
+          "RTI": {
+            "complete": true,
+            "mean_loss": 0.27463362164813565,
+            "pooled_capped_edge_rmse_px": 15.721649388131073,
+            "minimum_rank": 10
+          }
+        },
+        "outer_test": {
+          "training_ids": [
+            "164411_450626",
+            "164446_617061",
+            "164528_587972",
+            "164617_573884",
+            "164652_717058",
+            "164727_286206",
+            "165012_890546"
+          ],
+          "test_ids": [
+            "164327_828105",
+            "164819_212871",
+            "164921_130392"
+          ],
+          "metrics": [
+            {
+              "id": "164327_828105",
+              "baseline": {
+                "valid": true,
+                "loss": 0.2598062807382966,
+                "capped_edge_rmse_px": 15.29135875795434,
+                "median_edge_distance_px": 6.434317632281193,
+                "edge_match_share": 0.2708333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.25727860882548387,
+                "capped_edge_rmse_px": 15.216791644198045,
+                "median_edge_distance_px": 6.444350084343541,
+                "edge_match_share": 0.27166666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164819_212871",
+              "baseline": {
+                "valid": true,
+                "loss": 0.27513065751217364,
+                "capped_edge_rmse_px": 15.73586959023734,
+                "median_edge_distance_px": 5.868066684752533,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.2727413989389435,
+                "capped_edge_rmse_px": 15.66739477529845,
+                "median_edge_distance_px": 5.9473178790419725,
+                "edge_match_share": 0.2775,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164921_130392",
+              "baseline": {
+                "valid": true,
+                "loss": 0.3029686971722778,
+                "capped_edge_rmse_px": 16.512777702586867,
+                "median_edge_distance_px": 8.453557301416966,
+                "edge_match_share": 0.25833333333333336,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.29949921779658256,
+                "capped_edge_rmse_px": 16.417956511604128,
+                "median_edge_distance_px": 8.49202310355157,
+                "edge_match_share": 0.2683333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            }
+          ],
+          "relative_gain": 0.010008776056873007,
+          "passed": true,
+          "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+        },
+        "seconds": 5.149154299999964,
+        "memory": {
+          "available_mb": 24819.234375,
+          "process_mb": 153.390625
+        }
+      }
+    },
+    {
+      "label": "selection_d_optimal",
+      "configuration": {
+        "seed": 7,
+        "max_features_per_capture": 1200,
+        "max_association_rows": 1800,
+        "association_gates": [
+          6.0,
+          9.0,
+          12.0
+        ],
+        "iterations": 2,
+        "max_nfev": 50,
+        "training_budget": 4,
+        "selection_strategy": "d_optimal",
+        "outer_fraction": 0.3,
+        "min_capture_blocks": 4,
+        "min_relative_gain": 0.01,
+        "minimum_singular": 0.02,
+        "rank_rtol": 1e-05,
+        "support_floor": 0.98,
+        "evaluation_cap_px": 30.0,
+        "min_coverage": 0.9,
+        "max_angle_rad": 1.0,
+        "bootstrap_reps": 500
+      },
+      "result": {
+        "method": "fault_aware",
+        "status": "KEEP_CURRENT",
+        "selected": "KEEP",
+        "candidate": "R",
+        "reason": "No candidate clears the declared practical loss-improvement threshold.",
+        "comparison": {
+          "KEEP": {
+            "complete": true,
+            "mean_loss": 0.266625279572854,
+            "pooled_capped_edge_rmse_px": 15.490731151742597,
+            "minimum_rank": 1
+          },
+          "R": {
+            "complete": true,
+            "mean_loss": 0.26490857826011355,
+            "pooled_capped_edge_rmse_px": 15.440781082383825,
+            "minimum_rank": 4
+          },
+          "T": {
+            "complete": true,
+            "mean_loss": 0.2683573878362574,
+            "pooled_capped_edge_rmse_px": 15.540966799161232,
+            "minimum_rank": 4
+          },
+          "I": {
+            "complete": true,
+            "mean_loss": 0.2724666765684853,
+            "pooled_capped_edge_rmse_px": 15.659502192331555,
+            "minimum_rank": 6
+          },
+          "RT": {
+            "complete": true,
+            "mean_loss": 0.2683256329916327,
+            "pooled_capped_edge_rmse_px": 15.540047287330543,
+            "minimum_rank": 7
+          },
+          "RI": {
+            "complete": true,
+            "mean_loss": 0.27245787229982427,
+            "pooled_capped_edge_rmse_px": 15.659249186019164,
+            "minimum_rank": 7
+          },
+          "TI": {
+            "complete": true,
+            "mean_loss": 0.27216531614564216,
+            "pooled_capped_edge_rmse_px": 15.650839738847173,
+            "minimum_rank": 9
+          },
+          "RTI": {
+            "complete": true,
+            "mean_loss": 0.272290251421424,
+            "pooled_capped_edge_rmse_px": 15.65443152207328,
+            "minimum_rank": 10
+          }
+        },
+        "outer_test": {
+          "training_ids": [
+            "164411_450626",
+            "164446_617061",
+            "164528_587972",
+            "164617_573884",
+            "164652_717058",
+            "164727_286206",
+            "165012_890546"
+          ],
+          "test_ids": [
+            "164327_828105",
+            "164819_212871",
+            "164921_130392"
+          ],
+          "metrics": [
+            {
+              "id": "164327_828105",
+              "baseline": {
+                "valid": true,
+                "loss": 0.2598062807382966,
+                "capped_edge_rmse_px": 15.29135875795434,
+                "median_edge_distance_px": 6.434317632281193,
+                "edge_match_share": 0.2708333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.2577266313964613,
+                "capped_edge_rmse_px": 15.230035070767736,
+                "median_edge_distance_px": 6.43391977525433,
+                "edge_match_share": 0.2725,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164819_212871",
+              "baseline": {
+                "valid": true,
+                "loss": 0.27513065751217364,
+                "capped_edge_rmse_px": 15.73586959023734,
+                "median_edge_distance_px": 5.868066684752533,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.27321786666655307,
+                "capped_edge_rmse_px": 15.681073942810732,
+                "median_edge_distance_px": 5.889478331862506,
+                "edge_match_share": 0.2808333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164921_130392",
+              "baseline": {
+                "valid": true,
+                "loss": 0.3029686971722778,
+                "capped_edge_rmse_px": 16.512777702586867,
+                "median_edge_distance_px": 8.453557301416966,
+                "edge_match_share": 0.25833333333333336,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.30019033494220915,
+                "capped_edge_rmse_px": 16.436888435710337,
+                "median_edge_distance_px": 8.401116366536069,
+                "edge_match_share": 0.265,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            }
+          ],
+          "relative_gain": 0.008080626422936728,
+          "passed": false,
+          "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+        },
+        "seconds": 4.934381900000062,
+        "memory": {
+          "available_mb": 24851.52734375,
+          "process_mb": 152.42578125
+        }
+      }
+    },
+    {
+      "label": "selection_e_optimal",
+      "configuration": {
+        "seed": 7,
+        "max_features_per_capture": 1200,
+        "max_association_rows": 1800,
+        "association_gates": [
+          6.0,
+          9.0,
+          12.0
+        ],
+        "iterations": 2,
+        "max_nfev": 50,
+        "training_budget": 4,
+        "selection_strategy": "e_optimal",
+        "outer_fraction": 0.3,
+        "min_capture_blocks": 4,
+        "min_relative_gain": 0.01,
+        "minimum_singular": 0.02,
+        "rank_rtol": 1e-05,
+        "support_floor": 0.98,
+        "evaluation_cap_px": 30.0,
+        "min_coverage": 0.9,
+        "max_angle_rad": 1.0,
+        "bootstrap_reps": 500
+      },
+      "result": {
+        "method": "fault_aware",
+        "status": "KEEP_CURRENT",
+        "selected": "KEEP",
+        "candidate": "R",
+        "reason": "No candidate clears the declared practical loss-improvement threshold.",
+        "comparison": {
+          "KEEP": {
+            "complete": true,
+            "mean_loss": 0.26659505054971616,
+            "pooled_capped_edge_rmse_px": 15.48985298492999,
+            "minimum_rank": 1
+          },
+          "R": {
+            "complete": true,
+            "mean_loss": 0.2649390986891207,
+            "pooled_capped_edge_rmse_px": 15.441670532044409,
+            "minimum_rank": 4
+          },
+          "T": {
+            "complete": true,
+            "mean_loss": 0.2685366356082475,
+            "pooled_capped_edge_rmse_px": 15.54615618239514,
+            "minimum_rank": 4
+          },
+          "I": {
+            "complete": true,
+            "mean_loss": 0.27295398358744893,
+            "pooled_capped_edge_rmse_px": 15.67349945700398,
+            "minimum_rank": 6
+          },
+          "RT": {
+            "complete": true,
+            "mean_loss": 0.2690683368036887,
+            "pooled_capped_edge_rmse_px": 15.561539227316809,
+            "minimum_rank": 7
+          },
+          "RI": {
+            "complete": true,
+            "mean_loss": 0.27308335595162747,
+            "pooled_capped_edge_rmse_px": 15.677213411715258,
+            "minimum_rank": 7
+          },
+          "TI": {
+            "complete": true,
+            "mean_loss": 0.2716304449017648,
+            "pooled_capped_edge_rmse_px": 15.635453316472418,
+            "minimum_rank": 9
+          },
+          "RTI": {
+            "complete": true,
+            "mean_loss": 0.2718215926734443,
+            "pooled_capped_edge_rmse_px": 15.640953724312974,
+            "minimum_rank": 10
+          }
+        },
+        "outer_test": {
+          "training_ids": [
+            "164411_450626",
+            "164446_617061",
+            "164528_587972",
+            "164617_573884",
+            "164652_717058",
+            "164727_286206",
+            "165012_890546"
+          ],
+          "test_ids": [
+            "164327_828105",
+            "164819_212871",
+            "164921_130392"
+          ],
+          "metrics": [
+            {
+              "id": "164327_828105",
+              "baseline": {
+                "valid": true,
+                "loss": 0.2598062807382966,
+                "capped_edge_rmse_px": 15.29135875795434,
+                "median_edge_distance_px": 6.434317632281193,
+                "edge_match_share": 0.2708333333333333,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.25861367924176526,
+                "capped_edge_rmse_px": 15.256222052578703,
+                "median_edge_distance_px": 6.447895813886657,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164819_212871",
+              "baseline": {
+                "valid": true,
+                "loss": 0.27513065751217364,
+                "capped_edge_rmse_px": 15.73586959023734,
+                "median_edge_distance_px": 5.868066684752533,
+                "edge_match_share": 0.2791666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.27387608808395764,
+                "capped_edge_rmse_px": 15.699951569210713,
+                "median_edge_distance_px": 5.958323069627101,
+                "edge_match_share": 0.27416666666666667,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            },
+            {
+              "id": "164921_130392",
+              "baseline": {
+                "valid": true,
+                "loss": 0.3029686971722778,
+                "capped_edge_rmse_px": 16.512777702586867,
+                "median_edge_distance_px": 8.453557301416966,
+                "edge_match_share": 0.25833333333333336,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              },
+              "candidate": {
+                "valid": true,
+                "loss": 0.30093554038282444,
+                "capped_edge_rmse_px": 16.457277610362596,
+                "median_edge_distance_px": 8.419626631786315,
+                "edge_match_share": 0.26,
+                "coverage": 1.0,
+                "points": 1200,
+                "lost_projections": 0,
+                "cap_px": 30.0,
+                "scope": "Same baseline-visible held-out edge points; nearest-edge proxy; invalid projections penalized"
+              }
+            }
+          ],
+          "relative_gain": 0.0053470552348537335,
+          "passed": false,
+          "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+        },
+        "seconds": 5.032345000000078,
+        "memory": {
+          "available_mb": 24805.84375,
+          "process_mb": 152.86328125
+        }
+      }
+    }
+  ],
+  "small_dataset": [
+    {
+      "method": "legacy_optimizer",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Too few capture blocks for the declared model-comparison policy.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.13050445018581316,
+          "pooled_capped_edge_rmse_px": 10.837619903245908,
+          "minimum_rank": 1
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.1300254978274126,
+          "pooled_capped_edge_rmse_px": 10.817714548122972,
+          "minimum_rank": 7
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.13240757843466544,
+          "pooled_capped_edge_rmse_px": 10.916355646056925,
+          "minimum_rank": 7
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.13013875323531957,
+          "pooled_capped_edge_rmse_px": 10.82242477043789,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "171004_537034",
+          "171109_134683",
+          "171152_029967"
+        ],
+        "test_ids": [],
+        "metrics": [],
+        "relative_gain": null,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 1.5392724999999245,
+      "memory": {
+        "available_mb": 18071.78515625,
+        "process_mb": 123.80078125
+      }
+    },
+    {
+      "method": "joint",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Too few capture blocks for the declared model-comparison policy.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.1304996632264571,
+          "pooled_capped_edge_rmse_px": 10.837421137143807,
+          "minimum_rank": 1
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.1285827386408207,
+          "pooled_capped_edge_rmse_px": 10.757530607752814,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "171004_537034",
+          "171109_134683",
+          "171152_029967"
+        ],
+        "test_ids": [],
+        "metrics": [],
+        "relative_gain": null,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 0.6817143999999189,
+      "memory": {
+        "available_mb": 17824.37109375,
+        "process_mb": 124.83984375
+      }
+    },
+    {
+      "method": "fault_aware",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Too few capture blocks for the declared model-comparison policy.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.1304996632264571,
+          "pooled_capped_edge_rmse_px": 10.837421137143807,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.13107579170255165,
+          "pooled_capped_edge_rmse_px": 10.86131725585329,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.13019889600204904,
+          "pooled_capped_edge_rmse_px": 10.824925237702297,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.1295502209272509,
+          "pooled_capped_edge_rmse_px": 10.797925672763537,
+          "minimum_rank": 6
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.1298872865693863,
+          "pooled_capped_edge_rmse_px": 10.811963647388371,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.12942427159602896,
+          "pooled_capped_edge_rmse_px": 10.792675499449897,
+          "minimum_rank": 8
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.12923732215832806,
+          "pooled_capped_edge_rmse_px": 10.78487783623418,
+          "minimum_rank": 9
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.12917533327811673,
+          "pooled_capped_edge_rmse_px": 10.782291034390838,
+          "minimum_rank": 10
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "171004_537034",
+          "171109_134683",
+          "171152_029967"
+        ],
+        "test_ids": [],
+        "metrics": [],
+        "relative_gain": null,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 2.2048675000000912,
+      "memory": {
+        "available_mb": 17840.93359375,
+        "process_mb": 125.6328125
+      }
+    },
+    {
+      "method": "no_observability",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Too few capture blocks for the declared model-comparison policy.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.1304996632264571,
+          "pooled_capped_edge_rmse_px": 10.837421137143807,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.13107579220376994,
+          "pooled_capped_edge_rmse_px": 10.861317276619488,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.13019889353986575,
+          "pooled_capped_edge_rmse_px": 10.82492513534755,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.12962954969464494,
+          "pooled_capped_edge_rmse_px": 10.801231167102221,
+          "minimum_rank": 7
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.12988728529010962,
+          "pooled_capped_edge_rmse_px": 10.811963594144158,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.1291092441281628,
+          "pooled_capped_edge_rmse_px": 10.779532444190078,
+          "minimum_rank": 10
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.12932828914825223,
+          "pooled_capped_edge_rmse_px": 10.78867277441609,
+          "minimum_rank": 10
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.1285827386408207,
+          "pooled_capped_edge_rmse_px": 10.757530607752814,
+          "minimum_rank": 13
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "171004_537034",
+          "171109_134683",
+          "171152_029967"
+        ],
+        "test_ids": [],
+        "metrics": [],
+        "relative_gain": null,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 2.1955940000000282,
+      "memory": {
+        "available_mb": 17695.1953125,
+        "process_mb": 124.8984375
+      }
+    },
+    {
+      "method": "no_selection",
+      "status": "INSUFFICIENT_EVIDENCE",
+      "selected": "KEEP",
+      "candidate": null,
+      "reason": "Too few capture blocks for the declared model-comparison policy.",
+      "comparison": {
+        "KEEP": {
+          "complete": true,
+          "mean_loss": 0.1304996632264571,
+          "pooled_capped_edge_rmse_px": 10.837421137143807,
+          "minimum_rank": 1
+        },
+        "R": {
+          "complete": true,
+          "mean_loss": 0.13107579170255165,
+          "pooled_capped_edge_rmse_px": 10.86131725585329,
+          "minimum_rank": 4
+        },
+        "T": {
+          "complete": true,
+          "mean_loss": 0.13019889600204904,
+          "pooled_capped_edge_rmse_px": 10.824925237702297,
+          "minimum_rank": 4
+        },
+        "I": {
+          "complete": true,
+          "mean_loss": 0.1295502209272509,
+          "pooled_capped_edge_rmse_px": 10.797925672763537,
+          "minimum_rank": 6
+        },
+        "RT": {
+          "complete": true,
+          "mean_loss": 0.1298872865693863,
+          "pooled_capped_edge_rmse_px": 10.811963647388371,
+          "minimum_rank": 7
+        },
+        "RI": {
+          "complete": true,
+          "mean_loss": 0.12942427159602896,
+          "pooled_capped_edge_rmse_px": 10.792675499449897,
+          "minimum_rank": 8
+        },
+        "TI": {
+          "complete": true,
+          "mean_loss": 0.12923732215832806,
+          "pooled_capped_edge_rmse_px": 10.78487783623418,
+          "minimum_rank": 9
+        },
+        "RTI": {
+          "complete": true,
+          "mean_loss": 0.12917533327811673,
+          "pooled_capped_edge_rmse_px": 10.782291034390838,
+          "minimum_rank": 10
+        }
+      },
+      "outer_test": {
+        "training_ids": [
+          "171004_537034",
+          "171109_134683",
+          "171152_029967"
+        ],
+        "test_ids": [],
+        "metrics": [],
+        "relative_gain": null,
+        "passed": false,
+        "note": "Outer test not used by selection/optimization; three independent capture blocks required."
+      },
+      "seconds": 1.8324259999999413,
+      "memory": {
+        "available_mb": 17747.05859375,
+        "process_mb": 124.08984375
+      }
+    }
+  ],
+  "limitations": [
+    "Unlabelled real recordings: no fault-classification accuracy or physical calibration truth.",
+    "CV comparisons select models; only the separately reserved outer captures test the chosen candidate.",
+    "legacy_optimizer reuses legacy refine inside the common new protocol; strict legacy is a separate API mode.",
+    "All methods use the same fixed-support capped nearest-edge test proxy; correspondence ground truth absent."
+  ],
+  "initialization": {
+    "exit_code": 0,
+    "seconds": 188.75049529999978,
+    "stopped": null,
+    "max_sampled_process_mb": 285.72265625,
+    "min_sampled_available_mb": 25929.5390625,
+    "status": "INITIAL_CALIBRATION_CANDIDATE",
+    "uncertainty_status": "UNVALIDATED_INITIALIZATION",
+    "independent_validation": false,
+    "inherited_heuristic_label": "reliable"
+  }
+}

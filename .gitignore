@@ -16,3 +16,6 @@ devices.json
 *credentials*
 *.pem
 *.key
+
+# Local experiments include machine paths and private recording references.
+research_artifacts/

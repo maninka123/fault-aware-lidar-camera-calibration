@@ -160,9 +160,12 @@ class SetupPage(QtWidgets.QWidget):
             combo.setMaxVisibleItems(16)
         self.go = button("Check calibration", "primary", self.calculate)
         self.go.setStyleSheet("padding: 10px 36px; font-size: 11pt;")
+        self.research_go = button('Research check…', slot=self.calculate_research)
+        self.research_go.setToolTip('Offline fault-aware backend for stacked captures. Opens diagnostic reports; no device writes.')
         self.hint = label("", "muted", wrap=True)
         self.update_choice.currentIndexChanged.connect(self.update_ready)
         l3.addWidget(hbox(self.go, self.hint, stretch_at=2, spacing=16))
+        l3.addWidget(hbox(self.research_go, stretch_at=1))
         v.addWidget(c3)
         v.addStretch(1)
 
@@ -335,6 +338,7 @@ class SetupPage(QtWidgets.QWidget):
                     ready = False
                     reason = 'Image resolution differs from this calibration. Choose a calibration for this resolution.'
         self.go.setEnabled(ready)
+        self.research_go.setEnabled(bool(ready and self.data['kind']=='stacked' and len(self.data['captures'])>=2))
         self.hint.setText(("Tests four update choices. Allow a few minutes." if self.update_choice.currentData() == 'compare'
                            else f"Checks {len(self.data['captures'])} captures.") if ready
                           else reason or "Choose a calibration and captures to continue.")
@@ -342,6 +346,14 @@ class SetupPage(QtWidgets.QWidget):
     def calculate(self):
         self.run_requested.emit(self.cal["path"], self.data["path"], self.update_choice.currentData(),
                                 self.device.text().strip() or "rig", self.pair_units.currentData(), self.units_confirm.isChecked())
+
+    def calculate_research(self):
+        owner=self.window()
+        if any(p.poll() is None for p in getattr(owner,'procs',{}).values()):
+            QtWidgets.QMessageBox.information(self,'Check already running','Finish the current check before starting a research assessment.')
+            return
+        from research_dialog import ResearchDialog
+        ResearchDialog(self.cal['path'],self.data['path'],self).exec_()
 
     def prefill(self, cal, data, device=None, cloud_units='m', allow_unusual_units=False):
         if cal and Path(cal).exists():

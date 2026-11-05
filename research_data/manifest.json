@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "audited_date": "2026-11-05",
+  "base_commit": "d0931889bf2f2a5ecb2cca9dd3c8a77c9fa8c763",
+  "workspace_root_relative_to_repository": "../..",
+  "path_resolution": "Resolve workspace_root_relative_to_repository against repository root, then resolve each path against that workspace. Recordings remain external and were not copied.",
+  "datasets": [
+    {
+      "id": "creep_three",
+      "data_directory": "Targetless calibration/stacked_data/creep_data",
+      "capture_count": 3,
+      "compressed_bytes": 17008336,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+        "bytes": 14945,
+        "sha256": "f64be8f4471523be700a5f03db767050af3c5afcf046bab4764af2255859c8e5"
+      },
+      "historical_summary": {
+        "path": "Calibration maintenance/results/creep_update_options_20261104/summary.json",
+        "bytes": 12585,
+        "sha256": "46734c20255113f61cddd1bebae2e8d91024696a1c270824c064667452e7838a"
+      },
+      "historical_output": {
+        "mode": "intrinsic",
+        "verdict": "BORDERLINE",
+        "movement_median_px": 1.4084998918652667,
+        "jackknife_spread_px": 0.18558939661327237
+      },
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Targetless calibration/stacked_data/creep_data/capture_20260929_171004_537034_enclosure_on.npz",
+          "bytes": 5662796,
+          "sha256": "7c596dcf080c0bccc3b00321a880fc1d7727ed1a1b876f2a3fb0ecc99fb59273",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 970185,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Targetless calibration/stacked_data/creep_data/capture_20260929_171109_134683_enclosure_on.npz",
+          "bytes": 5655010,
+          "sha256": "264c831fcb298a9d0c9e1c290a20d0a7f8b0830925501287e45637c5fa1e86cd",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 969428,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Targetless calibration/stacked_data/creep_data/capture_20260929_171152_029967_enclosure_on.npz",
+          "bytes": 5690530,
+          "sha256": "01b5000dc1153e3f119a946bf49aaedbe471f16b30070f61e5590dd915087d9c",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 974061,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        }
+      ]
+    },
+    {
+      "id": "enclosure_off_ten",
+      "data_directory": "Calibration maintenance/results/rig_20261104_174529/stacked/data",
+      "capture_count": 10,
+      "compressed_bytes": 67217832,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Calibration maintenance/examples/feb2025_enclosure.json",
+        "bytes": 1274,
+        "sha256": "6bdc790a83758c83ee0b8c581760ddc29f2a5a285b60dfaee82a551ddcd76007"
+      },
+      "historical_summary": {
+        "path": "Calibration maintenance/results/rig_20261104_174529/summary.json",
+        "bytes": 28039,
+        "sha256": "2b2c04df0fe55ce741f936b345b52a7c48aea7ce724fd3b630780af5a0e532a2"
+      },
+      "historical_output": {
+        "mode": "extrinsic",
+        "verdict": "LARGE CHANGE",
+        "movement_median_px": 18.6629473721409,
+        "jackknife_spread_px": 0.687703781453644
+      },
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164327_828105_enclosure_off.npz",
+          "bytes": 6795274,
+          "sha256": "ab9896c12b5ec3172c2e6981f9752e64ddf97ca700c71428624851ab485d0dc4",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1142076,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164411_450626_enclosure_off.npz",
+          "bytes": 6765523,
+          "sha256": "2b5fefdd90e1d2f81c2e322f6bd62af72f70cf21fe150b87c3be3fc00107b66c",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1137172,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164446_617061_enclosure_off.npz",
+          "bytes": 6730233,
+          "sha256": "d19f530bc12f09a18a5bdbb9751028e3add3dca050e44d684403effb54e0517d",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1128596,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164528_587972_enclosure_off.npz",
+          "bytes": 6773467,
+          "sha256": "d8f1000eb3eddd027969fefa5c8fb0513d9364d028a4f28830b1d89c84622087",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1138841,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164617_573884_enclosure_off.npz",
+          "bytes": 6779967,
+          "sha256": "8801c14b82a3d8ae4f7d98a27bfd1db111d44b8fdf481b7ac1e99b2b5bf66825",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1139297,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164652_717058_enclosure_off.npz",
+          "bytes": 6564753,
+          "sha256": "250705e1e0f2ec92202314f55f7b24ecb9d28170bac012fedf2ab9e6999e1a49",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1099892,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164727_286206_enclosure_off.npz",
+          "bytes": 6475090,
+          "sha256": "0b7c602fe2a2ddb577552d5ba34495780ec01b40c7f0fd43e4c53f34f0f46201",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1088538,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164819_212871_enclosure_off.npz",
+          "bytes": 6799143,
+          "sha256": "9c352460f6f5d53216f963cfd1ac2463740699c0fff05ec3625d35570be4cc61",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1142405,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_164921_130392_enclosure_off.npz",
+          "bytes": 6747280,
+          "sha256": "9a862731d68c0799c51714ee931be44856c696a049a1cdba774b2f7623ec6759",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1134321,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_174529/stacked/data/capture_20260929_165012_890546_enclosure_off.npz",
+          "bytes": 6787102,
+          "sha256": "54e996fad9feb7f2910ea316cad6c4bb5459800130320a1f663545422be9aac8",
+          "image_size_wh": [
+            484,
+            366
+          ],
+          "image_channels": 3,
+          "points": 1141434,
+          "frames": 51,
+          "images": 61,
+          "fields": [
+            "version",
+            "image",
+            "image_std",
+            "n_images",
+            "xyz_mm",
+            "intensity",
+            "frame",
+            "frame_time",
+            "n_frames"
+          ],
+          "xyz_dtype": "int16"
+        }
+      ]
+    }
+  ],
+  "additional_available_caches": [
+    {
+      "id": "enclosure_on_twelve",
+      "data_directory": "Calibration maintenance/results/rig_20261104_202917/stacked/data",
+      "capture_count": 12,
+      "compressed_bytes": 70421453
+    },
+    {
+      "id": "october_device_one",
+      "data_directory": "Calibration maintenance/results/rig_20261104_220224/stacked/data",
+      "capture_count": 11,
+      "compressed_bytes": 27041903
+    },
+    {
+      "id": "october_device_four",
+      "data_directory": "Calibration maintenance/results/rig_20261104_221306/stacked/data",
+      "capture_count": 15,
+      "compressed_bytes": 54053136
+    }
+  ],
+  "limitations": [
+    "No physical drift labels independently verified.",
+    "Historical output is not a newly reproduced result or ground truth.",
+    "Static scene captures and accumulated points are dependent.",
+    "Array timestamps do not establish cross-sensor synchronization.",
+    "Do not mix training and held-out points when fitting, selecting data or measuring observability.",
+    "Historical simulated drift outputs are excluded."
+  ]
+}

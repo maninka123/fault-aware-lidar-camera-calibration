@@ -1,91 +1,45 @@
-# Camera–LiDAR Calibration Optimizer
+﻿# Fault-Aware Camera–LiDAR Calibration
 
-Check calibration drift, compare updates, and review the results before applying a change.
+Targetless camera–LiDAR calibration that decides **what** may have drifted, checks whether the data can actually tell, and **keeps your current calibration** when the evidence is not enough.
 
-A Windows desktop tool you can adapt to your camera and LiDAR. The included live integration is customized for [Sensor_Computer](https://github.com/maninka123/Sensor_Computer); configure the topics, coordinate frames, camera model and device connection for your setup.
+> Research prototype. Numerically verified, but novelty and physical fault-classification accuracy are **not** established. See [limitations](#status-and-limits).
 
-[Quick start](#quick-start) · [Example results](#example-results) · [Data formats](docs/DATA_FORMAT.md) · [Validation](docs/VALIDATION.md)
+## What it does
 
-![Updated calibration review with error measurements and update options](docs/images/overview.png)
+- **Conditional observability**: finds which rotation, translation and intrinsic directions the measurements support (measurement-only information, priors excluded).
+- **Constrained fault hypotheses**: compares rotation-only, translation-only, extrinsics, intrinsics and joint updates, and reports when explanations are indistinguishable.
+- **Capture selection**: ranks already-recorded captures using training data only.
+- **Guarded acceptance**: independent held-out check; a rejected update returns the exact input calibration.
+- **Reports**: JSON + Markdown per assessment. Nothing is written to hardware.
 
-*Development-build preview. This update publishes documentation, results and images; the repository's application source is unchanged.*
+Built on the existing [Calibration optimizer](docs/ORIGINAL_APP_README.md) (edge extraction, targetless initialization, desktop app), which still works unchanged (`legacy` mode).
 
 ## Quick start
 
-Use Python 3.10 or 3.11 on Windows.
+Python 3.10/3.11, `pip install -r requirements.txt`.
 
 ```powershell
-git clone https://github.com/maninka123/automated-lidar-camera-calibration-optimizer.git
-cd automated-lidar-camera-calibration-optimizer
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe "Calibration maintenance/code/app.py"
+python -B verify_research.py                     # 28 baseline + 37 research tests
+python -B -m research_calibration assess --calibration current.json --captures my_captures --output out/check
+python -B -m research_calibration benchmark --dataset enclosure_off_ten --output out/compare
 ```
 
-After setup, double-click **start_app.bat**.
-
-| Start with | Steps |
-|---|---|
-| Live device | Connect → **Capture and check** → Review results |
-| Saved captures | Open calibration → Choose capture folder → **Check calibration** |
-
-**Compare update options** checks all four choices below. **Capture format** shows the accepted folder layouts.
-
-## Example results
-
-One recorded comparison: **10 held-out checks**, evaluated on the same visible edge points.
-
-| Update option | Edge matches ↑ | Edge RMSE ↓ | Median projection shift |
-|---|---:|---:|---:|
-| Keep current | 12.1% | 20.54 px | 0.00 px |
-| **Alignment only** | **14.3%** | **14.78 px** | **18.66 px** |
-| Camera only | 13.8% | 21.01 px | 2.26 px |
-| Camera + alignment | 15.1% | 20.04 px | 22.33 px |
-
-**Alignment only reduced edge RMSE by 28.0%.** The final verdict was **Large change: check the mounting before updating**. This example is one dataset, not a general accuracy benchmark. [Results and saved measurements →](docs/RESULTS.md)
-
-### Read the numbers
-
-- **Edge RMSE:** distance to the nearest image edge over held-out points, including unmatched points. Lower is better; it is an alignment proxy, not known-point reprojection error.
-- **Projection shift:** how far an option moves points compared with Keep current. It measures change, not remaining error.
-- **Edge matches:** share of tested points matching an image edge within 2 px and a similar direction. Higher is better.
-
-## What each option changes
-
-| Option | Camera intrinsics | Camera–LiDAR alignment |
-|---|---|---|
-| Keep current | Keep | Keep |
-| Alignment only | Keep | Update |
-| Camera only | Update | Keep |
-| Camera + alignment | Update | Update |
-
-The comparison favours a simpler update unless extra changes show a consistent held-out gain. The final verdict also considers uncertainty and unseen image regions.
-
-<details>
-<summary>Updated matrix and evidence previews</summary>
-
-![Bracketed camera and LiDAR transformation matrices](docs/images/matrix-preview.png)
-
-![Compact capture and image-region evidence tables](docs/images/evidence.png)
-
-The development UI previews each option's matrices, highlights changed values, and lets you collapse the matrix panel. Previewing an option does not apply it.
-
-</details>
-
-## Inputs and outputs
-
-- **Calibration:** [JSON example](examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
-- **Captures:** image/PCD pairs, recorded bags or stacked arrays. PCD defaults to metres; millimetres are selectable. [Folder layouts →](docs/DATA_FORMAT.md)
-- **Results:** candidate calibration, summary, report and plots in `Calibration maintenance/results/<run>/`.
-
-For live data, the included ROS 1 integration reads `/camera/image_raw` and `/livox/lidar`. Topics are configurable. Adapting another camera model or device may require code changes.
-
-## Validation
-
-- Tests cover update decisions, geometry, input checks and interface behaviour. [Validation notes →](docs/VALIDATION.md)
-- **View pairs** checks file matches, readability, image sizes and coordinate ranges. Ranges are clues, not proof of units or synchronization.
-- Recordings, credentials and machine-specific settings are excluded. Live-device writes were not exercised in the recorded-data checks.
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s "Calibration maintenance/code/tests" -v
+```python
+from research_calibration import assess
+result = assess(calibration="current.json", captures="my_captures", strategy="fault_aware", output="out/check")
+print(result.status, result.recommended_action)
 ```
+
+Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_variant`, `legacy_optimizer`, `legacy`. `calibrate_from_scratch` / `initialize` runs the targetless initializer. Details: [RESEARCH_README.md](RESEARCH_README.md), [data formats](docs/DATA_FORMAT.md).
+
+## Status and limits
+
+- Recorded 10-capture result: best candidate gained 0.62 % (< 1 % threshold), so the reference was kept.
+- No evidence yet that capture selection or the correspondence ensemble beats random/feature-count baselines.
+- No independently labelled faults, nominal-session false-alarm tests, or other rigs/cameras.
+
+## Docs
+
+[Final report](docs/research/FINAL_TECHNICAL_REPORT.md) · [Method](docs/research/MATHEMATICAL_METHOD.md) · [Prior art](docs/research/PRIOR_ART_REVIEW.md) · [Novelty](docs/research/NOVELTY_ASSESSMENT.md) · [Verification](docs/research/VERIFICATION_RESULTS.md)
+
+Recordings are not distributed; `research_data/manifest.json` references local paths and hashes.
