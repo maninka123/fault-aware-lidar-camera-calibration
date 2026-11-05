@@ -1030,7 +1030,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if exe.name.lower() == "pythonw.exe":
             exe = exe.with_name("python.exe")
         self.process = p
-        p.start(str(exe), ["-X", "utf8", "-B", "-m", "research_calibration"] + args)
+        p.start(str(exe), ["-X", "utf8", "-B", "-W", "ignore::RuntimeWarning", "-m", "research_calibration"] + args)
         self.refresh_runs()
 
     def tiles_clear(self):
