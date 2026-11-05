@@ -10,6 +10,7 @@ device and never overwrites the input calibration.
 """
 import json
 import os
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -23,6 +24,67 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "Calibration maintenance" / "code"))
 import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy loads)
 from ui_common import ManualDialog, calibration_view  # noqa: E402
+
+NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
+CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
+
+
+def text_to_calibration(path):
+    """intrinsics.txt / extrinsics.txt (as written by the targetless pipeline) -> a calibration.json path.
+
+    Select either file; the sibling is found beside it. One text file that holds both (fx.. keys plus a
+    3x4 / 4x4 matrix) also works. Translation is read as metres, or millimetres when |t| > 20.
+    """
+    p = Path(path)
+    texts = [p.read_text(encoding="utf-8", errors="replace")]
+    for sib in ("intrinsics.txt", "extrinsics.txt"):
+        s = p.with_name(sib)
+        if s != p and s.is_file():
+            texts.append(s.read_text(encoding="utf-8", errors="replace"))
+    joined = "\n".join(texts)
+    vals = {}
+    for k in ("fx", "fy", "cx", "cy", "k1", "k2"):
+        m = re.search(rf"^\s*{k}\s*[:=]?\s*({NUM})\s*$", joined, re.M | re.I)
+        if m:
+            vals[k] = m.group(1)
+    missing = [k for k in ("fx", "fy", "cx", "cy") if k not in vals]
+    rows = []
+    for text in texts:
+        lines = text.splitlines()
+        head = next((i for i, l in enumerate(lines) if re.search(r"T_lidar_to_camera", l, re.I)), None)
+        cand = lines[head + 1:] if head is not None else (lines if "fx" not in text else [])
+        found = []
+        for line in cand:
+            if line.lstrip().startswith("#") or re.match(r"\s*[A-Za-z]", line):
+                if found:
+                    break
+                continue
+            n = core.numbers(line)
+            if len(n) == 4:
+                found.append(n)
+            elif found:
+                break
+        if len(found) >= 3:
+            rows = found
+            break
+    if missing or len(rows) < 3:
+        need = []
+        if missing:
+            need.append("intrinsics (" + ", ".join(missing) + " missing; keep intrinsics.txt beside the file)")
+        if len(rows) < 3:
+            need.append("a 3x4 or 4x4 LiDAR → camera matrix (keep extrinsics.txt beside the file)")
+        raise ValueError("This text file is not a complete calibration. It needs " + " and ".join(need) + ".")
+    size = re.search(r"image\s+(\d+)\s*[x×]\s*(\d+)", joined, re.I) or re.search(
+        r"image_width\s+(\d+)[\s\S]*?image_height\s+(\d+)", joined, re.I)
+    v = dict(vals, ext_mode="matrix", matrix="\n".join(" ".join(map(repr, r)) for r in rows[:4]))
+    if size:
+        v.update(width=size.group(1), height=size.group(2))
+    dst = Path(core.manual_calibration(v))
+    c = json.loads(dst.read_text(encoding="utf-8"))
+    c["method"] = f"imported from {p.name} (text)"
+    dst.write_text(json.dumps(c, indent=2), encoding="utf-8")
+    return str(dst)
+
 
 STRATEGIES = [
     ("Fault-aware (recommended)", "fault_aware"),
@@ -413,7 +475,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ---- existing calibration (same choices as the maintenance app)
     def load_cal(self, path):
+        shown = Path(path)
         try:
+            if Path(path).suffix.lower() != ".json":
+                path = text_to_calibration(path)
             info = core.calibration_info(path)
         except (ValueError, KeyError, TypeError, OSError) as err:
             self.cal.path = ""
@@ -423,7 +488,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cal_info = info
         i = info["intrinsics"]
         size = f" · {i['image_size'][0]}×{i['image_size'][1]}" if i.get("image_size") else ""
-        p = Path(info["path"])
+        p = shown
         self.cal.summary.setText(f"<b>{p.parent.name}/{p.name}</b><br>fx {core.fmt(i['fx'])} · fy {core.fmt(i['fy'])}{size}"
                                  f" · {info['extrinsics']['mounting_label']}")
         self.cal.summary.setTextFormat(QtCore.Qt.RichText)
@@ -456,7 +521,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_cal(self):
         start = str(Path(self.cal.path).parent) if self.cal.path else str(core.PROJECT)
-        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Existing calibration", start, "Calibration (*.json)")
+        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Existing calibration", start, CAL_FILTER)
         if p:
             self.cal.combo.setCurrentIndex(0)
             self.load_cal(p)
