@@ -16,7 +16,7 @@ Built on the existing [Calibration optimizer](docs/ORIGINAL_APP_README.md) (edge
 
 ## Quick start
 
-Python 3.10/3.11, `pip install -r requirements.txt`.
+Python 3.10/3.11, `pip install -r requirements.txt`.`n`nDesktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Pick a calibration and captures, run, and read the verdict, per-hypothesis scores and parameter table.
 
 ```powershell
 python -B verify_research.py                     # 28 baseline + 37 research tests
@@ -43,3 +43,4 @@ Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_
 [Final report](docs/research/FINAL_TECHNICAL_REPORT.md) · [Method](docs/research/MATHEMATICAL_METHOD.md) · [Prior art](docs/research/PRIOR_ART_REVIEW.md) · [Novelty](docs/research/NOVELTY_ASSESSMENT.md) · [Verification](docs/research/VERIFICATION_RESULTS.md)
 
 Recordings are not distributed; `research_data/manifest.json` references local paths and hashes.
+
