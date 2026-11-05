@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import copy
 
 import numpy as np
 
@@ -17,16 +18,17 @@ def free_parameters(mode, distortion_model):
     if mode in ('extrinsic', 'full'):
         indices += list(range(6))
     if mode in ('intrinsic', 'full'):
-        indices += list(range(6, 11)) + ([11] if distortion_model == 'k1-k2' else [])
+        indices += list(range(6, 11)) + ([11] if distortion_model != 'k1' else [])
     return sorted(indices)
 
 
-def valid_solution(parameters):
+def valid_solution(parameters, higher_order=(0.0, 0.0), theta_max=np.pi / 2):
     """Reject nonfinite, negative-focal and folded fisheye solutions."""
     if not np.isfinite(parameters).all() or min(parameters[6:8]) <= 0:
         return False
-    theta_squared = np.linspace(0, np.pi / 2, 100) ** 2
+    theta_squared = np.linspace(0, theta_max, 100) ** 2
     derivative = 1 + 3 * parameters[10] * theta_squared + 5 * parameters[11] * theta_squared ** 2
+    derivative += 7 * higher_order[0] * theta_squared ** 3 + 9 * higher_order[1] * theta_squared ** 4
     return bool(np.all(derivative > 0))
 
 
@@ -37,6 +39,159 @@ def constrained_start(start, existing, mode):
     elif mode == 'intrinsic':
         value[:6] = existing[:6]
     return value
+
+
+def edge_distance_metrics(caps, model, parameters):
+    """Median nearest-image-edge distance over all common visible held-out points.
+
+    Unlike the matched-edge residual, there is no 2 px acceptance gate here.
+    This is an edge-distance proxy, not a known-correspondence reprojection error.
+    """
+    from scipy.spatial import cKDTree
+
+    distances = []
+    for capture in caps:
+        if not len(capture.img['q']):
+            return None
+        u, v, visible = model.project(model.to_camera(capture.xyz, capture.sgn, parameters), parameters)
+        visible &= np.isfinite(u) & np.isfinite(v)
+        if np.any(visible):
+            distance, _ = cKDTree(capture.img['q']).query(np.c_[u[visible], v[visible]])
+            distances.append(distance)
+    if not distances:
+        return None
+    distance = np.concatenate(distances)
+    squared_sum = float(np.dot(distance, distance))
+    return dict(median_edge_distance_px=float(np.median(distance)), edge_rmse_px=float(np.sqrt(squared_sum / len(distance))),
+                edge_squared_error_sum=squared_sum, edge_test_points=int(len(distance)))
+
+
+def edge_distance_error(caps, model, parameters):
+    metrics = edge_distance_metrics(caps, model, parameters)
+    return metrics['median_edge_distance_px'] if metrics else None
+
+
+def rmse_changes(comparison):
+    """Pool squared edge distances on the same held-out points for every option."""
+    modes = ('existing',) + MODES
+    squared, count, folds = dict.fromkeys(modes, 0.), 0, 0
+    for check in comparison.get('rmse_checks', comparison.get('checks', [])):
+        values = [check.get('scores', {}).get(mode, {}) for mode in modes]
+        counts = [value.get('edge_test_points') for value in values]
+        sums = [value.get('edge_squared_error_sum') for value in values]
+        if not all(isinstance(n, (int, float)) and math.isfinite(n) and n > 0 for n in counts):
+            continue
+        if len(set(counts)) != 1 or not all(isinstance(x, (int, float)) and math.isfinite(x) and x >= 0 for x in sums):
+            continue
+        count += int(counts[0])
+        folds += 1
+        for mode, value in zip(modes, sums):
+            squared[mode] += value
+    if not count:
+        return {}
+    errors = {mode: math.sqrt(value / count) for mode, value in squared.items()}
+    before = errors['existing']
+    return {mode: dict(before_px=before, after_px=after, reduction_px=before - after,
+                       reduction_percent=(before - after) / before * 100 if before else None,
+                       points=count, checks=folds) for mode, after in errors.items()}
+
+
+def error_changes(comparison):
+    """Summarise the same finite folds for every option; support older saved runs.
+
+    Older runs only saved residuals for their accepted matches. Keep that metric
+    visibly distinct and never infer pixel errors from the edge-match percentages.
+    """
+    modes = ('existing',) + MODES
+    checks = comparison.get('checks', [])
+    for metric, title, scope in (
+            ('median_edge_distance_px', 'Edge error', 'All tested edges'),
+            ('median_residual_px', 'Matched-edge error', 'Matched edges only')):
+        paired = []
+        for check in checks:
+            values = [check.get('scores', {}).get(mode, {}).get(metric) for mode in modes]
+            shares = [check.get('scores', {}).get(mode, {}).get('on_edge_share') for mode in modes]
+            if all(isinstance(value, (int, float)) and math.isfinite(value) and value >= 0 for value in values) \
+                    and all(isinstance(value, (int, float)) and math.isfinite(value) for value in shares):
+                paired.append(values)
+        if not paired:
+            continue
+        means = np.mean(paired, axis=0)
+        before = float(means[0])
+        return {mode: dict(before_px=before, after_px=float(after),
+                           reduction_px=before - float(after),
+                           reduction_percent=(before - float(after)) / before * 100 if before > 0 else None,
+                           metric=metric, title=title, scope=scope, checks=len(paired))
+                for mode, after in zip(modes, means)}
+    return {}
+
+
+def error_readout(change, mode):
+    """Short card copy, including deterioration and unavailable denominators."""
+    if not change:
+        return 'Pixel error unavailable', 'Run Compare update options to measure it.'
+    before, after = change['before_px'], change['after_px']
+    digits = 2 if max(before, after) < 10 else 1
+    values = f'{before:.{digits}f} px' if mode == 'existing' else f'{before:.{digits}f} → {after:.{digits}f} px'
+    heading = f'{change["title"]}: {values}'
+    if mode == 'existing':
+        detail = 'Current error · ' + change['scope'].lower()
+    elif abs(change['reduction_px']) < 1e-9:
+        detail = 'No measured error change'
+    else:
+        percent = change['reduction_percent']
+        absolute = f'{abs(change["reduction_px"]):.{digits}f} px'
+        direction = 'less' if change['reduction_px'] > 0 else 'more'
+        detail = f'{abs(percent):.1f}% {direction} error · {absolute} {direction}' if percent is not None \
+            else f'{absolute} {direction} error · percentage unavailable'
+    if change['metric'] == 'median_residual_px':
+        detail = detail.replace('less error', 'lower matched residual').replace('more error', 'higher matched residual')
+    return heading, detail
+
+
+def fit_candidates(caps, model, starts, existing, mode, distortion_model, cfg, refine_cfg, prior, alignment):
+    """Fit actual full-data candidates for one option, keeping its fixed group fixed."""
+    import calib as cb
+
+    candidates = []
+    for name, start in starts:
+        q = constrained_start(start, existing, mode)
+        try:
+            p, info = cb.refine(caps, model, q, free_parameters(mode, distortion_model), refine_cfg, prior,
+                                log=lambda *args: None, passes=cfg['refine']['passes'])
+        except (ValueError, FloatingPointError, np.linalg.LinAlgError):
+            continue
+        theta = model.validation_angle(caps, p) if hasattr(model, 'validation_angle') else np.pi / 2
+        if not valid_solution(p, getattr(model, 'higher_order', (0., 0.)), theta):
+            continue
+        lift = alignment(caps, model, p, cfg)['lift']
+        if math.isfinite(lift):
+            candidates.append(dict(start=name, p=p, info=info, lift=lift))
+    return candidates
+
+
+def candidate_calibration(original, model, parameters, mode):
+    """Store each fitted matrix, preserving the fixed group's original exact values."""
+    result = copy.deepcopy(original)
+    K, D, T = model.matrices(parameters)
+    if mode in ('intrinsic', 'full'):
+        result['intrinsics'].update(camera_matrix=K.tolist(), distortion_coefficients=D.tolist())
+    if mode in ('extrinsic', 'full'):
+        result['extrinsics'] = dict(transform_lidar_to_camera=T.tolist())
+    return result
+
+
+def projection_movement(model, existing, candidate, points):
+    """Movement between projections; neither residual error nor quality improvement."""
+    zero = np.zeros(len(points))
+    u0, v0, valid0 = model.project(model.to_camera(points, zero, existing), existing)
+    u1, v1, valid1 = model.project(model.to_camera(points, zero, candidate), candidate)
+    distance = np.hypot(u1 - u0, v1 - v0)
+    valid = valid0 & valid1 & np.isfinite(distance)
+    if not np.any(valid):
+        return None
+    return dict(median_px=float(np.median(distance[valid])),
+                p90_px=float(np.percentile(distance[valid], 90)), points=int(valid.sum()))
 
 
 def recommend(folds, minimum_gain=0.01, majority=0.66, min_folds=3):
@@ -142,7 +297,8 @@ def compare(caps, model, existing, distortion_model, cfg, refine_cfg, prior, ali
                                               log=quiet, passes=cfg['refine']['passes'])
                 except (ValueError, FloatingPointError, np.linalg.LinAlgError):
                     continue
-                if valid_solution(parameters):
+                theta_max = model.validation_angle(caps, parameters) if hasattr(model, 'validation_angle') else np.pi / 2
+                if valid_solution(parameters, getattr(model, 'higher_order', (0.0, 0.0)), theta_max):
                     lift = alignment(train, model, parameters, cfg)['lift']
                     if np.isfinite(lift):
                         candidates.append((lift, parameters))
@@ -165,6 +321,10 @@ def compare(caps, model, existing, distortion_model, cfg, refine_cfg, prior, ali
         scores = {mode: alignment(common, model, parameters, cfg) for mode, parameters in fitted.items()}
         if max(value['matches'] for value in scores.values()) < decision['min_region_matches']:
             continue
+        for mode, parameters in fitted.items():
+            metrics = edge_distance_metrics(common, model, parameters)
+            if metrics:
+                scores[mode].update(metrics)
         results.append(dict(left_out=name, common_points=common_count, scores=scores))
     result = recommend(results, decision.get('comparison_min_gain', 0.01), decision['heldout_majority'])
     result.update(method=method, checks=results,

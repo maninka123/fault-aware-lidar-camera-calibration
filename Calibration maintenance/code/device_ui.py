@@ -614,11 +614,12 @@ class DevicePage(QtWidgets.QWidget):
         self.render_snapshot()
 
     def use_file(self):
-        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Calibration of this device", str(core.PROJECT), "Calibration (*.json)")
+        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Calibration of this device", str(core.PROJECT),
+                                                   "Calibration files (*.json *.txt)")
         if not p:
             return
         try:
-            cal = json.loads(Path(p).read_text())
+            cal = core.load_calibration_data(p)
             params, rep = dm.to_device(cal, theta_max_deg=55.0)
         except Exception as e:  # noqa: BLE001
             warn(self, "Not usable", str(e))

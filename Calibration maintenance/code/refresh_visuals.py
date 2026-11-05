@@ -14,6 +14,7 @@ import lidar_edges as le
 from common import image_circle
 import figures
 from maintain import params_of
+from maintenance_model import Model
 
 
 def refresh(out):
@@ -34,7 +35,7 @@ def refresh(out):
     circle = image_circle(frames)
     previous = load_calibration((code / summary['existing']).resolve())
     refined = load_calibration(out / 'refined_calibration.json')
-    model = cb.Model(previous.T[:3, :3], frames[0].image.shape[1::-1], circle)
+    model = Model(previous.T[:3, :3], frames[0].image.shape[1::-1], circle, previous.D)
     caps = []
     for frame in frames:
         edges, _ = le.extract(frame, cfg['lidar'], cfg['seed'])

@@ -1,0 +1,63 @@
+{
+  "method": "Example: initial Feb 2025 enclosure calibration",
+  "source": "results/2025_02_initial_legacy/enclosure/intrinsics.json + extrinsics.json",
+  "convention": "p_camera = R @ p_lidar + t (metres); OpenCV fisheye model",
+  "image_size": [
+    484,
+    366
+  ],
+  "intrinsics": {
+    "distortion_model": "k1-k2-k3-k4",
+    "camera_matrix": [
+      [
+        196.26004882,
+        0.0,
+        247.23436671
+      ],
+      [
+        0.0,
+        199.02882177,
+        186.20313089
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "distortion_coefficients": [
+      0.10593139,
+      -0.37673128,
+      0.83268208,
+      -0.46339204
+    ]
+  },
+  "extrinsics": {
+    "transform_lidar_to_camera": [
+      [
+        -0.025156648062798614,
+        -0.9996611372065103,
+        -0.0066898293872938485,
+        0.0169696691982727
+      ],
+      [
+        0.028272890431011118,
+        0.005977810000351965,
+        -0.9995823675186931,
+        -0.0837788419717795
+      ],
+      [
+        0.9992836367743247,
+        -0.025335282642715905,
+        0.02811292813801451,
+        0.05069743650279073
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  }
+}

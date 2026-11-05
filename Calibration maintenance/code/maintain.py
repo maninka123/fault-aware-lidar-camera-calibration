@@ -37,6 +37,7 @@ import calib as cb  # noqa: E402  (Targetless calibration, read-only)
 import image_edges as ie  # noqa: E402
 import lidar_edges as le  # noqa: E402
 import update_options
+from maintenance_model import Model
 
 BANDS = ((1.5, 3.0), (3.0, 5.0), (5.0, 10.0))
 FIELD_ANGLE = np.radians(35.0)
@@ -218,7 +219,7 @@ def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units=
     stage("features", "edges detected - LiDAR (its own view; red depth jumps, green plane creases, blue reflectivity) "
           f"and image (sub-pixel Canny): LiDAR edge points per capture {', '.join(str(len(c.xyz)) for c in caps)}, "
           f"image edge pixels {', '.join(str(len(c.img['q'])) for c in caps)}", imgs)
-    model = cb.Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle)
+    model = Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle, cal.D)
     p_exist = params_of(cal, model.R0)
 
     rcfg = copy.deepcopy(cfg)
@@ -263,13 +264,7 @@ def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units=
                  heldout_alignment=(f'{value * 100:.1f} %' if value is not None else 'Not enough evidence'),
                  selected=key == strategy_comparison['selected'])
             for key, value in strategy_comparison['scores'].items()])
-    cands = []
-    for label, q in starts:
-        q = update_options.constrained_start(q, p_exist, mode)
-        pq, iq = cb.refine(caps, model, q, free, rcfg, prior_centre, log=quiet, passes=mc["passes"])
-        if not update_options.valid_solution(pq):
-            continue
-        cands.append(dict(start=label, p=pq, info=iq, lift=alignment(caps, model, pq, cfg)["lift"]))
+    cands = update_options.fit_candidates(caps, model, starts, p_exist, mode, cal.model, cfg, rcfg, prior_centre, alignment)
     if not cands:
         raise ValueError('No valid calibration fit. Collect more captures with edges at different distances.')
     best = max(cands, key=lambda c: c["lift"])
@@ -381,17 +376,32 @@ def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units=
         for i, (n, kk) in enumerate((("fx", (0, 0)), ("fy", (1, 1)), ("cx", (0, 2)), ("cy", (1, 2)))):
             add(n, "px", cal.K[kk], Kn[kk], lambda r, i=i: r["p"][6 + i], FIELD_ANGLE if n in ("fx", "fy") else 1.0)
         add("k1", "", cal.D[0], Dn[0], lambda r: r["p"][10], f_ * FIELD_ANGLE ** 3)
-        if cal.model == 'k1-k2':
+        if cal.model != 'k1':
             add("k2", "", cal.D[1], Dn[1], lambda r: r["p"][11], f_ * FIELD_ANGLE ** 5)
 
     # 6. outputs
     refined = copy.deepcopy(cal.raw)
-    refined["intrinsics"].update(camera_matrix=Kn, distortion_coefficients=np.r_[Dn[:2], 0.0, 0.0] if cal.model == "k1-k2"
-                                 else np.r_[Dn[0], 0.0, 0.0, 0.0])
+    refined["intrinsics"].update(camera_matrix=Kn, distortion_coefficients=Dn)
     refined["extrinsics"] = dict(transform_lidar_to_camera=Tn)
     refined["maintenance"] = dict(refined_from=str(calibration), data=str(data), run=name, mode=mode, verdict=verdict,
                                   date=datetime.now().isoformat(timespec="seconds"))
     write_json(out / "refined_calibration.json", refined)
+    if strategy_comparison:
+        previews = dict(existing=cal.raw)
+        movements = dict(existing=update_options.projection_movement(model, p_exist, p_exist, probe))
+        movements[mode] = update_options.projection_movement(model, p_exist, p_new, probe)
+        previews[mode] = refined
+        for option in update_options.MODES:
+            if option == mode:
+                continue
+            log(f'Preparing matrix preview: {update_options.LABELS[option]}')
+            choices = update_options.fit_candidates(caps, model, starts, p_exist, option, cal.model,
+                                                     cfg, rcfg, prior_centre, alignment)
+            if choices:
+                fitted = max(choices, key=lambda value: value['lift'])
+                previews[option] = update_options.candidate_calibration(cal.raw, model, fitted['p'], option)
+                movements[option] = update_options.projection_movement(model, p_exist, fitted['p'], probe)
+        write_json(out / 'option_calibrations.json', dict(calibrations=previews, movements=movements))
     summary = dict(run=name, device=device or "", date=datetime.now().isoformat(timespec="seconds"), existing=str(calibration),
                    data=str(data), mode=mode, requested_mode=requested_mode, strategy_comparison=strategy_comparison,
                    cloud_units=cloud_units, allow_unusual_units=allow_unusual_units,

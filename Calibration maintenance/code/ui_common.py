@@ -155,6 +155,31 @@ def button(text, name=None, slot=None):
     return b
 
 
+def navigation_icon(kind, selected=False):
+    """Small matching outline icons for the two maintenance workflows."""
+    pm = QtGui.QPixmap(40, 40)
+    pm.fill(Qt.transparent)
+    painter = QtGui.QPainter(pm)
+    painter.setRenderHint(QtGui.QPainter.Antialiasing)
+    painter.scale(2, 2)
+    painter.setPen(QtGui.QPen(QtGui.QColor('white' if selected else INK2), 1.5,
+                             Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+    painter.setBrush(Qt.NoBrush)
+    if kind == 'devices':
+        painter.drawLine(QtCore.QPointF(10, 7), QtCore.QPointF(10, 10))
+        painter.drawLine(QtCore.QPointF(4, 10), QtCore.QPointF(16, 10))
+        for x in (4, 16):
+            painter.drawLine(QtCore.QPointF(x, 10), QtCore.QPointF(x, 13))
+        for x, y in ((7, 1), (1, 13), (13, 13)):
+            painter.drawRoundedRect(QtCore.QRectF(x, y, 6, 5), 1, 1)
+    else:
+        painter.drawPolyline(QtGui.QPolygonF([QtCore.QPointF(x, y) for x, y in
+                             ((12, 1), (4, 1), (4, 18), (17, 18), (17, 6), (12, 1), (12, 6), (17, 6))]))
+        painter.drawPolyline(QtGui.QPolygonF([QtCore.QPointF(x, y) for x, y in ((7, 11), (10, 14), (14, 9))]))
+    painter.end()
+    return QtGui.QIcon(pm)
+
+
 def card(title=None, subtitle=None):
     f = QtWidgets.QFrame()
     f.setObjectName("card")
@@ -357,7 +382,7 @@ def img_label(p):
              "refined": "Refined calibration", "motion": "Still window found"}
     for k, v in names.items():
         if f.startswith(k + "_"):
-            return f"{v} · {f[len(k) + 1:]}"
+            return f"{v} · {core.capture_display_name(f[len(k) + 1:])}"
     return {"regions": "Image regions (left out one at a time)", "shift_by_range": "How far points move, by distance"}.get(f, f.replace("_", " "))
 
 
@@ -565,7 +590,10 @@ def calibration_view(c):
     size = f"{i['image_size'][0]} × {i['image_size'][1]}" if i.get("image_size") else "–"
     left.addWidget(value_grid([("fx (px)", core.fmt(i["fx"])), ("fy (px)", core.fmt(i["fy"])), ("image size", size),
                                ("cx (px)", core.fmt(i["cx"])), ("cy (px)", core.fmt(i["cy"])), ("distortion", i["model"]),
-                               ("k1", core.fmt(i["k1"], 4)), ("k2", core.fmt(i["k2"], 4))]))
+                               ("k1", core.fmt(i["k1"], 8)), ("k2", core.fmt(i["k2"], 8)),
+                               ("k3", core.fmt(i.get("k3", 0), 8)), ("k4", core.fmt(i.get("k4", 0), 8))]))
+    if i.get("k3") or i.get("k4"):
+        left.addWidget(label("Checks use all four coefficients; refinement keeps k3 and k4 fixed.", "small", wrap=True))
     left.addStretch(1)
     right = QtWidgets.QVBoxLayout()
     right.addWidget(label("EXTRINSICS  (LIDAR → CAMERA)", "caps"))
@@ -613,9 +641,10 @@ class ManualDialog(QtWidgets.QDialog):
         intr = QtWidgets.QGroupBox("Intrinsics (OpenCV fisheye, pixels)")
         g = QtWidgets.QGridLayout(intr)
         for k, (key, name) in enumerate((("fx", "fx"), ("fy", "fy"), ("cx", "cx"), ("cy", "cy"), ("k1", "k1"), ("k2", "k2"),
+                                          ("k3", "k3"), ("k4", "k4"),
                                           ("width", "image width (optional)"), ("height", "image height (optional)"))):
             g.addWidget(label(name, "small"), (k // 4) * 2, k % 4)
-            g.addWidget(field(key, "0" if key in ("k1", "k2") else ""), (k // 4) * 2 + 1, k % 4)
+            g.addWidget(field(key, "0" if key in ("k1", "k2", "k3", "k4") else ""), (k // 4) * 2 + 1, k % 4)
         lay.addWidget(intr)
 
         ext = QtWidgets.QGroupBox("Extrinsics (LiDAR → camera: p_cam = R · p_lidar + t)")
@@ -648,19 +677,17 @@ class ManualDialog(QtWidgets.QDialog):
         lay.addWidget(bb)
         if prefill:
             i, e = prefill["intrinsics"], prefill["extrinsics"]
-            for k in ("fx", "fy", "cx", "cy"):
-                self.f[k].setText(f"{i[k]:.4f}")
-            self.f["k1"].setText(f"{i['k1']:.6f}")
-            self.f["k2"].setText(f"{i['k2']:.6f}")
+            for k in ("fx", "fy", "cx", "cy", "k1", "k2", "k3", "k4"):
+                self.f[k].setText(f"{i.get(k, 0):.12g}")
             if i.get("image_size"):
                 self.f["width"].setText(str(i["image_size"][0]))
                 self.f["height"].setText(str(i["image_size"][1]))
             self.mount.setCurrentIndex(e["mounting"])
             for k in ("tilt", "pan", "roll"):
-                self.f[k].setText(f"{e[k]:.4f}")
+                self.f[k].setText(f"{e[k]:.12g}")
             for k in ("tx", "ty", "tz"):
-                self.f[k].setText(f"{e[k]:.2f}")
-            self.matrix.setPlainText("\n".join("  ".join(f"{x:.8f}" for x in row) for row in e["matrix"]))
+                self.f[k].setText(f"{e[k]:.12g}")
+            self.matrix.setPlainText("\n".join("  ".join(f"{x:.17g}" for x in row) for row in e["matrix"]))
         self.resize(640, 0)
 
     def accept(self):

@@ -62,12 +62,13 @@ class Calibration:
 
 
 def load_calibration(path) -> Calibration:
-    """calibration.json in the layout used by all calibrations in this project."""
-    c = json.loads(Path(path).read_text())
+    """Project calibration JSON or a lossless calibration TXT export."""
+    from calibration_io import read_calibration
+    c = read_calibration(path)
     D = np.r_[np.ravel(c["intrinsics"]["distortion_coefficients"]), np.zeros(4)][:4]
     return Calibration(np.array(c["intrinsics"]["camera_matrix"], float), D,
                        np.array(c["extrinsics"]["transform_lidar_to_camera"], float),
-                       c["intrinsics"].get("distortion_model", "k1-k2" if D[1] else "k1"), str(path), c)
+                       c["intrinsics"].get("distortion_model", "k1-k2-k3-k4" if np.any(D[2:]) else "k1-k2" if D[1] else "k1"), str(path), c)
 
 
 def load_stacked(folder):

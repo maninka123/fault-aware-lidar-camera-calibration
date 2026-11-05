@@ -173,8 +173,8 @@ QScrollArea {{ border: none; background: transparent; }}
 QLabel {{ background: transparent; }}
 QLabel#largeTitle {{ font-size: 28px; font-weight: 700; }}
 QLabel#title {{ font-size: 20px; font-weight: 600; }}
-QLabel#headline {{ font-size: 15px; font-weight: 600; }}
-QLabel#muted {{ font-size: 13px; color: {MUTED}; }}
+QLabel#headline {{ font-size: 17px; font-weight: 600; }}
+QLabel#muted {{ font-size: 14px; color: {MUTED}; }}
 QLabel#footnote {{ font-size: 12px; color: {MUTED}; }}
 QLabel#metric {{ font-size: 30px; font-weight: 500; }}
 QFrame#card {{ background: white; border: 1px solid {LINE}; border-radius: 16px; }}
@@ -183,7 +183,7 @@ QFrame#option {{ background: white; border: 1px solid {LINE}; border-radius: 12p
 QFrame#optionBest {{ background: white; border: 2px solid {BLUE}; border-radius: 12px; }}
 QLabel#err {{ color: {BAD}; background: {SOFT['bad']}; border-radius: 6px; padding: 6px 10px; font-size: 13px; }}
 QLabel#small {{ font-size: 12px; color: {MUTED}; }}
-QLabel#caps {{ font-size: 12px; font-weight: 600; color: {MUTED}; }}
+QLabel#caps {{ font-size: 12px; font-weight: 700; color: {MUTED}; letter-spacing: 1px; }}
 QLabel#h3 {{ font-size: 14px; font-weight: 600; }}
 QFrame#subtle {{ background: #f8f9fb; border: 1px solid {LINE}; border-radius: 8px; }}
 QDialog {{ background: {BG}; }}
@@ -206,6 +206,9 @@ QPushButton#primary {{ background: {BLUE}; color: white; border-color: {BLUE}; m
     padding: 0 32px; font-size: 15px; }}
 QPushButton#primary:hover {{ background: #1686ff; border-color: #1686ff; }}
 QPushButton#primary:disabled {{ background: #a9c7ec; border-color: #a9c7ec; color: white; }}
+QPushButton#nav {{ min-height: 34px; padding: 0 12px; font-size: 14px; }}
+QPushButton#navprimary {{ background: {BLUE}; color: white; border-color: {BLUE}; min-height: 34px; padding: 0 12px; font-size: 14px; }}
+QPushButton#navprimary:hover {{ background: #1686ff; border-color: #1686ff; }}
 QPushButton#link {{ border: none; background: transparent; color: {BLUE}; padding: 0 4px; min-height: 24px; }}
 QPushButton#seg {{ background: transparent; border: none; color: {MUTED}; border-radius: 8px;
     min-height: 32px; padding: 0 24px; }}
@@ -318,6 +321,42 @@ class CalibrationDialog(QtWidgets.QDialog):
         return f
 
 
+class SourceCard(QtWidgets.QFrame):
+    """Run-page strip card: title, 'Open ↗' link and the (shortened) path, as in the maintenance app."""
+
+    def __init__(self, title):
+        super().__init__()
+        self.setObjectName("source")
+        lay = QtWidgets.QVBoxLayout(self)
+        lay.setContentsMargins(16, 12, 16, 12)
+        lay.setSpacing(4)
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(label(title, "headline", wrap=False), 1)
+        self.link = QtWidgets.QPushButton("Open ↗")
+        self.link.setObjectName("link")
+        self.link.setCursor(QtCore.Qt.PointingHandCursor)
+        self.link.clicked.connect(self.open)
+        row.addWidget(self.link)
+        lay.addLayout(row)
+        self.value = label("–", "footnote", wrap=False)
+        self.value.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred)
+        lay.addWidget(self.value)
+        self.target = ""
+        self.set_path("")
+
+    def set_path(self, p):
+        self.target = str(p or "")
+        self.link.setVisible(bool(self.target))
+        full = self.target or "–"
+        self.value.setToolTip(full)
+        fm = QtGui.QFontMetrics(self.value.font())
+        self.value.setText(fm.elidedText(full, QtCore.Qt.ElideMiddle, 300))
+
+    def open(self):
+        if self.target:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.target))
+
+
 class Pager(QtWidgets.QFrame):
     changed = QtCore.pyqtSignal(int)
 
@@ -360,7 +399,7 @@ class StepHeader(QtWidgets.QWidget):
         txt = QtWidgets.QVBoxLayout()
         txt.setSpacing(0)
         txt.addWidget(label(title, "headline", wrap=False))
-        txt.addWidget(label(subtitle, "footnote", wrap=False))
+        txt.addWidget(label(subtitle, "muted", wrap=False))
         lay.addLayout(txt, 1)
         self.set_done(False)
 
@@ -440,7 +479,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Fault-Aware Calibration")
-        self.resize(1240, 860)
+        screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
+        self.resize(min(1680, int(screen.width() * 0.92)), min(1020, int(screen.height() * 0.90)))
         self.setMinimumSize(1000, 680)
         self.output = None
         self.process = None
@@ -456,20 +496,31 @@ class MainWindow(QtWidgets.QMainWindow):
         sl = QtWidgets.QVBoxLayout(side)
         sl.setContentsMargins(16, 20, 12, 16)
         sl.setSpacing(10)
-        sl.addWidget(label("Fault-aware<br>calibration", "title", rich=True))
-        sl.addWidget(label("Camera–LiDAR · offline", "footnote"))
-        sl.addSpacing(8)
-        self.nav_new = QtWidgets.QPushButton("New check")
-        self.nav_new.setObjectName("primary")
-        self.nav_new.clicked.connect(self.show_setup)
-        self.nav_open = QtWidgets.QPushButton("Open result folder…")
+        logo = QtWidgets.QLabel()
+        logo.setPixmap(self.logo_pixmap(36))
+        head = QtWidgets.QHBoxLayout()
+        head.setSpacing(10)
+        head.addWidget(logo)
+        head.addWidget(label("<b style='font-size:17px'>Fault-aware<br>calibration</b>", rich=True), 1)
+        sl.addLayout(head)
+        self.nav_open = QtWidgets.QPushButton("Open…")
+        self.nav_open.setObjectName("nav")
+        self.nav_open.setToolTip("Open a result folder (contains assessment.json)")
         self.nav_open.clicked.connect(self.open_previous)
-        sl.addWidget(self.nav_new)
-        sl.addWidget(self.nav_open)
+        self.nav_new = QtWidgets.QPushButton("New check")
+        self.nav_new.setObjectName("navprimary")
+        self.nav_new.clicked.connect(self.show_setup)
+        nav = QtWidgets.QHBoxLayout()
+        nav.setSpacing(8)
+        nav.addWidget(self.nav_open)
+        nav.addWidget(self.nav_new, 1)
+        sl.addLayout(nav)
         sl.addSpacing(6)
         sl.addWidget(label("CHECKS", "caps"))
         self.runs = QtWidgets.QListWidget()
         self.runs.setObjectName("runs")
+        self.runs.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.runs.setWordWrap(True)
         self.runs.itemClicked.connect(lambda it: self.open_run(it.data(QtCore.Qt.UserRole)))
         sl.addWidget(self.runs, 1)
 
@@ -527,6 +578,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cal.combo.activated.connect(lambda k: self.cal.combo.itemData(k) and self.load_cal(self.cal.combo.itemData(k)))
         self.cal.add_button("Open file…", self.open_cal)
         self.cal.add_button("Enter values…", self.enter_cal)
+        self.cal.add_header_link("Use example values", self.use_example)
         v.addWidget(self.cal)
 
         self.cap = Step(2, "New captures", "Image + PCD pairs, recorded bags or stacked captures",
@@ -559,7 +611,7 @@ class MainWindow(QtWidgets.QMainWindow):
         v.addWidget(self.cap)
 
         step3, l3 = frame("card", (24, 20, 24, 20), 12)
-        self.step3 = StepHeader(3, "Run the check", "Compare the possible changes, then review the verdict")
+        self.step3 = StepHeader(3, "Check for changes", "Compare the options, then review the recommendation")
         l3.addWidget(self.step3)
         grid = QtWidgets.QGridLayout()
         grid.setHorizontalSpacing(24)
@@ -577,7 +629,7 @@ class MainWindow(QtWidgets.QMainWindow):
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 1)
         l3.addLayout(grid)
-        self.run_btn = QtWidgets.QPushButton("Run check")
+        self.run_btn = QtWidgets.QPushButton("Check calibration")
         self.run_btn.setObjectName("primary")
         self.run_btn.clicked.connect(self.run)
         self.hint = label("", "muted")
@@ -605,15 +657,29 @@ class MainWindow(QtWidgets.QMainWindow):
         top = QtWidgets.QHBoxLayout()
         self.run_title = label("Result", "largeTitle", wrap=False)
         top.addWidget(self.run_title, 1)
-        self.state = label("", "muted", wrap=False)
+        self.state = QtWidgets.QLabel("")
+        self.state.hide()
         top.addWidget(self.state)
         outer.addLayout(top)
+        strip = QtWidgets.QHBoxLayout()
+        strip.setSpacing(8)
+        self.s_cal, self.s_cap, self.s_out = SourceCard("Existing calibration"), SourceCard("New captures"), SourceCard("Results")
+        for i, c in enumerate((self.s_cal, self.s_cap, self.s_out)):
+            strip.addWidget(c, 1)
+            if i < 2:
+                strip.addWidget(label("→", "muted", wrap=False))
+        outer.addLayout(strip)
         self.progress = QtWidgets.QProgressBar()
         self.progress.setTextVisible(False)
         self.progress.setRange(0, 1)
         outer.addWidget(self.progress)
+        self.stack = QtWidgets.QStackedWidget()
+        self.stack.addWidget(self.build_log())
+        self.stack.addWidget(self.build_result())
+        self.stack.addWidget(self.build_report())
+        outer.addWidget(self.banner)
         bar = QtWidgets.QHBoxLayout()
-        self.pager = Pager(["Result", "Report", "Log"])
+        self.pager = Pager(["Processing", "Result", "Report"])
         bar.addWidget(self.pager)
         bar.addStretch()
         self.cal_btn = QtWidgets.QPushButton("View calibration after this check…")
@@ -621,15 +687,39 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cal_btn.hide()
         bar.addWidget(self.cal_btn)
         outer.addLayout(bar)
-        self.stack = QtWidgets.QStackedWidget()
         outer.addWidget(self.stack, 1)
-        self.stack.addWidget(self.build_result())
-        self.stack.addWidget(self.build_report())
-        self.stack.addWidget(self.build_log())
         self.pager.changed.connect(self.stack.setCurrentIndex)
         return page
 
-    # ---- pages
+    def set_state(self, text):
+        tone = {"Finished": (GOOD, SOFT["good"]), "Running…": (BLUE, SOFT["blue"]), "Stopped": (BAD, SOFT["bad"])}
+        fg, bg = tone.get(text, (MUTED, SOFT["grey"]))
+        self.state.setText(text)
+        self.state.setStyleSheet(f"color:{fg}; background:{bg}; border-radius:10px; padding:6px 20px;"
+                                 "font-size:14px; font-weight:600;")
+        self.state.show()
+
+    @staticmethod
+    def logo_pixmap(size):
+        scale = 2
+        pm = QtGui.QPixmap(size * scale, size * scale)
+        pm.fill(QtCore.Qt.transparent)
+        p = QtGui.QPainter(pm)
+        p.setRenderHint(QtGui.QPainter.Antialiasing)
+        p.setPen(QtCore.Qt.NoPen)
+        p.setBrush(QtGui.QColor(BLUE))
+        n = size * scale
+        p.drawRoundedRect(0, 0, n, n, n * 0.24, n * 0.24)
+        p.setBrush(QtGui.QColor("white"))
+        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.30, n * 0.30)
+        p.setBrush(QtGui.QColor(BLUE))
+        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.22, n * 0.22)
+        p.setBrush(QtGui.QColor("white"))
+        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.10, n * 0.10)
+        p.end()
+        pm.setDevicePixelRatio(scale)
+        return pm
+
     def build_result(self):
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -649,7 +739,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.b_body = label("", "muted")
         bl.addWidget(self.b_title)
         bl.addWidget(self.b_body)
-        self.rlay.addWidget(self.banner)
 
         self.cards_frame, cl = frame("card")
         cl.addWidget(label("Which change does the evidence support?", "headline"))
@@ -761,6 +850,16 @@ class MainWindow(QtWidgets.QMainWindow):
         p.end()
         return QtGui.QIcon(pm)
 
+    @staticmethod
+    def meta_file(folder):
+        return Path(folder).with_name(Path(folder).name + ".gui.json")
+
+    def meta_of(self, folder):
+        try:
+            return json.loads(self.meta_file(folder).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+
     def refresh_runs(self):
         current = str(self.output) if self.output else None
         self.runs.clear()
@@ -768,21 +867,29 @@ class MainWindow(QtWidgets.QMainWindow):
         folders = sorted((p for p in base.glob("gui_*") if p.is_dir()), reverse=True) if base.exists() else []
         for f in folders:
             rf = self.result_file(f)
-            running = self.process is not None and self.process.state() != QtCore.QProcess.NotRunning \
-                and self.output is not None and Path(self.output) == f
-            status, color = "stopped", MUTED
+            meta = self.meta_of(f)
+            running = self.is_running() and self.output is not None and Path(self.output) == f
+            status, color = "stopped with an error" if not running else "running…", MUTED
             if running:
-                status, color = "running…", BLUE
+                color = BLUE
             elif rf:
                 try:
-                    st = json.loads(rf.read_text(encoding="utf-8")).get("status", "")
-                    status = STATUS.get(st, (st.replace("_", " ").lower(),))[0]
+                    r = json.loads(rf.read_text(encoding="utf-8"))
+                    st = r.get("status", "")
+                    status = STATUS.get(st, (st.replace("_", " ").lower(),))[0].lower()
                     color = STATUS.get(st, (None, MUTED))[1]
+                    gain = ((r.get("diagnostics") or {}).get("decision") or {}).get("best_relative_gain")
+                    if gain is not None:
+                        status += f" · {gain * 100:.2f} % gain"
                 except (OSError, ValueError):
                     pass
-            when = datetime.strptime(f.name[4:], "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M") \
-                if len(f.name) >= 19 else f.name
-            it = QtWidgets.QListWidgetItem(self.dot(color), f"{when}\n{status}")
+            try:
+                when = datetime.strptime(f.name[4:19], "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M")
+            except ValueError:
+                when = f.name
+            title = Path(meta.get("captures", "")).name
+            lines = [title, status, when] if title else [status, when]
+            it = QtWidgets.QListWidgetItem(self.dot(color), "\n".join(lines))
             it.setData(QtCore.Qt.UserRole, str(f))
             it.setToolTip(str(f))
             self.runs.addItem(it)
@@ -855,6 +962,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if d.exec_() == QtWidgets.QDialog.Accepted:
             self.cal.combo.setCurrentIndex(0)
             self.load_cal(d.path)
+
+    def use_example(self):
+        example = ROOT / "examples" / "calibration.example.json"
+        if example.is_file():
+            self.cal.combo.setCurrentIndex(0)
+            self.load_cal(str(example))
 
     # ---- step 2: captures (image + PCD pairs, raw bags, stacked)
     def load_data(self, path):
@@ -957,7 +1070,7 @@ class MainWindow(QtWidgets.QMainWindow):
         scratch = self.mode == "scratch"
         self.cal.setEnabled(not scratch)
         self.strategy.setEnabled(not scratch)
-        self.run_btn.setText("Calibrate" if scratch else "Run check")
+        self.run_btn.setText("Calibrate" if scratch else "Check calibration")
         self.update_ready()
 
     def update_ready(self):
@@ -991,11 +1104,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def run(self):
         scratch = self.mode == "scratch"
         self.output = ROOT / "research_artifacts" / datetime.now().strftime("gui_%Y%m%d_%H%M%S")
+        self.output.parent.mkdir(parents=True, exist_ok=True)
+        self.meta_file(self.output).write_text(json.dumps(dict(
+            calibration="" if scratch else self.cal.path, captures=self.cap.path, mode=self.mode,
+            strategy=None if scratch else self.strategy.currentData())), encoding="utf-8")
+        self.set_sources(self.output)
         self.log.clear()
         self.run_btn.setEnabled(False)
         self.progress.setRange(0, 0)
         self.run_title.setText("Calibrating from scratch" if scratch else "Checking calibration")
-        self.state.setText("Running…")
+        self.set_state("Running…")
         self.style_banner(BLUE, "blue")
         self.b_title.setText("Running…")
         self.b_body.setText("This can take a few minutes. Open the Log tab to follow it." if not scratch else
@@ -1033,6 +1151,13 @@ class MainWindow(QtWidgets.QMainWindow):
         p.start(str(exe), ["-X", "utf8", "-B", "-W", "ignore::RuntimeWarning", "-m", "research_calibration"] + args)
         self.refresh_runs()
 
+    def set_sources(self, folder):
+        meta = self.meta_of(folder)
+        self.s_cal.set_path(meta.get("calibration"))
+        self.s_cap.set_path(meta.get("captures"))
+        self.s_out.set_path(folder)
+        self.s_cal.value.setText("Calibrated from scratch" if meta.get("mode") == "scratch" else self.s_cal.value.text())
+
     def tiles_clear(self):
         self.clear(self.tiles)
 
@@ -1056,7 +1181,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def fail(self, msg):
         self.progress.setRange(0, 1)
         self.update_ready()
-        self.state.setText("Stopped")
+        self.set_state("Stopped")
         self.run_title.setText("Check stopped")
         self.style_banner(BAD, "bad")
         self.b_title.setText("Could not finish")
@@ -1084,8 +1209,10 @@ class MainWindow(QtWidgets.QMainWindow):
         dec = diag.get("decision") or {}
         status = r.get("status", "")
         title, color, soft, meaning = STATUS.get(status, (status.replace("_", " ").capitalize(), MUTED, "grey", ""))
-        self.state.setText("Finished")
-        self.run_title.setText(self.title_of(folder))
+        self.set_state("Finished")
+        meta = self.meta_of(folder)
+        self.run_title.setText(Path(meta.get('captures', '')).name or self.title_of(folder))
+        self.set_sources(folder)
         self.result_cal = r.get("updated_calibration") if isinstance(r.get("updated_calibration"), dict) else None
         self.cal_btn.setVisible(bool(self.result_cal))
         self.cal_btn.setText("View calibration produced…" if status == "INITIAL_CALIBRATION_CANDIDATE"
@@ -1156,7 +1283,7 @@ class MainWindow(QtWidgets.QMainWindow):
         md = self.result_file(folder).with_name("report.md")
         self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
         self.folder_btn.setEnabled(True)
-        self.pager.select(0)
+        self.pager.select(1)
 
     def option_card(self, key, loss, keep, diff, best, is_keep):
         f, lay = frame("optionBest" if best else "option", (16, 16, 16, 16), 8)
@@ -1197,6 +1324,11 @@ def main():
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
     win = MainWindow()
+    if "--prefill" in sys.argv:  # python research_gui.py --prefill <calibration> <captures folder>
+        k = sys.argv.index("--prefill")
+        win.load_cal(sys.argv[k + 1])
+        win.load_data(sys.argv[k + 2])
+        sys.argv[k:k + 3] = []
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     shot = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--shot=")), None)
     if args and MainWindow.result_file(args[0]):
@@ -1204,7 +1336,7 @@ def main():
     win.resize(1240, 1700 if "--tall" in sys.argv else 860)
     win.show()
     if shot:  # offscreen screenshot for visual checks
-        win.pager.select(int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--tab=")), "0")))
+        win.pager.select(int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--tab=")), "1")))
         QtCore.QTimer.singleShot(500, lambda: (win.grab().save(shot), app.quit()))
     return app.exec_()
 

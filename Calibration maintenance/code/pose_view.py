@@ -149,10 +149,11 @@ class CalibrationPosePanel(QtWidgets.QFrame):
     def __init__(self, comparison):
         super().__init__()
         self.setObjectName('posePanel')
+        self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
         self.setStyleSheet(f'QFrame#posePanel {{ background: #f8fafc; border: 1px solid {LINE}; border-radius: 10px; }}')
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(16, 14, 16, 14)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(6)
         previous = np.asarray(comparison['previous']['extrinsics']['matrix'])
         refined = np.asarray(comparison['new']['extrinsics']['matrix'])
         self.canvas = PoseCanvas(previous, refined)
@@ -168,11 +169,10 @@ class CalibrationPosePanel(QtWidgets.QFrame):
         layout.addWidget(label(f'<b>{movement:.1f} mm</b> camera-centre shift'
                                f' &nbsp; <b>{angle:.2f}\u00b0</b> rotation', rich=True, wrap=True))
         position = self.canvas.refined[0] * 1000
-        layout.addWidget(label('Refined camera centre (LiDAR frame)', 'small'))
-        layout.addWidget(label('   '.join(f'{axis} {value:+.1f}' for axis, value in zip('XYZ', position)) + ' mm', sel=True))
-        layout.addWidget(label('Drag to rotate \u00b7 double-click to reset. Sensor shapes show orientation; '
-                               'they are schematic, not lens fields of view.', 'small', wrap=True))
-        layout.addStretch(1)
+        self.canvas.setToolTip('Drag to rotate · double-click to reset.\n'
+                               'Camera centre in LiDAR coordinates (mm): ' +
+                               ', '.join(f'{axis} {value:+.1f}' for axis, value in zip('XYZ', position)) +
+                               '\nSensor shapes indicate orientation; they are not lens fields of view.')
 
 
 class ComparisonColumns(QtWidgets.QWidget):
@@ -184,7 +184,7 @@ class ComparisonColumns(QtWidgets.QWidget):
         self.box.setContentsMargins(0, 0, 0, 0)
         self.box.setSpacing(20)
         self.box.addWidget(table_column, 1)
-        self.box.addWidget(pose_panel)
+        self.box.addWidget(pose_panel, 0, Qt.AlignTop)
         self.arrange()
 
     def arrange(self):

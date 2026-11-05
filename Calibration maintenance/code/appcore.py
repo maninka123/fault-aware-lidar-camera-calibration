@@ -20,6 +20,7 @@ from pathlib import Path  # noqa: E402
 
 import numpy as np  # noqa: E402
 from scipy.spatial.transform import Rotation  # noqa: E402
+from calibration_io import read_calibration as load_calibration_data  # noqa: E402
 
 CODE = Path(__file__).resolve().parent
 ROOT = CODE.parent
@@ -27,6 +28,8 @@ RESULTS = ROOT / "results"
 INPUTS = RESULTS / "_inputs"
 PROJECT = ROOT.parent
 TARGETLESS = PROJECT / "Targetless calibration"
+EXAMPLE_CALIBRATION = ROOT / "examples" / "feb2025_enclosure.json"
+EXAMPLE_LABEL = "Example: Feb 2025 enclosure"
 STAGES = ["data", "features", "health", "search", "refined", "evidence", "verdict"]
 
 
@@ -115,7 +118,8 @@ def describe(c, mounting=None):
     fine = np.degrees(Rotation.from_matrix(R @ MOUNTINGS[m].T).as_rotvec())
     return dict(
         intrinsics=dict(fx=K[0, 0], fy=K[1, 1], cx=K[0, 2], cy=K[1, 2], k1=float(D[0]), k2=float(D[1]),
-                        model=c["intrinsics"].get("distortion_model", "k1-k2" if D[1] else "k1"),
+                        k3=float(D[2]), k4=float(D[3]),
+                        model=c["intrinsics"].get("distortion_model", "k1-k2-k3-k4" if np.any(D[2:]) else "k1-k2" if D[1] else "k1"),
                         image_size=c.get("image_size")),
         extrinsics=dict(tx=t[0] * 1000, ty=t[1] * 1000, tz=t[2] * 1000, tilt=fine[0], pan=fine[1], roll=fine[2],
                         mounting=m, mounting_label=mounting_label(MOUNTINGS[m]), matrix=T),
@@ -123,7 +127,7 @@ def describe(c, mounting=None):
 
 
 def calibration_info(path):
-    c = read_json(path)
+    c = load_calibration_data(path)
     if not isinstance(c, dict) or "intrinsics" not in c or "extrinsics" not in c:
         raise ValueError("This is not a calibration.json in this project's layout (it needs 'intrinsics' with "
                          "camera_matrix and 'extrinsics' with transform_lidar_to_camera).")
@@ -141,6 +145,7 @@ def manual_calibration(v):
     if None in (fx, fy, cx, cy):
         raise ValueError("fx, fy, cx and cy are needed.")
     k1, k2 = f("k1", 0.0), f("k2", 0.0)
+    k3, k4 = f("k3", 0.0), f("k4", 0.0)
     T = np.eye(4)
     if v.get("ext_mode") == "matrix":
         n = numbers(v.get("matrix"))
@@ -158,8 +163,8 @@ def manual_calibration(v):
             @ MOUNTINGS[int(v.get("mounting", 0))]
         T[:3, 3] = np.array([f("tx", 0.0), f("ty", 0.0), f("tz", 0.0)]) / 1000.0
     c = dict(method="entered by hand in the maintenance app", convention="p_camera = R @ p_lidar + t (metres); OpenCV fisheye model",
-             intrinsics=dict(distortion_model="k1-k2" if k2 else "k1", camera_matrix=[[fx, 0, cx], [0, fy, cy], [0, 0, 1]],
-                             distortion_coefficients=[k1, k2, 0.0, 0.0]),
+             intrinsics=dict(distortion_model="k1-k2-k3-k4" if k3 or k4 else "k1-k2" if k2 else "k1", camera_matrix=[[fx, 0, cx], [0, fy, cy], [0, 0, 1]],
+                             distortion_coefficients=[k1, k2, k3, k4]),
              extrinsics=dict(transform_lidar_to_camera=T.tolist()))
     if f("width") and f("height"):
         c["image_size"] = [int(f("width")), int(f("height"))]
@@ -220,6 +225,8 @@ def suggestions():
     cals += sorted((ROOT / "accepted").glob("*.json"), reverse=True) + sorted((ROOT / "examples").glob("*.json"))
 
     def label(p):
+        if p == EXAMPLE_CALIBRATION:
+            return EXAMPLE_LABEL
         if "accepted" in p.parts:
             return f"Accepted: {p.stem}"
         if "examples" in p.parts:
@@ -279,7 +286,11 @@ def mark_history(run, text):
 
 def comparison(s, out):
     """Previous vs new value of every intrinsic / extrinsic, with the statistics of the change."""
-    prev_c, new_c = read_json(resolve(s["existing"])), read_json(Path(out) / "refined_calibration.json")
+    try:
+        prev_c = load_calibration_data(resolve(s["existing"]))
+    except (OSError, ValueError):
+        prev_c = None
+    new_c = read_json(Path(out) / "refined_calibration.json")
     if not prev_c or not new_c:
         return None
     a = describe(prev_c)
@@ -313,11 +324,46 @@ def run_info(name):
                 device=read_json(out / "device.json"), device_writes=read_json(out / "device_writes.json") or [])
     if s:
         imgs = out / "images"
+        if s.get('strategy_comparison'):
+            saved = read_json(out / 'option_calibrations.json') or {}
+            calibrations = saved.get('calibrations', {})
+            try:
+                previous = load_calibration_data(resolve(s['existing']))
+            except (OSError, ValueError):
+                previous = None
+            refined = read_json(out / 'refined_calibration.json')
+            if previous:
+                calibrations.setdefault('existing', previous)
+            if refined:
+                calibrations.setdefault(s['mode'], refined)
+            movements = saved.get('movements', {})
+            movements.setdefault('existing', dict(median_px=0., p90_px=0.))
+            movements.setdefault(s['mode'], dict(median_px=s['shift_median_px'], p90_px=s.get('shift_p90_px')))
+            error_data = read_json(out / 'option_errors.json') or {}
+            s['strategy_comparison'] = dict(s['strategy_comparison'], calibrations=calibrations, movements=movements,
+                                           rmse_checks=error_data.get('checks', s['strategy_comparison'].get('checks', [])))
         info.update(comparison=comparison(s, out), accepted=accepted_of(name),
                     captures=[dict(name=p.stem, image=p, flicker=imgs / f"{p.stem}_flicker.gif")
                               for p in sorted(imgs.glob("*.png")) if p.stem != "shift_by_range"],
                     extra=[p for p in (imgs / "shift_by_range.png", out / "stages" / "regions.png") if p.exists()])
     return info
+
+
+def capture_label(path):
+    """Use the capture folder's own name, including historical paths moved elsewhere."""
+    return re.split(r'[\\/]', str(path).rstrip('\\/'))[-1] if path else ''
+
+
+def capture_display_name(name, index=None):
+    """Readable capture labels; keep original IDs in tooltips and file paths."""
+    raw = Path(str(name)).stem
+    match = re.search(r'(?:^|[_-])(\d{2})(\d{2})(\d{2})[_-]\d{3,6}(?:$|[_-])', raw)
+    if match and all(int(part) < limit for part, limit in zip(match.groups(), (24, 60, 60))):
+        time = ':'.join(match.groups())
+        return f'Capture {index:02d} · {time}' if index is not None else f'Capture at {time}'
+    if index is not None:
+        return f'Capture {index:02d}'
+    return raw.replace('_', ' ').strip()
 
 
 def list_runs():
@@ -329,6 +375,7 @@ def list_runs():
         s = read_json(p / "summary.json") if prog.get("finished") else None
         inp = read_json(p / "inputs.json") or {}
         rows.append(dict(name=p.name, time=(p / "progress.json").stat().st_mtime, finished=bool(prog.get("finished")),
+                         display_name=capture_label((s or {}).get('data') or inp.get('data')),
                          verdict=s and s["verdict"], shift=s and s["shift_median_px"],
                          device=(s and s["device"]) or inp.get("device") or "", date=s and s["date"]))
     accepted = {r["run"] for r in history() if r.get("accepted")}

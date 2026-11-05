@@ -5,7 +5,7 @@ Start:  start_app.bat   (or: python app.py)
 Connected devices (device_ui.py): connect to one sensor device at a time (Central Monitoring Platform
 devices), capture a few seconds of its camera + LiDAR data, check its calibration, and - only after
 review and confirmation - write the new calibration into the device (SSH, with a backup).
-Manual check: 1. the previous calibration (a suggested one, a calibration.json, or values typed in);
+Check files: 1. the previous calibration (a suggested one, a JSON/TXT calibration, or values typed in);
 2. the new captures (raw bags or stacked *.npz); 3. Calculate.
 Either way maintain.py runs in the background and the window follows it stage by stage (what is detected
 in the LiDAR and the image, how each step went), then shows the verdict, previous vs new intrinsics and
@@ -28,12 +28,14 @@ import appcore as core  # noqa: E402  first: sets the BLAS thread limits before 
 from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402
 from PyQt5.QtCore import Qt  # noqa: E402
 from pose_view import CalibrationPosePanel, ComparisonColumns  # noqa: E402
-from ui_widgets import MODE_NAMES, OptionsResults, SourceStrip, UpdateChoice  # noqa: E402
+from ui_widgets import MODE_NAMES, OptionsResults, SourceStrip, UpdateChoice, PageTabs, action_flow, EvidenceColumns  # noqa: E402
+from matrix_preview import MatrixPreview, ResultHeader
 from capture_help import CaptureFormatDialog  # noqa: E402
 
 from ui_common import (BAD, BAD_SOFT, BG, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, MONO, ORANGE, PARAMS, QSS,  # noqa: E402
                        STAGES, VERDICT, WARN, WARN_SOFT, Gauge, ImageView, ManualDialog, StepTracker, app_icon, badge_icon, button, calibration_view,
-                       card, clear, dot_icon, hbox, image_grid, img_label, label, np_to_pixmap, scroll, table)
+                       card, clear, dot_icon, hbox, image_grid, img_label, label, navigation_icon, np_to_pixmap, scroll, table)
+from calibration_io import MODE_LABELS, write_calibration_txt
 
 
 SCRATCH = ("scratch", "Scratch", "Calibration from scratch",
@@ -95,6 +97,9 @@ class SetupPage(QtWidgets.QWidget):
         self.cal_combo.activated.connect(lambda k: self.cal_combo.itemData(k) and self.load_cal(self.cal_combo.itemData(k)))
         l1.addWidget(hbox(self.cal_combo, label("or", "muted"), button("Open file…", slot=self.open_cal),
                           button("Enter values…", slot=self.enter_cal)))
+        self.example_cal_button = button("Use example values", "link", self.use_example_cal)
+        self.example_cal_button.setToolTip("Load the Feb 2025 enclosure camera intrinsics and LiDAR → camera alignment (484 × 366).")
+        l1.addWidget(hbox(self.example_cal_button, label("Feb 2025 · enclosure · 484 × 366", "small"), stretch_at=2))
         self.cal_err = label("", "err", wrap=True)
         self.cal_err.hide()
         l1.addWidget(self.cal_err)
@@ -160,8 +165,8 @@ class SetupPage(QtWidgets.QWidget):
             combo.setMaxVisibleItems(16)
         self.go = button("Check calibration", "primary", self.calculate)
         self.go.setStyleSheet("padding: 10px 36px; font-size: 11pt;")
-        self.research_go = button('Research check…', slot=self.calculate_research)
-        self.research_go.setToolTip('Offline fault-aware backend for stacked captures. Opens diagnostic reports; no device writes.')
+        self.research_go = button('Fault-aware check…', slot=self.open_research)
+        self.research_go.setToolTip('Open the offline fault-aware assessment with this calibration and these captures. No device writes.')
         self.hint = label("", "muted", wrap=True)
         self.update_choice.currentIndexChanged.connect(self.update_ready)
         l3.addWidget(hbox(self.go, self.hint, stretch_at=2, spacing=16))
@@ -180,7 +185,7 @@ class SetupPage(QtWidgets.QWidget):
     def load_cal(self, path):
         try:
             self.cal = core.calibration_info(path)
-        except (ValueError, KeyError, TypeError) as err:
+        except (OSError, ValueError, KeyError, TypeError) as err:
             self.cal_err.setText(str(err))
             self.cal_err.show()
             return
@@ -192,10 +197,16 @@ class SetupPage(QtWidgets.QWidget):
 
     def open_cal(self):
         start = str(Path(self.cal["path"]).parent) if self.cal else str(core.PROJECT)
-        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Previous calibration", start, "Calibration (*.json)")
+        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Existing calibration", start,
+                                                   "Calibration files (*.json *.txt);;JSON calibration (*.json);;Calibration TXT (*.txt)")
         if p:
             self.cal_combo.setCurrentIndex(0)
             self.load_cal(p)
+
+    def use_example_cal(self):
+        index = self.cal_combo.findData(str(core.EXAMPLE_CALIBRATION))
+        self.cal_combo.setCurrentIndex(max(0, index))
+        self.load_cal(core.EXAMPLE_CALIBRATION)
 
     def enter_cal(self, prefill=False):
         d = ManualDialog(self, prefill or None)
@@ -218,11 +229,12 @@ class SetupPage(QtWidgets.QWidget):
             self.data_box.addWidget(head)
             row = QtWidgets.QHBoxLayout()
             row.setSpacing(12)
-            for c in d["captures"][:6]:
+            for index, c in enumerate(d["captures"][:6], 1):
                 box = QtWidgets.QVBoxLayout()
                 box.setSpacing(2)
                 if c["npz"] or c.get('image'):
-                    iv = ImageView(pixmap=np_to_pixmap(core.capture_image(c['npz'] or c['image'])), caption=c["name"])
+                    iv = ImageView(pixmap=np_to_pixmap(core.capture_image(c['npz'] or c['image'])),
+                                   caption=core.capture_display_name(c['name'], index))
                 else:
                     iv = label(f"raw bag\n{c['size_mb']:.0f} MB")
                     iv.setAlignment(Qt.AlignCenter)
@@ -230,7 +242,8 @@ class SetupPage(QtWidgets.QWidget):
                     iv.setStyleSheet(f"background: {INFO_SOFT}; border-radius: 8px; color: {MUTED};")
                 iv.setMaximumWidth(260)
                 box.addWidget(iv)
-                cap = label(c["name"].replace("capture_", "").replace("_enclosure_on", "").replace("_enclosure_off", ""), "small")
+                cap = label(core.capture_display_name(c['name'], index), "small")
+                cap.setToolTip(c['name'])
                 box.addWidget(cap)
                 row.addLayout(box)
             row.addStretch(1)
@@ -338,7 +351,7 @@ class SetupPage(QtWidgets.QWidget):
                     ready = False
                     reason = 'Image resolution differs from this calibration. Choose a calibration for this resolution.'
         self.go.setEnabled(ready)
-        self.research_go.setEnabled(bool(ready and self.data['kind']=='stacked' and len(self.data['captures'])>=2))
+        self.research_go.setEnabled(bool(ready))
         self.hint.setText(("Tests four update choices. Allow a few minutes." if self.update_choice.currentData() == 'compare'
                            else f"Checks {len(self.data['captures'])} captures.") if ready
                           else reason or "Choose a calibration and captures to continue.")
@@ -347,13 +360,14 @@ class SetupPage(QtWidgets.QWidget):
         self.run_requested.emit(self.cal["path"], self.data["path"], self.update_choice.currentData(),
                                 self.device.text().strip() or "rig", self.pair_units.currentData(), self.units_confirm.isChecked())
 
-    def calculate_research(self):
-        owner=self.window()
-        if any(p.poll() is None for p in getattr(owner,'procs',{}).values()):
-            QtWidgets.QMessageBox.information(self,'Check already running','Finish the current check before starting a research assessment.')
-            return
-        from research_dialog import ResearchDialog
-        ResearchDialog(self.cal['path'],self.data['path'],self).exec_()
+    def open_research(self):
+        """Open the fault-aware assessment window (research_gui.py) with the chosen inputs."""
+        import subprocess
+        gui = Path(__file__).resolve().parents[2] / 'research_gui.py'
+        exe = Path(sys.executable)
+        if exe.name.lower() == 'python.exe' and exe.with_name('pythonw.exe').exists():
+            exe = exe.with_name('pythonw.exe')
+        subprocess.Popen([str(exe), str(gui), '--prefill', self.cal['path'], self.data['path']], cwd=str(gui.parent))
 
     def prefill(self, cal, data, device=None, cloud_units='m', allow_unusual_units=False):
         if cal and Path(cal).exists():
@@ -375,6 +389,7 @@ class RunPage(QtWidgets.QWidget):
         super().__init__()
         self.main = main
         self.name = None
+        self.export_dataset_folder = None
         page = QtWidgets.QWidget()
         page.setObjectName("page")
         v = QtWidgets.QVBoxLayout(self)
@@ -392,7 +407,10 @@ class RunPage(QtWidgets.QWidget):
 
         self.banner = label("", wrap=True, rich=True)
         self.banner.hide()
-        v.addWidget(self.banner)
+        self.matrix_preview = MatrixPreview()
+        self.matrix_preview.hide()
+        self.result_header = ResultHeader(self.banner, self.matrix_preview)
+        v.addWidget(self.result_header)
 
         self.tracker = StepTracker()
         self.tracker.clicked.connect(self.select_stage_key)
@@ -401,6 +419,7 @@ class RunPage(QtWidgets.QWidget):
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.tabBar().setExpanding(False)
         self.tabs.tabBar().setElideMode(Qt.ElideNone)
+        self.tabs.tabBar().hide()
         self.tabs.currentChanged.connect(lambda index: self.tracker.setVisible(index == 0))
         v.addWidget(self.tabs, 1)
 
@@ -408,6 +427,8 @@ class RunPage(QtWidgets.QWidget):
         proc = QtWidgets.QWidget()
         pl = QtWidgets.QVBoxLayout(proc)
         pl.setContentsMargins(0, 8, 0, 0)
+        self.processing_nav = PageTabs(self.tabs)
+        pl.addWidget(self.processing_nav, 0, Qt.AlignLeft)
         split = QtWidgets.QSplitter()
         split.setHandleWidth(10)
         self.stage_list = QtWidgets.QListWidget()
@@ -455,8 +476,10 @@ class RunPage(QtWidgets.QWidget):
             w.deleteLater()
         clear(self.result_lay)
         self.banner.hide()
+        self.matrix_preview.hide()
         self.toggle_log(False)
         self.tabs.setTabEnabled(1, False)
+        self.processing_nav.setTabEnabled(1, False)
         self.tabs.setCurrentIndex(0)
         self.refresh()
 
@@ -467,7 +490,7 @@ class RunPage(QtWidgets.QWidget):
         running = self.main.is_running(self.name)
         failed = not running and not info["finished"] and self.main.exit_code(self.name) not in (None, 0)
         inp = info["inputs"]
-        self.title.setText(inp.get("device") or self.name)
+        self.title.setText(core.capture_label(inp.get('data')) or inp.get("device") or self.name)
         dev = info.get("device")
         self.sources.set_paths(core.resolve(inp['calibration']) if inp.get('calibration') else None,
                                core.resolve(inp['data']) if inp.get('data') else None, info['out'])
@@ -511,6 +534,7 @@ class RunPage(QtWidgets.QWidget):
             self.built = True
             self.build_results(info)
             self.tabs.setTabEnabled(1, True)
+            self.processing_nav.setTabEnabled(1, True)
             self.tabs.setCurrentIndex(1)
 
     def select_stage_key(self, idx):
@@ -565,6 +589,20 @@ class RunPage(QtWidgets.QWidget):
     # ---- results
     def build_results(self, info):
         s, cmp_ = info["summary"], info["comparison"]
+        dataset = info['inputs'].get('data') or s.get('data')
+        self.export_dataset_folder = core.resolve(dataset) if dataset else None
+        self.export_txt_btn = None
+        self.export_mode_label = None
+        self.export_calibrations = dict((s.get('strategy_comparison') or {}).get('calibrations', {}))
+        if 'existing' not in self.export_calibrations:
+            try:
+                self.export_calibrations['existing'] = core.load_calibration_data(core.resolve(s['existing']))
+            except (OSError, ValueError):
+                pass
+        refined = core.read_json(info['out'] / 'refined_calibration.json')
+        if refined:
+            self.export_calibrations.setdefault(s['mode'], refined)
+        self.selected_result_mode = s['mode']
         fg, bg, icon, todo = VERDICT.get(s["verdict"], VERDICT["INCONCLUSIVE"])
         reason = core.verdict_message(s)
         self.banner.setText(f"<span style='font-size:14pt; font-weight:600; color:{fg}'>{s['verdict'].capitalize()}</span><br>"
@@ -577,20 +615,34 @@ class RunPage(QtWidgets.QWidget):
         v = QtWidgets.QVBoxLayout(page)
         v.setContentsMargins(4, 10, 4, 20)
         v.setSpacing(14)
+        self.result_nav = PageTabs(self.tabs)
+        v.addWidget(self.result_nav, 0, Qt.AlignLeft)
 
         if s.get('strategy_comparison'):
             c, cl = card('What should you update?')
-            cl.addWidget(OptionsResults(s['strategy_comparison']))
+            comparison = s['strategy_comparison']
+            self.matrix_preview.set_calibrations(comparison.get('calibrations', {}))
+            self.options_results = OptionsResults(comparison)
+            self.options_results.mode_changed.connect(self.preview_mode)
+            self.preview_mode(self.options_results.active_mode)
+            self.matrix_preview.show()
+            cl.addWidget(self.options_results)
             v.addWidget(c)
 
         # metrics
+        from update_options import rmse_changes
+        rmse = rmse_changes(s.get('strategy_comparison') or {}).get(s['mode'])
         o, n = s["existing_on_new_data"], s["refined_on_new_data"]
         z = s.get("z")
         zword = "" if not core.fin(z) else "within noise" if z < 2 else "borderline" if z < 3 else "statistically significant"
         row = QtWidgets.QHBoxLayout()
         row.setSpacing(12)
         for title_, value, note in (
-                ("Point shift", core.fmt(s["shift_median_px"], 2, " px"), "Median across the scene"),
+                ("Edge RMSE", core.fmt(rmse['after_px'], 2, " px") if rmse else "Not measured",
+                 (f"Before {rmse['before_px']:.2f} px" +
+                  (f" · {rmse['reduction_percent']:.1f}% lower" if rmse['reduction_percent'] is not None and rmse['reduction_percent'] >= 0
+                   else f" · {abs(rmse['reduction_percent']):.1f}% higher" if rmse['reduction_percent'] is not None else ''))
+                 if rmse else "Run Compare update options to measure RMSE"),
                 ("Uncertainty", "± " + core.fmt(s["shift_uncertainty_px"], 2, " px"),
                  f'Shift is {core.fmt(z, 1)}× uncertainty' if core.fin(z) else 'More captures needed'),
                 ("Regions improved", f"{s['heldout_improved']} / {s['heldout_total']}", "Tested outside the fit"),
@@ -599,9 +651,15 @@ class RunPage(QtWidgets.QWidget):
             cl.setSpacing(2)
             cl.addWidget(label(title_, "small"))
             big = label(value)
-            big.setStyleSheet("font-size: 19pt; font-weight: 700;")
+            big.setStyleSheet("font-size: 18pt; font-weight: 500;")
             cl.addWidget(big)
             cl.addWidget(label(note, "small", wrap=True))
+            if title_ == 'Edge RMSE':
+                cl.addWidget(label(f"Median projection shift: {s['shift_median_px']:.2f} px", wrap=True))
+                cl.addWidget(label(MODE_NAMES.get(s['mode'], s['mode']), 'small'))
+                c.setToolTip('Held-out nearest-image-edge RMSE over all tested visible edge points, including unmatched '
+                             'points. RMSE describes alignment distance; projection shift describes the change from '
+                             'the previous calibration. Neither is a known-correspondence ground-truth error.')
             row.addWidget(c, 1)
         v.addLayout(row)
 
@@ -655,12 +713,18 @@ class RunPage(QtWidgets.QWidget):
 
         # images
         c, cl = card("Images: previous vs refined")
-        views = [(x["name"], x["image"], x["flicker"] if x["flicker"].exists() else None) for x in info["captures"]]
+        views = [(core.capture_display_name(x['name'], index), x['image'],
+                  x['flicker'] if x['flicker'].exists() else None) for index, x in enumerate(info['captures'], 1)]
         views += [(img_label(p), p, None) for p in info["extra"]]
         sel = QtWidgets.QComboBox()
+        sel.setObjectName('resultCaptureSelector')
         for name, *_ in views:
             sel.addItem(name)
-        b_side, b_flick = button("Side by side"), button("Flicker (previous ↔ refined)")
+        for index, capture in enumerate(info['captures']):
+            sel.setItemData(index, capture['name'], Qt.ToolTipRole)
+        b_side, b_flick = button("Side by side"), button("Alternate views")
+        b_flick.setObjectName('alternateViews')
+        b_flick.setToolTip('Alternate between the previous and refined calibration overlays.')
         for b in (b_side, b_flick):
             b.setCheckable(True)
         grp = QtWidgets.QButtonGroup(c)
@@ -697,13 +761,23 @@ class RunPage(QtWidgets.QWidget):
         # evidence
         ev = [("capture " + x["left_out"], x) for x in s.get("leave_one_out") or []] + [(x["left_out"], x) for x in s.get("leave_one_region_out") or []]
         if ev:
-            c, cl = card("Evidence: leave one out", "Each row: refine without that capture or image region, then compare previous "
-                         "and refined on what was left out (share of LiDAR edges on an image edge).")
-            cl.addWidget(table(["Left out", "Shift of the refit", "Previous on it", "Refined on it", "Fits it better?"],
-                               [[name, core.fmt(x["shift_px"], 2, " px"), f"{x['heldout_existing_share'] * 100:.1f} %",
-                                 f"{x['heldout_refined_share'] * 100:.1f} %",
-                                 ("✓ yes", GOOD, GOOD_SOFT, True) if x["improved"] else ("no", MUTED)] for name, x in ev],
-                               numeric=[1, 2, 3]))
+            c, cl = card("Evidence: leave one out", "Fit without each capture or region, then test on the omitted data.")
+            evidence_groups = []
+            for title, records in [('Captures', s.get('leave_one_out') or []),
+                                    ('Image regions', s.get('leave_one_region_out') or [])]:
+                if not records:
+                    continue
+                entries = [[core.capture_display_name(x['left_out'], index) if title == 'Captures' else x['left_out'],
+                            core.fmt(x['shift_px'], 2, ' px'), f"{x['heldout_existing_share'] * 100:.1f}%",
+                            f"{x['heldout_refined_share'] * 100:.1f}%",
+                            ('Yes', GOOD) if x['improved'] else ('No', MUTED)] for index, x in enumerate(records, 1)]
+                view = table(['Left out', 'Shift', 'Before', 'After', 'Better?'], entries, numeric=(1, 2, 3), stretch=(0, 1, 2, 3, 4))
+                view.setStyleSheet('QTableWidget::item { padding: 3px 7px; } QHeaderView::section { padding: 5px 7px; }')
+                for index in range(len(entries)):
+                    view.setRowHeight(index, 28)
+                view.setFixedHeight(view.horizontalHeader().height() + 28 * len(entries) + 20)
+                evidence_groups.append((title, view))
+            cl.addWidget(EvidenceColumns(evidence_groups))
             v.addWidget(c)
 
         # actions
@@ -712,13 +786,18 @@ class RunPage(QtWidgets.QWidget):
         not_advised = s["verdict"] in ("NO UPDATE NEEDED", "INCONCLUSIVE", "BORDERLINE")
         self.accept_btn = button("✓ Accepted" if info["accepted"] else "Accept refined calibration", slot=lambda: self.accept_run(s, not_advised))
         self.accept_btn.setEnabled(not info["accepted"])
-        cl.addWidget(hbox(button("Save refined calibration…", "primary", lambda: self.save_refined(out)), self.accept_btn,
+        self.export_mode_label = label('', 'small')
+        self.export_mode_label.setObjectName('selectedCalibrationMode')
+        cl.addWidget(self.export_mode_label)
+        self.export_txt_btn = button('Save calibration TXT…', 'primary', self.save_selected_txt)
+        self.export_txt_btn.setObjectName('exportCalibrationTxt')
+        self.preview_mode(self.selected_result_mode)
+        action_buttons = [self.export_txt_btn, button("Save refined JSON…", slot=lambda: self.save_refined(out)), self.accept_btn,
                           button("Open results folder", slot=lambda: os.startfile(str(out))),
                           button("Show report", slot=lambda: self.show_report(out)),
                           button("Check again with these inputs", slot=lambda: self.check_again.emit(
                               info["inputs"].get("calibration", ""), info["inputs"].get("data", ""), info["inputs"].get("device", ""),
-                              info['inputs'].get('cloud_units', 'm'), info['inputs'].get('allow_unusual_units', False))),
-                          stretch_at=5))
+                              info['inputs'].get('cloud_units', 'm'), info['inputs'].get('allow_unusual_units', False)))]
         extra = []
         if info.get("device"):
             extra.append(button("Write to the device…", "primary", lambda: self.write_device(info)))
@@ -728,7 +807,7 @@ class RunPage(QtWidgets.QWidget):
                 and not any(x.get("stage") == "scratch" for x in info["stages"]):
             extra.append(button("Full calibration from scratch", slot=lambda: self.main.launch_scratch(info)))
         if extra:
-            cl.addWidget(hbox(*extra, stretch_at=len(extra)))
+            action_buttons.extend(extra)
             if info.get("device"):
                 writes = [w for w in info.get("device_writes") or [] if w.get("backup")]
                 cl.addWidget(label(("Last written to the device: " + writes[-1]["date"].replace("T", " ")
@@ -736,6 +815,7 @@ class RunPage(QtWidgets.QWidget):
                                    if writes else
                                    "Write to the device: shows the change and the exact file edit first, asks before writing and again "
                                    "before restarting the sensor pipeline, and keeps a backup on the device.", "muted", wrap=True))
+        cl.insertWidget(1, action_flow(action_buttons))
         self.accept_note = label(
             f"Accepted: {info['accepted']}" if info["accepted"] else
             (f"The verdict is <b>{s['verdict'].lower()}</b>, so accepting is not advised. " if not_advised else
@@ -745,6 +825,45 @@ class RunPage(QtWidgets.QWidget):
         v.addWidget(c)
         v.addStretch(1)
         self.result_lay.addWidget(scroll(page))
+
+    def preview_mode(self, mode):
+        self.selected_result_mode = mode
+        if self.matrix_preview.calibrations:
+            self.matrix_preview.set_mode(mode)
+        title = MODE_LABELS.get(mode, mode)
+        if self.export_mode_label is not None:
+            self.export_mode_label.setText('TXT export: ' + title)
+        if self.export_txt_btn is not None:
+            available = bool(self.export_calibrations.get(mode))
+            self.export_txt_btn.setEnabled(available)
+            self.export_txt_btn.setToolTip(f'Save the {title} camera intrinsics, distortion and LiDAR → camera extrinsics.'
+                                          if available else 'This option’s fitted calibration was not saved.')
+
+    def save_selected_txt(self):
+        mode = self.selected_result_mode
+        candidate = self.export_calibrations.get(mode)
+        if not candidate:
+            return
+        title = MODE_LABELS[mode]
+        folder = self.export_dataset_folder
+        if folder and folder.is_file():
+            folder = folder.parent
+        if not folder or not folder.is_dir():
+            folder = Path.home() / 'Downloads'
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, f'Save {title} calibration',
+            str(folder / f'{self.name}_{mode}_calibration.txt'), 'Calibration TXT (*.txt)')
+        if path:
+            path = Path(path)
+            if not path.suffix:
+                path = path.with_suffix('.txt')
+            try:
+                write_calibration_txt(path, candidate, mode, self.name)
+            except (OSError, ValueError) as error:
+                QtWidgets.QMessageBox.warning(self, 'Could not save calibration', str(error))
+                return
+            self.export_mode_label.setText(f'Saved {title}: {path.name}')
+            self.export_mode_label.setToolTip(str(path))
 
     def write_device(self, info):
         from device_ui import WriteDialog
@@ -805,15 +924,27 @@ class Main(QtWidgets.QMainWindow):
         logo = QtWidgets.QLabel()
         logo.setPixmap(app_icon().pixmap(36, 36))
         sl.addWidget(hbox(logo, label("<b style='font-size:12pt'>Calibration<br>maintenance</b>", rich=True), stretch_at=2, spacing=10))
-        self.nav_dev = button("Connected devices", "primary", self.show_devices)
-        self.nav_man = button("Manual check", slot=self.new_check)
-        sl.addWidget(self.nav_dev)
-        sl.addWidget(self.nav_man)
+        self.nav_dev = button("Devices", "primary", self.show_devices)
+        self.nav_man = button("Check files", slot=self.new_check)
+        for control, kind, selected, tip in ((self.nav_dev, 'devices', True, 'Connect to a sensor device'),
+                                             (self.nav_man, 'files', False, 'Check an existing calibration using saved capture files')):
+            control.setIcon(navigation_icon(kind, selected))
+            control.setIconSize(QtCore.QSize(18, 18))
+            control.setToolTip(tip)
+            control.setStyleSheet('font-size: 9.5pt; padding: 8px 6px;')
+            control.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.nav_dev.setAccessibleName('Connected devices')
+        self.nav_man.setAccessibleName('Check calibration from files')
+        sl.addWidget(hbox(self.nav_dev, self.nav_man, spacing=8))
         sl.addSpacing(6)
         sl.addWidget(label("CHECKS", "caps"))
         self.runs = QtWidgets.QListWidget()
         self.runs.setObjectName("runs")
         self.runs.setIconSize(QtCore.QSize(14, 14))
+        self.runs.setWordWrap(True)
+        self.runs.setTextElideMode(Qt.ElideNone)
+        self.runs.setResizeMode(QtWidgets.QListView.Adjust)
+        self.runs.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.runs.itemClicked.connect(lambda it: self.open_run(it.data(Qt.UserRole)))
         sl.addWidget(self.runs, 1)
 
@@ -906,11 +1037,11 @@ class Main(QtWidgets.QMainWindow):
                 col, sub = BLUE, "running…"
             elif r["verdict"]:
                 col = VERDICT.get(r["verdict"], VERDICT["INCONCLUSIVE"])[0]
-                sub = f"{r['verdict'].lower()} · {core.fmt(r['shift'])} px" + (" · accepted" if r["accepted"] else "")
+                sub = f"{r['verdict'].lower()} · {core.fmt(r['shift'])} px"
             else:
                 col, sub = MUTED, "stopped with an error" if self.exit_code(r["name"]) not in (None, 0) else "incomplete"
             when = r["date"].replace("T", " ")[:16] if r["date"] else datetime.fromtimestamp(r["time"]).strftime("%Y-%m-%d %H:%M")
-            title = r["device"] if r["device"] and r["device"] != "rig" else r["name"]
+            title = r.get('display_name') or (r["device"] if r["device"] and r["device"] != "rig" else r["name"])
             it = QtWidgets.QListWidgetItem(dot_icon(col), f"{title}\n{sub}\n{when}")
             it.setData(Qt.UserRole, r["name"])
             it.setToolTip(r["name"])
@@ -921,6 +1052,7 @@ class Main(QtWidgets.QMainWindow):
     def open_run(self, name):
         for b in (self.nav_dev, self.nav_man):
             b.setObjectName("")
+            b.setIcon(navigation_icon('devices' if b is self.nav_dev else 'files'))
             b.style().unpolish(b)
             b.style().polish(b)
         self.stack.setCurrentWidget(self.run_page)
@@ -933,6 +1065,7 @@ class Main(QtWidgets.QMainWindow):
         self.stack.setCurrentWidget(page)
         for b, on in ((self.nav_dev, page is self.devices), (self.nav_man, page is self.setup)):
             b.setObjectName("primary" if on else "")
+            b.setIcon(navigation_icon('devices' if b is self.nav_dev else 'files', on))
             b.style().unpolish(b)
             b.style().polish(b)
 
