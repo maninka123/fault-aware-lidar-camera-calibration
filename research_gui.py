@@ -29,6 +29,47 @@ NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
 CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
 
 
+def maintenance_text_to_calibration(p, text):
+    """The .txt the maintenance app exports (format = calibration-maintenance-v1, INI-like sections)."""
+    sections, cur = {}, None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            cur = sections.setdefault(line[1:-1], {})
+        elif cur is not None and "=" in line:
+            k, v = line.split("=", 1)
+            cur[k.strip()] = v.strip()
+    try:
+        K = [core.numbers(sections["camera_matrix"][f"row_{i}"]) for i in (1, 2, 3)]
+        T = [core.numbers(sections["transform_lidar_to_camera"][f"row_{i}"]) for i in (1, 2, 3, 4)]
+        D = core.numbers(sections.get("distortion_coefficients", {}).get("values", ""))
+    except KeyError as err:
+        raise ValueError(f"The calibration text is missing {err.args[0]}.") from None
+    if any(len(r) != 3 for r in K) or any(len(r) != 4 for r in T):
+        raise ValueError("camera_matrix rows need 3 numbers and the transform rows need 4.")
+    meta = {}
+    try:
+        meta = json.loads(sections.get("metadata", {}).get("json", "{}"))
+    except ValueError:
+        pass
+    if sections.get("calibration", {}).get("translation_unit", "metres").startswith("mill"):
+        for r in T[:3]:
+            r[3] /= 1000.0
+    c = dict(method=f"imported from {p.name} (maintenance export)",
+             convention="p_camera = R @ p_lidar + t (metres); OpenCV fisheye model",
+             intrinsics=dict(distortion_model=(meta.get("intrinsics") or {}).get("distortion_model", "k1-k2-k3-k4"),
+                             camera_matrix=K, distortion_coefficients=(D + [0.0] * 4)[:4]),
+             extrinsics=dict(transform_lidar_to_camera=T))
+    if meta.get("image_size"):
+        c["image_size"] = meta["image_size"]
+    dst = core.INPUTS / f"imported_{datetime.now():%Y%m%d_%H%M%S_%f}.json"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(json.dumps(c, indent=2), encoding="utf-8")
+    return str(dst)
+
+
 def text_to_calibration(path):
     """intrinsics.txt / extrinsics.txt (as written by the targetless pipeline) -> a calibration.json path.
 
@@ -37,6 +78,8 @@ def text_to_calibration(path):
     """
     p = Path(path)
     texts = [p.read_text(encoding="utf-8", errors="replace")]
+    if "[camera_matrix]" in texts[0] and "[transform_lidar_to_camera]" in texts[0]:
+        return maintenance_text_to_calibration(p, texts[0])
     for sib in ("intrinsics.txt", "extrinsics.txt"):
         s = p.with_name(sib)
         if s != p and s.is_file():
