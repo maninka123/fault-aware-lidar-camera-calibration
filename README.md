@@ -56,6 +56,7 @@ Windows 10/11, Python 3.10/3.11. Start it with **start_research_gui.bat** (or th
 
 - **New check** takes an existing calibration and a folder of recorded captures. **Devices** connects to a sensor, reads its calibration and captures a sample to check (read-only: nothing is ever written to a device).
 - **Processing** follows the check stage by stage: captures appearing as they are stacked, edges per capture, and every explanation's held-out result drawn as each fold completes. **Stop check** ends it safely. Finished checks can be replayed from their saved results.
+- **Use the result** (bottom of Result) accepts a calibration into `accepted/`, writes it to the connected device or restores the previous one, and re-runs a check with the same inputs. Everything the maintenance app does is here: see [docs/FEATURES.md](docs/FEATURES.md).
 - **Result** is the fault-aware assessment. **Calibration review** shows the original maintenance analysis of the same calibration and captures (four update choices, RMSE, parameter changes, leave-one-out evidence, matrices, images). It is a separate calculation: it runs after a new check when the option on the setup page is ticked, or on demand for any older check, and never changes the fault-aware verdict.
 - Every check is saved under `research_artifacts/<check>/` (the maintenance comparison in its `review/` folder). Your calibration files are never modified.
 

@@ -8,13 +8,42 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 import appcore as core
 
-from ui_common import BLUE, BLUE_SOFT, LINE, MUTED, button, hbox, label, open_path
+from ui_common import BLUE, BLUE_SOFT, LINE, MUTED, button, hbox, label, open_path, scroll, table
 from option_help import OPTIONS, OptionHelpDialog
 from update_options import rmse_changes
 
 MODE_NAMES = {'compare': 'Compare update options', 'extrinsic': 'Alignment only',
               'intrinsic': 'Camera only', 'full': 'Camera + alignment'}
 RECOMMEND_BORDER, RECOMMEND_BG, RECOMMEND_INK = '#cbbd9b', '#ffffff', '#716344'
+
+
+def pair_report_dialog(parent, data):
+    """'Pair checks': the matched image + PCD files of a validated capture folder, with ranges and notes.
+    data: the capture description of either app (path and paired_validation)."""
+    checked = data and data.get('paired_validation')
+    if not checked:
+        return None
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle('Pair checks')
+    dialog.resize(1000, 500)
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setContentsMargins(22, 20, 22, 20)
+    layout.addWidget(label('Matched image + PCD files', 'h2'))
+    layout.addWidget(label('PCD units: ' + ('metres' if checked['units'] == 'm' else 'millimetres'), 'small'))
+    root = Path(data['path'])
+    rows = [[str(Path(row['image']).relative_to(root)), str(Path(row['cloud']).relative_to(root)),
+             f'{row["points"]:,}', f'{row["median_range_m"]:.2f} m',
+             f'{row["range_5_95_m"][0]:.2f}–{row["range_5_95_m"][1]:.2f} m',
+             'Check units' if row['units_review'] else 'Readable'] for row in checked['reports']]
+    content = QtWidgets.QWidget()
+    details = QtWidgets.QVBoxLayout(content)
+    details.addWidget(table(['Image', 'PCD', 'Points', 'Median range', '90% range', 'Check'], rows, numeric=(2, 3, 4), stretch=(0, 1)))
+    for note in checked['warnings']:
+        details.addWidget(label(note, 'small', wrap=True))
+    details.addWidget(label('Use synchronized pairs in the LiDAR coordinate frame. Ranges cannot prove the units.', 'small', wrap=True))
+    layout.addWidget(scroll(content))
+    layout.addWidget(hbox(button('Done', slot=dialog.accept), stretch_at=0))
+    return dialog
 
 
 class ActionFlow(QtWidgets.QLayout):

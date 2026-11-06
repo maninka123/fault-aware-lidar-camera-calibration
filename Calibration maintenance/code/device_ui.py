@@ -737,7 +737,7 @@ class WriteDialog(QtWidgets.QDialog):
         self.new, self.rep = dm.to_device(refined, previous=self.prev, intrinsics=s["mode"] in ('full', 'intrinsic'), theta_max_deg=self.dev["theta_max_deg"])
         if s['mode'] == 'intrinsic':
             self.new['extrinsic_matrix'] = dm.device_params(self.prev)['extrinsic_matrix']
-        files = sorted((info["out"] / "captures").glob("*.npz"))
+        files = sorted(Path(info.get("captures_dir") or info["out"] / "captures").glob("*.npz"))
         xyz = np.concatenate([np.load(f)["xyz_mm"][::30] for f in files]).astype(float) / 1000.0 if files else np.zeros((0, 3))
         r = np.linalg.norm(xyz, axis=1)
         sh = dm.shift_px(self.prev, self.new, xyz[(r > 1.5) & (r < 10)]) if len(xyz) else np.array([np.nan])
@@ -826,7 +826,7 @@ class WriteDialog(QtWidgets.QDialog):
             self.path, self.old_text = read_device_yaml(self, self.ssh, self.device)
             self.stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.backup_name = f"{Path(self.path).name}.calib_backup_{self.stamp}"
-            note = (f"Calibration updated {datetime.now():%Y-%m-%d %H:%M} by Calibration maintenance (run {self.info['name']}, "
+            note = (f"Calibration updated {datetime.now():%Y-%m-%d %H:%M} by {self.info.get('tool', 'Calibration maintenance')} (run {self.info['name']}, "
                     f"{self.info['summary']['verdict'].lower()}); previous file: {self.backup_name}")
             self.new_text = dy.update(self.old_text, self.new, note)
             in_file = dm.device_params(dy.read_params(self.old_text), effective=True)

@@ -32,6 +32,8 @@ import app_icon  # noqa: E402
 import result_visuals  # noqa: E402
 import calibration_review  # noqa: E402
 import processing_view  # noqa: E402
+import review_adapter  # noqa: E402
+import use_result  # noqa: E402
 from version import VERSION  # noqa: E402
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
@@ -577,6 +579,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.output = None
         self.process = None
         self.history_cache = {}
+        self.pending_device = None   # device capture folder of the check about to start (kept in its metadata)
         self.run_output = None      # folder of the check that is running (self.output follows what the user opens)
         self.stopping = False
         self.data = None
@@ -692,11 +695,14 @@ class MainWindow(QtWidgets.QMainWindow):
             return self.warn(f"Could not keep the capture: {err}")
         self.load_cal(str(dst / "device_calibration.json"))
         self.load_data(str(dst / "captures"))
+        self.pending_device = dst        # remembered by the check, so its result can be written back to this device
         self.mode_combo.setCurrentIndex(max(0, self.mode_combo.findData("check")))
         self.update_ready()
         if self.run_btn.isEnabled():
             self.run()
+            self.pending_device = None
         else:
+            self.pending_device = None
             self.pages.setCurrentIndex(0)
             self.warn(self.hint.text() or "The capture could not be checked.")
 
@@ -758,6 +764,12 @@ class MainWindow(QtWidgets.QMainWindow):
         row = QtWidgets.QHBoxLayout()
         row.addWidget(label("PCD units", "headline", wrap=False))
         row.addWidget(self.pair_units)
+        self.pair_report_btn = QtWidgets.QPushButton("View pairs")
+        self.pair_report_btn.setObjectName("link")
+        self.pair_report_btn.setCursor(QtCore.Qt.PointingHandCursor)
+        self.pair_report_btn.setEnabled(False)
+        self.pair_report_btn.clicked.connect(self.show_pair_report)
+        row.addWidget(self.pair_report_btn)
         row.addStretch(1)
         pl.addLayout(row)
         self.pair_status = label("", "muted")
@@ -846,6 +858,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.addWidget(self.processing)
         self.stack.addWidget(self.build_result())
         self.review = calibration_review.CalibrationReview()
+        self.review.changed.connect(self.on_review_changed)
         self.stack.addWidget(self.review)
         self.stack.addWidget(self.build_report())
         outer.addWidget(self.banner)
@@ -943,6 +956,10 @@ class MainWindow(QtWidgets.QMainWindow):
                            "optimiser proposed before validation. Values are shown as a change from the current calibration: rotations in "
                            "degrees, translations in millimetres, camera terms in pixels.", "footnote"))
         self.rlay.addWidget(self.table_frame)
+        self.use_card = use_result.UseResultCard()
+        self.use_card.check_again.connect(self.check_again)
+        self.use_card.changed.connect(self.refresh_runs)
+        self.rlay.addWidget(self.use_card)
         self.rlay.addStretch()
         return scroll
 
@@ -990,6 +1007,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table_frame.hide()
         self.visuals.hide()
         self.review.clear()
+        self.use_card.clear()
         self.cal_btn.hide()
 
     @staticmethod
@@ -1030,6 +1048,31 @@ class MainWindow(QtWidgets.QMainWindow):
         except (OSError, ValueError):
             return {}
 
+    def on_review_changed(self):
+        """A maintenance comparison started or finished: its options join (or leave) the Use the result list."""
+        folder = self.review.folder
+        if folder is not None and self.use_card.folder == folder:
+            ready = review_adapter.state(folder) == "ready"
+            self.use_card.set_review(review_adapter.load(folder) if ready else None)
+
+    def check_again(self):
+        """Back to New check with the calibration, captures and options of the check that is open."""
+        meta = self.meta_of(self.output) if self.output else {}
+        if meta.get("mode") == "scratch":
+            self.mode_combo.setCurrentIndex(max(0, self.mode_combo.findData("scratch")))
+        else:
+            self.mode_combo.setCurrentIndex(max(0, self.mode_combo.findData("check")))
+            if meta.get("calibration") and Path(meta["calibration"]).is_file():
+                self.load_cal(meta["calibration"])
+            index = self.strategy.findData(meta.get("strategy"))
+            if index >= 0:
+                self.strategy.setCurrentIndex(index)
+        if meta.get("captures") and Path(meta["captures"]).is_dir():
+            self.load_data(meta["captures"])
+        self.auto_review.setChecked(bool(meta.get("with_review")))
+        self.update_ready()
+        self.show_setup()
+
     def refresh_runs(self):
         current = str(self.output) if self.output else None
         self.runs.clear()
@@ -1056,6 +1099,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     status, color = self.history_cache[stamp]
                 except (OSError, ValueError, AttributeError):
                     pass
+            marks = []
+            if (f / use_result.USE_DIR / "accepted.json").exists():
+                marks.append("accepted")
+            if any(w.get("backup") for w in use_result.device_writes(f)):
+                marks.append("written to device")
+            if marks:
+                status += " · " + ", ".join(marks)
             try:
                 when = datetime.strptime(f.name[4:19], "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M")
             except ValueError:
@@ -1217,13 +1267,22 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 med = sorted(r["median_range_m"] for r in checked["reports"])[len(checked["reports"]) // 2]
                 text, color = f"{len(checked['captures'])} pairs checked · files readable · typical range {med:.2f} m", GOOD
+                if checked.get("warnings"):
+                    text += f" · {len(checked['warnings'])} notes in View pairs"
         except (ValueError, OSError) as err:
             text, color = str(err), BAD
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
         self.pair_status.setText(text)
         self.pair_status.setStyleSheet(f"color:{color};")
+        self.pair_report_btn.setEnabled(bool(self.data.get("paired_validation")))
         self.update_ready()
+
+    def show_pair_report(self):
+        from ui_widgets import pair_report_dialog
+        dialog = pair_report_dialog(self, self.data)
+        if dialog is not None:
+            dialog.exec_()
 
     def show_capture_format(self):
         from capture_help import CaptureFormatDialog
@@ -1291,7 +1350,9 @@ class MainWindow(QtWidgets.QMainWindow):
             strategy=None if scratch else self.strategy.currentData(),
             cloud_units=self.pair_units.currentData() if self.data and self.data["kind"] == "paired" else None,
             confirm_cloud_units=bool(self.data and self.data["kind"] == "paired" and self.units_confirm.isChecked()),
-            with_review=bool(self.auto_review.isChecked() and not scratch))), encoding="utf-8")
+            with_review=bool(self.auto_review.isChecked() and not scratch),
+            device_source=str(self.pending_device) if self.pending_device else None)), encoding="utf-8")
+        self.pending_device = None
         self.set_sources(self.output)
         self.log.clear()
         self.run_btn.setEnabled(False)
@@ -1306,6 +1367,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table_frame.hide()
         self.visuals.hide()
         self.review.clear()
+        self.use_card.clear()
         self.cal_btn.hide()
         self.tiles_clear()
         self.pager.select(0)
@@ -1398,6 +1460,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table_frame.hide()
         self.visuals.hide()
         self.review.clear()
+        self.use_card.clear()
         self.cal_btn.hide()
         self.tiles_clear()
 
@@ -1509,6 +1572,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.review.set_check(folder, r, meta, (title, color, SOFT[soft], meaning + (f" {reason}" if reason else "")))
         if not self.is_running():
             self.processing.show_result(folder, r)
+        ready = review_adapter.state(folder) == "ready"
+        self.use_card.set_check(folder, r, meta, review_adapter.load(folder) if ready else None,
+                                (title, color, SOFT[soft], meaning))
 
         md = self.result_file(folder).with_name("report.md")
         self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
