@@ -109,7 +109,8 @@
           "xyz_dtype": "int16"
         }
       ],
-      "evaluation_role": "development_v2"
+      "evaluation_role": "development_v2",
+      "pairing_role": "unassigned"
     },
     {
       "id": "enclosure_off_ten",
@@ -390,7 +391,8 @@
           "xyz_dtype": "int16"
         }
       ],
-      "evaluation_role": "development_v2"
+      "evaluation_role": "development_v2",
+      "pairing_role": "development"
     },
     {
       "id": "enclosure_on_twelve",
@@ -470,7 +472,8 @@
           "bytes": 5662199,
           "sha256": "bee5ec72c61e7a8a79e97ad840660b3db8966c8e0ae02f9fefb0e1166d63913e"
         }
-      ]
+      ],
+      "pairing_role": "evaluation"
     },
     {
       "id": "october_device_four",
@@ -565,7 +568,8 @@
           "bytes": 1490528,
           "sha256": "a02adb6be2065078a64acee1d28a87e9a78be28388fd1edae04dcb0c48b02728"
         }
-      ]
+      ],
+      "pairing_role": "evaluation"
     },
     {
       "id": "october_device_one",
@@ -640,7 +644,8 @@
           "bytes": 1768892,
           "sha256": "0baa89c28153c3dc88485eeade63e7f551dfc54246f8bac905abd1c4fbd95138"
         }
-      ]
+      ],
+      "pairing_role": "development"
     }
   ],
   "additional_available_caches": [],
@@ -652,5 +657,6 @@
     "Do not mix training and held-out points when fitting, selecting data or measuring observability.",
     "Historical simulated drift outputs are excluded."
   ],
-  "evaluation_roles_v2": "Fault diagnostics v2: development recordings were inspected while the method was designed; held_out_v2 recordings were not evaluated before docs/research/PREREGISTRATION_V2.md fixed the protocol."
+  "evaluation_roles_v2": "Fault diagnostics v2: development recordings were inspected while the method was designed; held_out_v2 recordings were not evaluated before docs/research/PREREGISTRATION_V2.md fixed the protocol.",
+  "pairing_roles_note": "Correspondence-front-end study (V3): development recordings were used to design and diagnose the pairing methods; evaluation recordings were not used in their design. Both pairs were examined earlier in V2/V3 for other purposes, so neither is untouched blind data. See docs/research/v3/PROTOCOL_CORRESPONDENCE.md."
 }

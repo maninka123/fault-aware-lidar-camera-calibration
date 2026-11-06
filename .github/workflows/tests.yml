@@ -2,6 +2,15 @@ name: Tests
 
 on: [push, pull_request]
 
+# Fast deterministic suites only. Recorded-data benchmarks and the V2/V3 evaluations need local recordings and run from
+# tools/ (see docs/research/v3/README.md); they are not part of CI.
+env:
+  QT_QPA_PLATFORM: offscreen
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -12,4 +21,26 @@ jobs:
           python-version: '3.11'
           cache: pip
       - run: python -m pip install -r requirements.txt
-      - run: python -m unittest discover -s "Calibration maintenance/code/tests" -v
+      - name: Maintenance tests
+        run: python -m unittest discover -s "Calibration maintenance/code/tests" -v
+      - name: Research tests (engine, V2, V3, desktop app widgets offscreen)
+        run: python -m unittest discover -s research_tests -v
+
+  linux:
+    # The application targets Windows; this job checks the numerical engine and the research code on Linux. It does not gate
+    # merges until it has been observed green, because Qt and OpenCV need system libraries that differ between runners.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: System libraries for OpenCV and Qt (offscreen)
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libfontconfig1 libdbus-1-3 fonts-dejavu-core
+      - run: python -m pip install -r requirements.txt
+      - name: Maintenance tests
+        run: python -m unittest discover -s "Calibration maintenance/code/tests" -v
+      - name: Research tests
+        run: python -m unittest discover -s research_tests -v
