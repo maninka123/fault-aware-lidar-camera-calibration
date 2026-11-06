@@ -19,3 +19,7 @@ devices.json
 
 # Local experiments include machine paths and private recording references.
 research_artifacts/
+
+# Recordings captured from devices, and machine-specific shortcuts.
+device_captures/
+*.lnk

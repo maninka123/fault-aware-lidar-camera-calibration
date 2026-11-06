@@ -11,6 +11,7 @@ device and never overwrites the input calibration.
 import json
 import os
 import re
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -24,6 +25,8 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "Calibration maintenance" / "code"))
 import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy loads)
 from ui_common import ManualDialog, np_to_pixmap  # noqa: E402
+import app_icon  # noqa: E402
+import result_visuals  # noqa: E402
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
 CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
@@ -166,6 +169,13 @@ PARAM_NAMES = {"wx": "Rotation x", "wy": "Rotation y", "wz": "Rotation z", "tx":
                "cx": "Principal point cx", "cy": "Principal point cy", "k1": "Distortion k1",
                "k2": "Distortion k2", "beam": "Beam offset"}
 
+# name -> (unit shown, multiplier from the stored value, decimals).  Stored values stay radians / metres.
+PARAM_UNITS = {"wx": ("deg", 180 / 3.141592653589793, 4), "wy": ("deg", 180 / 3.141592653589793, 4),
+               "wz": ("deg", 180 / 3.141592653589793, 4), "tx": ("mm", 1000.0, 2), "ty": ("mm", 1000.0, 2),
+               "tz": ("mm", 1000.0, 2), "fx": ("px", 1.0, 3), "fy": ("px", 1.0, 3), "cx": ("px", 1.0, 3),
+               "cy": ("px", 1.0, 3), "k1": ("", 1.0, 5), "k2": ("", 1.0, 5),
+               "beam": ("deg", 180 / 3.141592653589793, 4)}
+
 QSS = f"""
 * {{ font-family: {FONT}; font-size: 14px; color: {INK}; }}
 QMainWindow, QWidget#page {{ background: {BG}; }}
@@ -206,7 +216,8 @@ QPushButton#primary {{ background: {BLUE}; color: white; border-color: {BLUE}; m
     padding: 0 32px; font-size: 15px; }}
 QPushButton#primary:hover {{ background: #1686ff; border-color: #1686ff; }}
 QPushButton#primary:disabled {{ background: #a9c7ec; border-color: #a9c7ec; color: white; }}
-QPushButton#nav {{ min-height: 34px; padding: 0 12px; font-size: 14px; }}
+QPushButton#nav {{ min-height: 34px; padding: 0 8px; font-size: 13px; }}
+QPushButton#nav[active="true"] {{ background: {SOFT['blue']}; border-color: {BLUE}; color: {BLUE}; }}
 QPushButton#navprimary {{ background: {BLUE}; color: white; border-color: {BLUE}; min-height: 34px; padding: 0 12px; font-size: 14px; }}
 QPushButton#navprimary:hover {{ background: #1686ff; border-color: #1686ff; }}
 QPushButton#link {{ border: none; background: transparent; color: {BLUE}; padding: 0 4px; min-height: 24px; }}
@@ -232,6 +243,28 @@ QScrollBar:vertical {{ background: transparent; width: 10px; }}
 QScrollBar::handle:vertical {{ background: #c9c9d0; border-radius: 5px; min-height: 24px; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
 """
+
+
+def nav_icon(kind):
+    """Simple blue outline icons for the two sidebar buttons."""
+    pm = QtGui.QPixmap(40, 40)
+    pm.fill(QtCore.Qt.transparent)
+    p = QtGui.QPainter(pm)
+    p.setRenderHint(QtGui.QPainter.Antialiasing)
+    p.scale(2, 2)
+    p.setPen(QtGui.QPen(QtGui.QColor(BLUE), 1.7, QtCore.Qt.SolidLine, QtCore.Qt.RoundCap, QtCore.Qt.RoundJoin))
+    p.setBrush(QtCore.Qt.NoBrush)
+    if kind == "devices":  # a sensor: rounded body, lens, short stand
+        p.drawRoundedRect(QtCore.QRectF(2.5, 3.5, 15, 10), 2.5, 2.5)
+        p.drawEllipse(QtCore.QPointF(10, 8.5), 2.6, 2.6)
+        p.drawLine(QtCore.QPointF(10, 13.5), QtCore.QPointF(10, 16.5))
+        p.drawLine(QtCore.QPointF(6.5, 16.5), QtCore.QPointF(13.5, 16.5))
+    else:  # plus in a circle
+        p.drawEllipse(QtCore.QPointF(10, 10), 7.6, 7.6)
+        p.drawLine(QtCore.QPointF(10, 6.5), QtCore.QPointF(10, 13.5))
+        p.drawLine(QtCore.QPointF(6.5, 10), QtCore.QPointF(13.5, 10))
+    p.end()
+    return QtGui.QIcon(pm)
 
 
 def label(text="", name=None, wrap=True, rich=False):
@@ -503,17 +536,22 @@ class MainWindow(QtWidgets.QMainWindow):
         head.addWidget(logo)
         head.addWidget(label("<b style='font-size:17px'>Fault-aware<br>calibration</b>", rich=True), 1)
         sl.addLayout(head)
-        self.nav_open = QtWidgets.QPushButton("Open…")
-        self.nav_open.setObjectName("nav")
-        self.nav_open.setToolTip("Open a result folder (contains assessment.json)")
-        self.nav_open.clicked.connect(self.open_previous)
+        self.devices = None  # built on first use so that starting the app never probes the network
+        self.nav_dev = QtWidgets.QPushButton("Devices")
+        self.nav_dev.setToolTip("Connect to a sensor device, read its calibration and capture data to check")
+        self.nav_dev.clicked.connect(self.show_devices)
         self.nav_new = QtWidgets.QPushButton("New check")
-        self.nav_new.setObjectName("navprimary")
+        self.nav_new.setToolTip("Check a calibration using saved capture files")
         self.nav_new.clicked.connect(self.show_setup)
         nav = QtWidgets.QHBoxLayout()
         nav.setSpacing(8)
-        nav.addWidget(self.nav_open)
-        nav.addWidget(self.nav_new, 1)
+        for b, kind in ((self.nav_dev, "devices"), (self.nav_new, "check")):
+            b.setObjectName("nav")
+            b.setIconSize(QtCore.QSize(18, 18))
+            b.setCursor(QtCore.Qt.PointingHandCursor)
+            b.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+            b.setProperty("kind", kind)
+            nav.addWidget(b)
         sl.addLayout(nav)
         sl.addSpacing(6)
         sl.addWidget(label("CHECKS", "caps"))
@@ -528,6 +566,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pages = QtWidgets.QStackedWidget()
         self.pages.addWidget(self.build_setup())
         self.pages.addWidget(self.build_run_page())
+        self.pages.currentChanged.connect(self.sync_nav)
         central = QtWidgets.QWidget()
         central.setObjectName("page")
         cl = QtWidgets.QHBoxLayout(central)
@@ -539,6 +578,46 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_empty()
         self.refresh_runs()
         self.update_ready()
+        self.sync_nav()
+
+    # ---- sidebar navigation
+    def sync_nav(self, *_):
+        """Highlight the button of the page that is open, and keep the blue icons in step."""
+        page = self.pages.currentWidget()
+        for b, on in ((self.nav_dev, self.devices is not None and page is self.devices),
+                      (self.nav_new, self.pages.currentIndex() == 0)):
+            b.setProperty("active", on)
+            b.setIcon(nav_icon(b.property("kind")))
+            b.style().unpolish(b)
+            b.style().polish(b)
+
+    def show_devices(self):
+        if self.devices is None:
+            from device_ui import DevicePage
+            self.devices = DevicePage(self, choose_mode=False)
+            self.devices.run_ready.connect(self.device_captured)
+            self.pages.addWidget(self.devices)
+        self.runs.clearSelection()
+        self.pages.setCurrentWidget(self.devices)
+
+    def device_captured(self, name, _args):
+        """A device capture finished: keep it in this app's own folder, then run the fault-aware check on it."""
+        src = Path(core.RESULTS) / name
+        dst = ROOT / "device_captures" / name
+        try:
+            dst.parent.mkdir(exist_ok=True)
+            shutil.move(str(src), str(dst))  # moved, so the maintenance app's history is not touched
+        except OSError as err:
+            return self.warn(f"Could not keep the capture: {err}")
+        self.load_cal(str(dst / "device_calibration.json"))
+        self.load_data(str(dst / "captures"))
+        self.mode_combo.setCurrentIndex(max(0, self.mode_combo.findData("check")))
+        self.update_ready()
+        if self.run_btn.isEnabled():
+            self.run()
+        else:
+            self.pages.setCurrentIndex(0)
+            self.warn(self.hint.text() or "The capture could not be checked.")
 
     # ---- setup page (three numbered steps, like the maintenance app's New check)
     def suggestions(self):
@@ -701,24 +780,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @staticmethod
     def logo_pixmap(size):
-        scale = 2
-        pm = QtGui.QPixmap(size * scale, size * scale)
-        pm.fill(QtCore.Qt.transparent)
-        p = QtGui.QPainter(pm)
-        p.setRenderHint(QtGui.QPainter.Antialiasing)
-        p.setPen(QtCore.Qt.NoPen)
-        p.setBrush(QtGui.QColor(BLUE))
-        n = size * scale
-        p.drawRoundedRect(0, 0, n, n, n * 0.24, n * 0.24)
-        p.setBrush(QtGui.QColor("white"))
-        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.30, n * 0.30)
-        p.setBrush(QtGui.QColor(BLUE))
-        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.22, n * 0.22)
-        p.setBrush(QtGui.QColor("white"))
-        p.drawEllipse(QtCore.QPointF(n / 2, n / 2), n * 0.10, n * 0.10)
-        p.end()
-        pm.setDevicePixelRatio(scale)
-        return pm
+        return app_icon.logo_pixmap(size)
 
     def build_result(self):
         scroll = QtWidgets.QScrollArea()
@@ -753,11 +815,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tiles.setSpacing(16)
         self.rlay.addLayout(self.tiles)
 
+        self.visuals = result_visuals.ResultVisuals()
+        self.visuals.hide()
+        self.rlay.addWidget(self.visuals)
+
         self.table_frame, tl = frame("card", spacing=8)
         tl.addWidget(label("Parameter changes", "headline"))
-        self.table = QtWidgets.QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Parameter", "Data supports", "Accepted change", "Candidate change"])
-        self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.table = QtWidgets.QTableWidget(0, 5)
+        heads = ["Parameter", "Unit", "Data can see it", "Accepted change", "Candidate change"]
+        self.table.setHorizontalHeaderLabels(heads)
+        hh = self.table.horizontalHeader()
+        hh.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        for c, w in ((1, 80), (2, 150), (3, 170), (4, 170)):
+            hh.setSectionResizeMode(c, QtWidgets.QHeaderView.Fixed)
+            self.table.setColumnWidth(c, w)
+        hh.setHighlightSections(False)
+        for c, h in enumerate(heads):  # header text lines up with the column below it
+            it = self.table.horizontalHeaderItem(c)
+            it.setTextAlignment((QtCore.Qt.AlignLeft if c < 2 else QtCore.Qt.AlignRight if c > 2 else QtCore.Qt.AlignCenter)
+                                | QtCore.Qt.AlignVCenter)
         self.table.verticalHeader().hide()
         self.table.verticalHeader().setDefaultSectionSize(36)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -767,7 +843,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setMinimumHeight(36 * 14 + 40)
         tl.addWidget(self.table)
         tl.addWidget(label("“Accepted” is zero whenever the current calibration is kept. “Candidate” is what the "
-                           "optimiser proposed before validation.", "footnote"))
+                           "optimiser proposed before validation. Values are shown as a change from the current calibration: rotations in "
+                           "degrees, translations in millimetres, camera terms in pixels.", "footnote"))
         self.rlay.addWidget(self.table_frame)
         self.rlay.addStretch()
         return scroll
@@ -820,6 +897,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.b_body.setText("Start a new check, or choose an earlier one from the list.")
         self.cards_frame.hide()
         self.table_frame.hide()
+        self.visuals.hide()
         self.cal_btn.hide()
 
     @staticmethod
@@ -904,16 +982,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.fail("This check has no result. It may have stopped before finishing.")
         self.pages.setCurrentIndex(1)
-
-    def open_previous(self):
-        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose a result folder (contains assessment.json)",
-                                                       str(ROOT / "research_artifacts"))
-        if not d:
-            return
-        if self.result_file(d):
-            self.open_run(d)
-        else:
-            self.warn("That folder has no assessment.json.")
 
     def warn(self, msg):
         QtWidgets.QMessageBox.information(self, "Missing input", msg)
@@ -1120,6 +1188,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             "Estimating a new calibration, then checking it. This takes about 10 minutes.")
         self.cards_frame.hide()
         self.table_frame.hide()
+        self.visuals.hide()
         self.cal_btn.hide()
         self.tiles_clear()
         self.pager.select(0)
@@ -1188,6 +1257,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.b_body.setText(msg)
         self.cards_frame.hide()
         self.table_frame.hide()
+        self.visuals.hide()
         self.cal_btn.hide()
         self.tiles_clear()
 
@@ -1270,20 +1340,50 @@ class MainWindow(QtWidgets.QMainWindow):
         cand_u = diag.get("candidate_parameter_updates") or {}
         names = list(acc) or list(cand_u)
         self.table.setRowCount(len(names))
+        mono = QtGui.QFont("Cascadia Mono")
+        mono.setStyleHint(QtGui.QFont.Monospace)
+        mono.setPixelSize(13)
         for i, n in enumerate(names):
-            vals = [PARAM_NAMES.get(n, n), "●" if n in obs else "", fmt(acc.get(n)),
-                    fmt(cand_u.get(n)) if isinstance(cand_u, dict) else "–"]
-            for j, v in enumerate(vals):
-                it = QtWidgets.QTableWidgetItem(v)
-                if j:
-                    it.setTextAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            unit, scale, digits = PARAM_UNITS.get(n, ("", 1.0, 4))
+            seen = n in obs
+            cells = [(PARAM_NAMES.get(n, n), QtCore.Qt.AlignLeft, None),
+                     (unit, QtCore.Qt.AlignLeft, MUTED),
+                     ("● Seen" if seen else "Not seen", QtCore.Qt.AlignCenter, GOOD if seen else MUTED)]
+            for v in (acc.get(n), cand_u.get(n) if isinstance(cand_u, dict) else None):
+                if v is None:
+                    cells.append(("–", QtCore.Qt.AlignRight, MUTED))
+                elif abs(v) < 1e-12:
+                    cells.append(("0", QtCore.Qt.AlignRight, MUTED))
+                else:
+                    cells.append((f"{v * scale:+.{digits}f}", QtCore.Qt.AlignRight, None))
+            for j, (text, align, color) in enumerate(cells):
+                it = QtWidgets.QTableWidgetItem(text)
+                it.setTextAlignment(align | QtCore.Qt.AlignVCenter)
+                if j >= 3:
+                    it.setFont(mono)
+                if color:
+                    it.setForeground(QtGui.QColor(color))
                 self.table.setItem(i, j, it)
         self.table_frame.setVisible(bool(names))
+        self.visuals.set_result(folder, r, self.reference_calibration(meta))
 
         md = self.result_file(folder).with_name("report.md")
         self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
         self.folder_btn.setEnabled(True)
         self.pager.select(1)
+
+    @staticmethod
+    def reference_calibration(meta):
+        """The calibration this check started from, if its file is still there (None otherwise)."""
+        path = meta.get("calibration")
+        try:
+            if path and Path(path).suffix.lower() == ".json":
+                c = json.loads(Path(path).read_text(encoding="utf-8"))
+                if "intrinsics" in c and "extrinsics" in c:
+                    return c
+        except (OSError, ValueError):
+            pass
+        return None
 
     def option_card(self, key, loss, keep, diff, best, is_keep):
         f, lay = frame("optionBest" if best else "option", (16, 16, 16, 16), 8)
@@ -1320,10 +1420,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 def main():
+    if sys.platform == "win32":  # own taskbar identity so the icon shows instead of Python's
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("UNSW.FaultAwareCalibration")
+        except Exception:
+            pass
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
+    app.setWindowIcon(app_icon.app_icon())
     win = MainWindow()
+    app.aboutToQuit.connect(lambda: win.devices and win.devices.shutdown())
     if "--prefill" in sys.argv:  # python research_gui.py --prefill <calibration> <captures folder>
         k = sys.argv.index("--prefill")
         win.load_cal(sys.argv[k + 1])

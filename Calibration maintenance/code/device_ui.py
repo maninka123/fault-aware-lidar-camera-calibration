@@ -217,9 +217,11 @@ def note_label(text, fg=INK2, bg=BLUE_SOFT):
 class DevicePage(QtWidgets.QWidget):
     run_ready = QtCore.pyqtSignal(str, list)          # run name, script arguments
 
-    def __init__(self, main):
+    def __init__(self, main, choose_mode=True):
+        """choose_mode=False hides the maintenance "What to check" options (the Fault-aware app has its own check)."""
         super().__init__()
         self.main = main
+        self.choose_mode = choose_mode
         self.devices, self.status = [], {}
         self.link = self.current = self.params = None
         self.params_raw, self.params_source, self.topics, self.snap = None, "", {}, None
@@ -357,7 +359,7 @@ class DevicePage(QtWidgets.QWidget):
         clear(self.rl)
         c, cl = card("Connect to a device")
         cl.addWidget(label("Select a device, then connect to see its camera, LiDAR and calibration.", "muted", wrap=True))
-        cl.addWidget(label("Changes are applied only after you review and confirm them.", "small", wrap=True))
+        cl.addWidget(label("Changes are applied only after you review and confirm them." if self.choose_mode else "Read-only: this app never writes to a device.", "small", wrap=True))
         self.rl.addWidget(c)
         self.rl.addStretch(1)
 
@@ -496,7 +498,8 @@ class DevicePage(QtWidgets.QWidget):
         self.rl.addWidget(c)
 
         # check
-        c, cl = card("Check the calibration", "Capture a short sample, then check what needs updating.")
+        c, cl = card("Check the calibration", "Capture a short sample, then check what needs updating." if self.choose_mode else
+                     "Capture a short sample from this device, then check whether its calibration still holds.")
         g = QtWidgets.QGridLayout()
         g.setHorizontalSpacing(16)
         self.img_topic, self.cloud_topic = QtWidgets.QComboBox(), QtWidgets.QComboBox()
@@ -520,8 +523,12 @@ class DevicePage(QtWidgets.QWidget):
         g.addWidget(self.n_caps, 0, 3)
         g.addWidget(label("Seconds each", "muted"), 1, 2)
         g.addWidget(self.secs, 1, 3)
-        g.addWidget(label("What to check", "muted"), 2, 0)
+        mode_label = label("What to check", "muted")
+        g.addWidget(mode_label, 2, 0)
         g.addWidget(self.update_choice, 2, 1, 1, 3)
+        if not self.choose_mode:
+            mode_label.hide()
+            self.update_choice.hide()
         g.setColumnStretch(4, 1)
         cl.addLayout(g)
         self.go = button("Capture and check", "primary", self.capture_and_check)
