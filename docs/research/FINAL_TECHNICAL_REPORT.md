@@ -41,9 +41,9 @@ The initializer's inherited `RELIABLE` label is heuristic. The research output r
 | Mathematical method | [MATHEMATICAL_METHOD.md](MATHEMATICAL_METHOD.md), including actual thresholds, equations, failure rules and cost |
 | Prior-art comparison | [PAPER_TO_ALGORITHM.md](PAPER_TO_ALGORITHM.md), [PRIOR_ART_REVIEW.md](PRIOR_ART_REVIEW.md) |
 | Actual verification evidence | [VERIFICATION_RESULTS.md](VERIFICATION_RESULTS.md), [computed JSON](evaluation/results_summary.json) and [figure](evaluation/recorded_comparison.png) |
-| Ablation framework | `run_recorded_ablations.py`, `research_calibration/benchmark.py`, `research_configs/` |
+| Ablation framework | `tools/run_recorded_ablations.py`, `research_calibration/benchmark.py`, `research_configs/` |
 | Limits and contribution assessment | [NOVELTY_ASSESSMENT.md](NOVELTY_ASSESSMENT.md) |
-| Reproduction and API instructions | [RESEARCH_README.md](../../RESEARCH_README.md) |
+| Reproduction and API instructions | [RESEARCH_README.md](../RESEARCH_README.md) |
 | Decisions and debugging history | [IMPLEMENTATION_LOG.md](IMPLEMENTATION_LOG.md) |
 
 ## Publication assessment

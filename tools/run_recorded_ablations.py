@@ -1,4 +1,7 @@
 """Additional one-factor ablations, sequentially on the same recorded partitions."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # tools/ runs from the repository root's package
 import argparse
 from dataclasses import replace
 import json

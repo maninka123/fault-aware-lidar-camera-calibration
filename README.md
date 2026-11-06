@@ -14,14 +14,30 @@ Targetless camera–LiDAR calibration that decides **what** may have drifted, ch
 
 Built on the existing [Calibration optimizer](docs/ORIGINAL_APP_README.md) (edge extraction, targetless initialization, desktop app), which still works unchanged (`legacy` mode).
 
+## Repository layout
+
+| Folder / file | What it holds |
+|---|---|
+| `start_research_gui.bat` | Start the desktop app (fault-aware assessment) |
+| `start_app.bat` | Start the original calibration maintenance app |
+| `gui/` | The desktop app: window, Processing tab, result figures, Calibration review, icon |
+| `research_calibration/` | The assessment engine (observability, hypotheses, decision policy) |
+| `Calibration maintenance/` | The maintenance analysis and app that the review tab reuses |
+| `Targetless calibration/` | Edge extraction and the targetless initializer (read by both apps) |
+| `research_tests/` | Tests for the engine and the app |
+| `tools/` | Verification, ablation and report-building scripts |
+| `docs/` | Method, results, data formats and the research report |
+| `research_configs/`, `research_data/`, `examples/`, `multi_capture_calibration/` | Settings, dataset manifests, sample calibrations, the multi-capture helpers |
+| `research_artifacts/` | Your checks (created on first use; not committed) |
+
 ## Quick start
 
 Python 3.10/3.11, `pip install -r requirements.txt.
 
-Desktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Same inputs as the maintenance app: calibration as `.json`, exported/targetless `.txt`, or typed values; captures as raw `capture_*/rig_0.bag`, stacked `.npz`, or image + PCD pairs (with PCD units). Check an existing calibration or calibrate from scratch (raw/stacked); past checks are listed in the sidebar.
+Desktop app: double-click **start_research_gui.bat** (or `python gui/research_gui.py`). Same inputs as the maintenance app: calibration as `.json`, exported/targetless `.txt`, or typed values; captures as raw `capture_*/rig_0.bag`, stacked `.npz`, or image + PCD pairs (with PCD units). Check an existing calibration or calibrate from scratch (raw/stacked); past checks are listed in the sidebar.
 
 ```powershell
-python -B verify_research.py                     # 28 baseline + 37 research tests
+python -B tools/verify_research.py                     # 28 baseline + 37 research tests
 python -B -m research_calibration assess --calibration current.json --captures my_captures --output out/check
 python -B -m research_calibration benchmark --dataset enclosure_off_ten --output out/compare
 ```
@@ -32,7 +48,7 @@ result = assess(calibration="current.json", captures="my_captures", strategy="fa
 print(result.status, result.recommended_action)
 ```
 
-Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_variant`, `legacy_optimizer`, `legacy`. `calibrate_from_scratch` / `initialize` runs the targetless initializer. Details: [RESEARCH_README.md](RESEARCH_README.md), [data formats](docs/DATA_FORMAT.md).
+Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_variant`, `legacy_optimizer`, `legacy`. `calibrate_from_scratch` / `initialize` runs the targetless initializer. Details: [RESEARCH_README.md](docs/RESEARCH_README.md), [data formats](docs/DATA_FORMAT.md).
 
 ## Desktop app
 

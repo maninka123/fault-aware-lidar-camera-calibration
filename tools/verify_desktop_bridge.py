@@ -1,4 +1,7 @@
 """Optional offscreen, recorded-data test of the new desktop -> research CLI bridge."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # tools/ runs from the repository root's package
 import os
 os.environ['QT_QPA_PLATFORM']='offscreen'
 for name in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS'): os.environ[name]='1'
@@ -6,7 +9,7 @@ import json
 from pathlib import Path
 import sys
 from research_calibration.benchmark import dataset_paths
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'Calibration maintenance/code'))
 from PyQt5 import QtCore,QtWidgets
 from research_dialog import ResearchDialog

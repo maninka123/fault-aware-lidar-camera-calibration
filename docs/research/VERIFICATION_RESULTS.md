@@ -9,11 +9,11 @@ The result is a working offline research prototype. These tests do not establish
 From `Fault-aware calibration/repository`:
 
 ```powershell
-python -B verify_research.py --recorded enclosure_off_ten --output research_artifacts/reproduce
+python -B tools/verify_research.py --recorded enclosure_off_ten --output research_artifacts/reproduce
 python -B -m research_calibration benchmark --dataset creep_three --output research_artifacts/reproduce_small
-python -B run_recorded_ablations.py --output research_artifacts/reproduce_ablations
-python -B verify_desktop_bridge.py
-python -B verify_initialization.py --output research_artifacts/reproduce_initial --timeout 600
+python -B tools/run_recorded_ablations.py --output research_artifacts/reproduce_ablations
+python -B tools/verify_desktop_bridge.py
+python -B tools/verify_initialization.py --output research_artifacts/reproduce_initial --timeout 600
 python -B -m research_calibration assess --dataset creep_three --strategy legacy --output research_artifacts/reproduce_legacy
 ```
 
@@ -30,7 +30,7 @@ Local executed evidence:
 - `research_artifacts/guarded_initialization_v2/`: full inherited coarse search, refinement, outputs and watchdog samples; exit code 0.
 - `research_artifacts/initialization_scope_verified/`: final report scoping and conditional assessment replayed from that saved initial calibration, without repeating the coarse search.
 
-Local artifacts are ignored by Git because they contain machine paths. A durable computed summary is [evaluation/results_summary.json](evaluation/results_summary.json). It includes versions, source hashes, configurations, folds/outer outcomes and all aggregate comparisons. [build_research_summary.py](../../build_research_summary.py) rebuilds it and the figure from actual run JSON.
+Local artifacts are ignored by Git because they contain machine paths. A durable computed summary is [evaluation/results_summary.json](evaluation/results_summary.json). It includes versions, source hashes, configurations, folds/outer outcomes and all aggregate comparisons. [tools/build_research_summary.py](../../build_research_summary.py) rebuilds it and the figure from actual run JSON.
 
 ## Numerical and integration checks
 

@@ -23,7 +23,7 @@ for _n in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
     os.environ.setdefault(_n, "1")
 from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]      # the repository root (this file lives in gui/)
 # Reuse the maintenance app's calibration loading, suggestions, entry dialog and viewer.
 sys.path.insert(0, str(ROOT / "Calibration maintenance" / "code"))
 import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy loads)

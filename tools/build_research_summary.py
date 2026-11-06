@@ -1,4 +1,7 @@
 """Build an inspectable summary and scientific plot from actual benchmark JSON only."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # tools/ runs from the repository root's package
 from pathlib import Path
 import json
 from research_calibration.legacy_adapter import REPOSITORY

@@ -2,7 +2,7 @@
 
 An offline backend that compares constrained parameter changes, checks measurement support and retains the reference when evidence is insufficient. It reuses this repository's input readers, edge extractors and targetless geometry.
 
-**Current outcome:** verified numerical/backend prototype. Recorded tests do not establish a new physical-fault classifier, calibrated confidence or an A* contribution. See [results](docs/research/VERIFICATION_RESULTS.md) and [novelty assessment](docs/research/NOVELTY_ASSESSMENT.md).
+**Current outcome:** verified numerical/backend prototype. Recorded tests do not establish a new physical-fault classifier, calibrated confidence or an A* contribution. See [results](research/VERIFICATION_RESULTS.md) and [novelty assessment](research/NOVELTY_ASSESSMENT.md).
 
 The original `Calibration maintenance` project outside this checkout remains separate. This checkout is on `research/fault-aware-calibration`, based on `d0931889bf2f2a5ecb2cca9dd3c8a77c9fa8c763`. No commits were pushed and no device calibration was applied.
 
@@ -12,7 +12,7 @@ Use the existing Python 3.10/3.11 environment with the repository requirements. 
 
 ```powershell
 # Sequential legacy regression and research numerical tests
-python -B verify_research.py
+python -B tools/verify_research.py
 
 # Hash-check the accessible local recordings and assess the current calibration
 python -B -m research_calibration assess --dataset creep_three --output research_artifacts/my_check
@@ -24,7 +24,7 @@ python -B -m research_calibration benchmark --dataset enclosure_off_ten --output
 python -B -m research_calibration assess --calibration "current.json" --captures "my_captures" --output research_artifacts/my_data
 ```
 
-`research_data/manifest.json` references existing recordings; it does not distribute them. For another machine, supply explicit paths or update a local manifest and hashes. Supported input layouts are described in [DATA_FORMAT.md](docs/DATA_FORMAT.md). The research camera adapter currently implements the existing OpenCV equidistant projection, preserving fixed higher distortion terms. Other camera projection models require an adapter and separate verification.
+`research_data/manifest.json` references existing recordings; it does not distribute them. For another machine, supply explicit paths or update a local manifest and hashes. Supported input layouts are described in [DATA_FORMAT.md](DATA_FORMAT.md). The research camera adapter currently implements the existing OpenCV equidistant projection, preserving fixed higher distortion terms. Other camera projection models require an adapter and separate verification.
 
 ## Python interface
 
@@ -72,13 +72,13 @@ Start this checkout's `start_app.bat`. In **Manual check**, choose a calibration
 
 ```powershell
 # Optional offscreen real-recording test of desktop -> CLI execution
-python -B verify_desktop_bridge.py
+python -B tools/verify_desktop_bridge.py
 
 # Original maintenance pipeline in the isolated clone
 python -B -m research_calibration assess --dataset creep_three --strategy legacy --output research_artifacts/original_workflow
 ```
 
-`calibrate_from_scratch(captures=..., output=...)` and CLI `initialize` preserve the inherited targetless coarse initializer, then produce an initial-candidate assessment. It requires stacked NPZ inputs and cannot diagnose a historical fault without a reference. The complete three-capture route finished in about 189 seconds under the watchdog; accuracy remains unvalidated. Use `python -B verify_initialization.py --output research_artifacts/my_initial_run` for the guarded route. Inherited automatic mounting assumes a camera looking along LiDAR +x and tries four rolls.
+`calibrate_from_scratch(captures=..., output=...)` and CLI `initialize` preserve the inherited targetless coarse initializer, then produce an initial-candidate assessment. It requires stacked NPZ inputs and cannot diagnose a historical fault without a reference. The complete three-capture route finished in about 189 seconds under the watchdog; accuracy remains unvalidated. Use `python -B tools/verify_initialization.py --output research_artifacts/my_initial_run` for the guarded route. Inherited automatic mounting assumes a camera looking along LiDAR +x and tries four rolls.
 
 ## Resource use and interpretation
 
@@ -88,10 +88,10 @@ Reported error is capped nearest-image-edge distance on fixed test support, not 
 
 ## Research documents
 
-- [Final technical report](docs/research/FINAL_TECHNICAL_REPORT.md)
-- [Source and data audit](docs/research/CURRENT_SYSTEM_AUDIT.md)
-- [Paper-to-algorithm comparison](docs/research/PAPER_TO_ALGORITHM.md) and [prior-art review](docs/research/PRIOR_ART_REVIEW.md)
-- [Implemented equations and decision policy](docs/research/MATHEMATICAL_METHOD.md)
-- [Verification and recorded results](docs/research/VERIFICATION_RESULTS.md)
-- [Originality and remaining experiments](docs/research/NOVELTY_ASSESSMENT.md)
-- [Implementation log](docs/research/IMPLEMENTATION_LOG.md)
+- [Final technical report](research/FINAL_TECHNICAL_REPORT.md)
+- [Source and data audit](research/CURRENT_SYSTEM_AUDIT.md)
+- [Paper-to-algorithm comparison](research/PAPER_TO_ALGORITHM.md) and [prior-art review](research/PRIOR_ART_REVIEW.md)
+- [Implemented equations and decision policy](research/MATHEMATICAL_METHOD.md)
+- [Verification and recorded results](research/VERIFICATION_RESULTS.md)
+- [Originality and remaining experiments](research/NOVELTY_ASSESSMENT.md)
+- [Implementation log](research/IMPLEMENTATION_LOG.md)

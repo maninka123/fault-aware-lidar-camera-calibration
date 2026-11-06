@@ -16,7 +16,7 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]      # the repository root (this file lives in gui/)
 CODE = ROOT / "Calibration maintenance" / "code"
 if str(CODE) not in sys.path:
     sys.path.insert(0, str(CODE))

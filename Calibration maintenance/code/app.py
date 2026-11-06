@@ -364,11 +364,11 @@ class SetupPage(QtWidgets.QWidget):
     def open_research(self):
         """Open the fault-aware assessment window (research_gui.py) with the chosen inputs."""
         import subprocess
-        gui = Path(__file__).resolve().parents[2] / 'research_gui.py'
+        gui = Path(__file__).resolve().parents[2] / 'gui' / 'research_gui.py'
         exe = Path(sys.executable)
         if exe.name.lower() == 'python.exe' and exe.with_name('pythonw.exe').exists():
             exe = exe.with_name('pythonw.exe')
-        subprocess.Popen([str(exe), str(gui), '--prefill', self.cal['path'], self.data['path']], cwd=str(gui.parent))
+        subprocess.Popen([str(exe), str(gui), '--prefill', self.cal['path'], self.data['path']], cwd=str(gui.parents[1]))
 
     def prefill(self, cal, data, device=None, cloud_units='m', allow_unusual_units=False):
         if cal and Path(cal).exists():

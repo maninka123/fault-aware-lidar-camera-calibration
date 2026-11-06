@@ -1,4 +1,7 @@
 """Watchdog for one inherited initializer run; controls only its own child process."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # tools/ runs from the repository root's package
 import argparse
 import json
 import os
@@ -8,7 +11,7 @@ import sys
 import time
 from research_calibration.resources import check_resources,memory_status
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
 
 
 def main():

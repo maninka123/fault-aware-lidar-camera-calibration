@@ -1,6 +1,6 @@
 # Capture inputs
 
-For the new offline research backend, see [RESEARCH_README.md](../RESEARCH_README.md). Existing readers are reused; stacked recordings are the inputs exercised in the recorded research comparisons. The research desktop button currently enables stacked captures only. Research results use a predeclared camera domain and separate fitting/test captures; imported files are never modified.
+For the new offline research backend, see [RESEARCH_README.md](RESEARCH_README.md). Existing readers are reused; stacked recordings are the inputs exercised in the recorded research comparisons. The research desktop button currently enables stacked captures only. Research results use a predeclared camera domain and separate fitting/test captures; imported files are never modified.
 
 In **New captures**, click **Capture format** for a visual guide, a copyable folder layout and the stacked-array fields.
 

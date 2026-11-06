@@ -14,6 +14,7 @@ from unittest import mock
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "gui"))
 
 import review_adapter as ra  # noqa: E402
 from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402

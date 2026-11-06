@@ -1,4 +1,7 @@
 """Sequential verification with conservative per-process threads and saved evidence."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # tools/ runs from the repository root's package
 import argparse
 from datetime import datetime,timezone
 import json
@@ -8,7 +11,7 @@ import subprocess
 import sys
 import time
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[1]
 
 
 def main():
