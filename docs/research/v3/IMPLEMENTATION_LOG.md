@@ -23,3 +23,29 @@ Work date: 6 November 2026. This log records development decisions, including ne
 10. Added a hash-checked, role-checked exact-correspondence simulator adapter and documented the paired image/PCD end-to-end interface. No simulator, renderer, new sensor model or hardware access is added. Independent simulated/physical fault validation is still missing.
 
 Final corrections, verification counts and measured comparisons are recorded in [experimental results](EXPERIMENTAL_RESULTS.md), [V2/V3 comparison](V2_V3_COMPARISON.md) and [readiness assessment](RESEARCH_READINESS.md). Negative outcomes are retained; code volume and oracle accuracy do not establish a stronger real-sensor calibration method.
+
+
+## Improved V3 (correspondence study), 6 November 2026
+
+11. **Audit.** Pulled `research/fault-diagnostics-v3` at `edb1727`: V3 package, tests, tools and documents all present but the experimental-results document referenced by the README was missing and nothing was
+    committed on the branch beyond the overlay fix. Verified 250 research and 56 maintenance tests, then wrote that document from the saved artifacts and committed the V3 work.
+12. **Root-cause experiments** (`tools/analyze_attribution_root_cause_v3.py`, development recordings only). Isolated the pairing front end by feeding the unchanged V3 inference with (a) the anchor's own pairs as a control and (b) each
+    front end's pairs. Result: 15/28 exact with control pairs against 4 to 5/28 with 15 to 19 wrong labels for nearest and oriented pairing. Pair identity measured (57 to 62 %, falling with the diagnosed error), optimizer recovery
+    measured (it does not recover the truth even for the right group; its best fit beats the anchor in 10/14), signature angles measured. See [ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md).
+13. **`correspondence.py`**: mixture responsibility over distinct edge lines, z-buffer visibility, cell/range balancing, optional unique-within-radius rule, identity accuracy and signed rows. Deterministic tests exposed two defects in the
+    first version (edge samples competing for responsibility; points of the chosen edge counted as rivals). Both were fixed before any final number was recorded; the numbers from the defective version were discarded.
+14. **`joint_estimation.py`**: annealed alternating pairing/calibration estimation with a truncated-SVD identifiable-direction step. A ridge step diverged on a correct calibration (1.2 degrees, 5.5 cm, 5.6 px); the truncated step is stable
+    (0.33 degree, 7.2 cm, 1.0 px) but pairs chosen at the estimate are circular and caused false alarms. Negative result, kept with its stability test.
+15. **Radius sweep and ablations** on the development pair chose nothing: the unique-pair rule did not help; the default pairing is the responsibility + visibility + balancing configuration with the constants declared in
+    `CorrespondenceConfig`, chosen before any evaluation recording was run. Design constants were not tuned on the evaluation recordings.
+16. **Frozen protocol** ([PROTOCOL_CORRESPONDENCE.md](PROTOCOL_CORRESPONDENCE.md)) committed at `e8beb0e` with manifest roles (`pairing_role`), then the evaluation was run once; the original recorded V3 pipeline was run on the same trials.
+    Outcome and the predeclared expectations are in EXPERIMENTAL_RESULTS.md sections 10 to 12.
+17. **CI.** The workflow now runs the research suite on Windows (gating, one process per module) and on Linux (non-gating until observed green); the single-process `unittest discover` is kept as an informational step. In a clean checkout (no saved
+    checks) the single-process run crashed natively (Windows heap corruption 0xc0000374) while constructing the desktop window in a later test. Bisect: the earlier commits (214 and 250 tests) pass in clean checkouts, adding the new numerical test
+    file triggers it, a control with equally heavy existing tests does not, process-heap validation after every new numerical call is clean, and repeated window creation alone is clean. The cause is **not resolved**; it looks like a latent
+    fault in desktop-window test setup/teardown that is exposed by allocation layout. The isolated runner (`tools/run_research_tests.py`) passes all 264 tests in a clean checkout (51 skipped: they need saved local checks). Temporary clean
+    worktrees `C:\fa_ci_check`, `C:\fa_ci_a`, `C:\fa_ci_b` were created for this and were not removed (the cleanup command was refused by a safety check); delete them with `git worktree remove --force`.
+18. **Not done, and why.** (Part C) physically constrained rival alternatives: no justified bound on a fault exists in the data or the reference calibrations (their standard deviations describe the reference estimate, not drift); the unbounded
+    result and its limitation are retained. (Part D) active selection: the earlier benchmark offers one dominant candidate that every information selector picks first, so it cannot separate the finite-effect objective from D/E; no new objective was
+    developed, and the established D/E/contrast selectors are the recommended simple choice. No experiment with a pool designed to separate them was run. (Temporal) the V2 monitor is reused unchanged; no new temporal evidence was produced. (Gate 5)
+    independent simulated or physical validation: no new data exists.

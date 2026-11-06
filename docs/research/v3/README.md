@@ -31,3 +31,11 @@ All existing recordings, including V2's historical held-out recordings, are V3 d
 | `UPDATE_CANDIDATE_VALIDATED` | A uniquely diagnosed, selectively fitted offline candidate passes directional support, conditional uncertainty and disjoint reserved evidence checks. Hardware writing remains unauthorized. |
 
 Data requests are returned in `recommended_observations`; they do not relabel an unresolved detected change as no change. Compatible nested models remain reported alongside minimal explanations. For the recorded default, geometric analysis is a veto/explanation layer, because experiments did not support promoting conditional local separability into unique physical attribution.
+
+
+## Improved V3: correspondence study
+
+Start with [ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md) and [PROTOCOL_CORRESPONDENCE.md](PROTOCOL_CORRESPONDENCE.md). New code: `correspondence.py` (pairing with responsibility, visibility, balancing) and `joint_estimation.py`
+(alternating estimation, a documented negative result, plus `diagnose_pairs`). Tools: `tools/analyze_attribution_root_cause_v3.py`, `tools/evaluate_pairing_v3.py`, `tools/run_research_tests.py` (one process per test module; use it
+instead of a single `unittest discover` run in a clean checkout, see IMPLEMENTATION_LOG.md item 17). The summary of what this achieved is in [RESEARCH_READINESS.md](RESEARCH_READINESS.md): safer pairing and a measured explanation of
+why recorded attribution fails; exact recorded attribution is not solved.

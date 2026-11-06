@@ -231,3 +231,67 @@ The ambiguity report can rank already observed comparison captures using rival e
 Any greedy maximin selection is a local finite-pool heuristic. It needs matched random, feature-count, D/E and existing V2-contrast baselines, matched capture/fit budgets and runtime measurement. If pair directions are taken from an estimated effect, selection is conditional on that estimate; candidate quality and acquisition costs must be declared. Image/depth bin scores alone do not prove that a proposed viewpoint or accumulation window will solve the ambiguity. Longer accumulation can also increase correlation and motion artifacts.
 
 V3 reuses the V2 clipped sequential detector rather than inventing another CUSUM. The recorded API returns the unchanged V2 persistence output; geometry-based diagnosis does not silently replace its signal or thresholds. A separate adapter can supply a quality-conditioned signal, but that remains an explicitly separate experiment. No historical reference is known nominal merely because it is first in time. The short, static, dependent recordings do not establish operational false-alarm control, average run length or robustness to real timing failures. Any unchanged temporal ablation is identified as unchanged rather than claimed as a new contribution.
+
+
+## 8. Correspondence-aware signed diagnosis (improved V3)
+
+Sections 1 to 7 take the pairing of LiDAR points with image edges as given. On recorded data it is not: see
+[ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md). This section states what is added, what is argued and what was only observed.
+
+### 8.1 Signed residual, observation model and what a wrong pair does
+
+For LiDAR point X_i paired with image edge point q_i of unit normal n_i, the signed residual at calibration p is
+
+    r_i(p) = n_i^T (pi(p; X_i) - q_i).
+
+If p* is the true calibration and the pair is correct, r_i(p*) = eps_i (matching noise). At p = p* "plus" delta (a fault delta, left retraction as in
+section 1) the local model is r_i(p) = n_i^T J_i delta + eps_i, with J_i the pixel Jacobian of section 2. Writing a_i = n_i^T J_i diag(s) (s the physical
+scales) and y_i = -r_i, the correction is the least-squares solution of y = A b, which is exactly the regression `infer_signatures` fits (cross-validated by
+capture, with nuisance shared and rival refits). A pair that is wrong adds w_i = n_i^T (q_i - q_i^true) to r_i, so
+
+    b_hat = b* + (A^T W A)^+ A^T W w.
+
+The bias term does not shrink with more rows or more captures of the same static scene (w_i is repeatable), and it is a smooth field because
+neighbouring points share the same wrong neighbouring edge. That is why false alarms grow with the number of rows for nearest-edge pairing, and why
+V3's correct signatures attribute the wrong group confidently: A is right, y is wrong. The measured share of wrong pairs is 38 to 43 % (development pair).
+
+### 8.2 Responsibility, distinct edge lines, visibility, balance
+
+For point i with candidate edge elements k inside the gate, c_ik = d_ik^2 / (2 sigma^2) + a_ik^2 / (2 sigma_a^2) (normal distance d, orientation angle a), and an
+outlier cost c_out. The posterior responsibility (a Gaussian-mixture E-step, not a calibrated probability)
+
+    r_ik = exp(-c_ik) / (sum over DISTINCT k' of exp(-c_ik') + exp(-c_out)).
+
+Two image-edge samples of one physical edge have the same normal distance and must not compete; candidates are therefore reduced to distinct normal-distance
+classes (separation 3 px) before normalising. Without this the true edge's responsibility is divided among its own samples (a defect found and fixed during
+this work). Row variance is sigma_0^2 / max(w_i, 0.05) with w_i = r_ik times a cell/range balancing factor. Visibility is a z-buffer test: a point is
+dropped if a nearer LiDAR return lies within 2 px. Balancing caps the total weight of an image-cell x range-bin at 1.5 times the median cell. All three are
+established ingredients (mixture correspondence models, z-buffering, stratified weighting); see NOVELTY_COMPARISON.md.
+
+### 8.3 Unique-pair rule (negative result)
+
+A pair is kept only if no other compatible edge line (normal distance differing by more than 3 px) lies within a radius R, so that the pairing is the same
+for every calibration error up to R. This raises pair identity (64 to 71 %) but removes most rows and did not improve the diagnosis (ROOT_CAUSE_ANALYSIS.md).
+
+### 8.4 Why pairing at the estimate is circular (negative result)
+
+Alternating the pairing and the calibration (annealed EM-ICP, `joint_estimation.em_refine`) yields pairs for which r_i(p_hat) is small by construction.
+Evaluating the same pairs at the calibration under diagnosis p gives r_i(p) = -a_i (p_hat - p) + eps_i, so the signed inference explains p_hat - p,
+not delta. p_hat - p is non-zero whenever the optimum of the pairing objective is not the truth (the objective is biased: its value at the best fit is lower
+than at the anchor in 10 of 14 development conditions), so a correct calibration is flagged as drifted. This is an argument for the observed 3 of 3 false
+alarms; it is not a proof that no estimator-based pairing can work. A truncated-SVD step was needed even to keep the estimate stable: directions are
+moved only if sigma_s / s_k <= tau (implied standard deviation under independent rows, which is optimistic for static captures), with tau = 1 normalized
+unit.
+
+### 8.5 Recovery and acceptance contract (offline)
+
+After an alarm, the correction over the groups in the minimal ambiguity set (or the unique hypothesis) plus the beam nuisance is the truncated-SVD
+least-squares solution of section 8.1 on whitened rows. An update is **accepted** only for a unique diagnosis whose training-capture correction improves
+the V2 decoy-referenced edge contrast by more than 0.01 on every reserved capture. Hardware writes are never authorized. The recovery figure reported is the
+median projection error of the captures' LiDAR points against the anchor before and after, a perturbation-recovery proxy, not physical error.
+
+### 8.6 What is not derived
+
+No claim of calibrated covariance, false-alarm probability or acceptance risk. Rows within a capture and captures within a recording are dependent; whitening
+by the declared variance treats them as independent. Unbounded rival coefficients remain (Part C of the V3.1 brief): no physically justified bound on a
+fault exists in the data, so none was imposed.

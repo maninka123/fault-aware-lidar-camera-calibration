@@ -76,3 +76,30 @@ Sources: [fresh optimizer experiment](results/legacy_optimizer_finite_effect.md)
 The historical V2 result is reproduced as 29/48 detections, 0/54 no-change alarms, 1/48 exact attribution and 3/102 wrong attribution; its sequential monitor reports 17/24 persistent alarms and 0/18 temporary alarms. Different recordings/replicate counts and the changed development role prevent interpreting 27/32 versus 29/48 as an independent V3 improvement. The existing sequential monitor is reused; no improved V3 temporal detection rate is established.
 
 The data support an executable, more explicit geometric ambiguity analysis and a conservative attribution contract. They do not establish better exact real-sensor fault attribution, accepted physical update accuracy, publication novelty or independent validation readiness.
+
+
+## Four-way technical comparison (added with the correspondence work)
+
+Sources: [matched evaluation on the evaluation recordings](results/pairing_evaluation_frozen_protocol.md) and
+[original V3 on the same trials](results/original_v3_pipeline_matched_evaluation_recordings.md); 28 injected changes and 4 nominal trials (nuisance trials only
+for the signed pairing rows). All counts dependent; no physical ground truth.
+
+| Property | Production policy (research engine baseline; the maintenance app was not scored on these trials) | Fault Diagnostics V2 | Initial V3 | Improved V3 (signed diagnosis, geometric pairing) |
+|---|---|---|---|---|
+| Decision basis | Maintenance comparison of update options on held-out regions | Chance-referenced edge contrast and replication on held-out captures | V2 evidence plus geometric veto and signature explanation | Signed point-to-line residuals of responsibility-weighted pairs, cross-validated by capture |
+| Pairing | Nearest oriented edge | Nearest oriented edge | Nearest oriented edge | Mixture responsibility over distinct edge lines, z-buffer visibility, cell/range balancing |
+| No-change alarms (nominal, 4 trials) | 2/4 | 0/4 | 0/4 | 0/4 (and 0/12 including nuisance) |
+| Detections of 28 injected changes | production policy 10/28 | 16/28 (26/28 without the harmful intensity rule) | 26/28 | 28/28 |
+| Exact attribution | 1/28 (production policy) | 0/28 | 0/28 | 1/28 |
+| Wrong unique attribution (of 32) | 11 (production policy) | 2 | 2 | 0 |
+| Ambiguity sets containing the truth | not available | 11 of 14 | 19 of 24 | 21 of 27 (mean set size 2.8 of 7) |
+| Recovery error after an alarmed correction | not measured | not measured | not measured | 1.29 px (from 2.05 px) |
+| Accepted updates on drift / no-change | outer test in the engine (not scored here) | not applicable | not exercised | 1/28 and 0/12 |
+| Hardware writes from the experimental path | existing, user-confirmed (app) | none | none | none |
+| Compute per trial | about 5 to 7 s (engine fits) | about 7 s (shared engine fits) | about 7 s plus 0.05 s | 0.08 s (no optimizer fits) |
+
+**What each change actually bought.** V2 vs production: removing nearest-edge density bias reduced false alarms and wrong attributions (V2 evaluation). Initial V3 vs V2: **no
+improvement of exact attribution**; the detection gain came from removing V2's harmful intensity-agreement rule, not from geometry. Improved V3 vs initial V3: pairing confidence
+gives a safer front end (0 alarms and 0 wrong unique labels in these trials) at the same exact attribution, plus a lower compute cost and a measurable (modest) recovery; its
+confidence weighting, not its visibility or balancing steps, produces the effect. The improvement over the original recorded V3 is one detection pair and two fewer wrong labels
+on 32 trials and should not be read as established.

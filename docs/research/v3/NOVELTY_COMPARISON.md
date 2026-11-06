@@ -63,3 +63,21 @@ Nested hypotheses cannot all be mutually separated: a true pure-R effect belongs
 ## Remaining review limits
 
 The full OCaMo manuscript was recovered and inspected in this round. Shen et al.'s full method, UniCalib's full PDF and the active-FDI sensor-selection paper's full derivation were not accessed. Fouladirad–Nikiforov's linked full PDF timed out; only publisher introduction/abstract were reviewed. The review is sufficient to reject broad novelty claims, not sufficient to certify the absence of a closer formulation. Independent physical validation and evidence across sensor families remain essential.
+
+
+## Correspondence work: what is and is not new
+
+| Component | Closest established work | Assessment |
+|---|---|---|
+| Mixture responsibility over candidate edges with an outlier component | EM-ICP (Granger and Pennec), robust point matching (Chui and Rangarajan), coherent point drift (Myronenko and Song), Gaussian-mixture registration | **Established.** Not a contribution. |
+| z-buffer visibility test | Standard rendering; visibility-aware calibration (Tong et al. 2026 abstract, P2O-Calib, Galibr) | **Established.** |
+| Cell/range balancing | Stratified weighting in EdgeCalib and EdO-LCEC style scene-conditioned weighting | **Established in spirit.** |
+| Truncated-SVD step in identifiable directions | OA-LICalib, Fu et al., Dunia and Qin | **Established.** |
+| Signed-residual attribution with cross-validated rival refits | Matched-subspace detection, Fouladirad and Nikiforov invariant tests | **Established** (V3 reuses it). |
+| An experiment that holds the inference fixed and swaps only the pairing, including a reference-pair control, on recorded sensor geometry, with pair identity as a function of the error being diagnosed | Not found in the reviewed calibration-monitoring papers | **Candidate contribution as an empirical analysis**, not a method. Absence from the review does not prove novelty. |
+
+The measured finding that identity of nearest-edge pairs falls from 100 % at zero error to 30 to 50 % as the diagnosed error grows, and that this alone separates 15/28 exact attribution (correct pairs) from 4 to 5/28 with 15 to 19 wrong
+labels (nearest pairs) under an unchanged inference, is the paper-worthy part. The new pairing front end is a safety improvement built from established components and does not improve exact attribution. The estimator-circularity
+argument (8.4) is a plausible explanation of an observed failure, not a theorem.
+
+No physical or independent-session evidence supports any of this; novelty over closer unreviewed work is not certified.

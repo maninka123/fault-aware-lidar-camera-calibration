@@ -41,3 +41,26 @@ The matched diagnostic comparison does not exercise V3 candidate acceptance; zer
 5. Multiple rigs, lenses and the separate simulator's five sensor profiles, with renderer/profile provenance, true visibility, independent scene/session splits and labels withheld from fitting and capture utility.
 
 Freeze these recording-level development/calibration/test partitions before inspecting final labels. Report exact attribution, incorrect attribution, ambiguity size/truth containment, selective coverage, actual parameter errors and accepted-update errors together. A method that only abstains more must be described as that tradeoff. See [simulator integration](SIMULATOR_INTEGRATION.md), [failure analysis](FAILURE_ANALYSIS.md), [selection results](ACTIVE_SELECTION_RESULTS.md) and [V2/V3 comparison](V2_V3_COMPARISON.md).
+
+
+## Update after the correspondence study (improved V3)
+
+**Status: experimental, diagnostically stronger and safer, but attribution is still not established on recorded sensor data. Not publication-ready.**
+
+What changed: a root-cause analysis with numbers (pairing identity 57 to 62 %, falling with the diagnosed error), a responsibility-weighted pairing front end with a frozen-protocol
+evaluation, a signed-residual diagnosis path with recovery and acceptance measurements, negative results for alternating estimation and a unique-pair rule, CI that runs the
+research suite, and a per-module test runner.
+
+What the evidence supports: on two evaluation recordings (28 injected changes, 12 no-change trials) the new front end raised 0 no-change alarms (existing front ends 6 to 8 of 12), made 0 wrong
+unique attributions (existing 3 to 9), and detected 28 of 28 changes. It gives **1 of 28** exact attributions against 17 of 28 with correct pairs.
+
+What contradicts a stronger claim: exact attribution did not improve over the original recorded V3 (0 to 1 of 28); the improvement is abstention-driven safety; recovered error is 1.29 px against a 0.19 px control; only 1 of
+28 updates passed acceptance; visibility and balancing showed no benefit; the control is a proxy from the anchor, not verified correspondences; both pairs of recordings were examined earlier; no physical truth exists.
+
+Merge safety as an experimental, non-default feature: the V3 package, tools, tests and documents are additive. Changes to existing modules are an optional read-only fold observer in `assess` (default off), an optional
+reflectivity-sample argument of the capture loader (default off), a fix for an empty-basis LAPACK failure, a `diagnose`/`diagnose-v3` command, one application file (`gui/result_visuals.py`, the overlay alignment banner) and CI. No production decision
+rule, hardware path or maintenance code is changed. Remaining merge risks: the desktop-window native crash noted in the CI section (pre-existing, unresolved) and the Linux CI job being unverified.
+
+Most valuable next experiments (unchanged in kind, sharpened by this study): independent correspondence information, since pairing at the current estimate cannot be both unbiased and informative. Options, in order of
+cost: fiducial or calibration-target frames inserted into otherwise natural sessions (the Nov 5 board recordings already contain boards); a nominal-period correspondence map re-used across later sessions; multi-view structure;
+then physical sessions with independently measured mount rotations, translations and intrinsics.

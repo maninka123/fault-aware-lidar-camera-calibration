@@ -119,3 +119,13 @@ The numerical experiments support correct local signatures and explain a control
 Priority should be: obtain independently checked correspondence/geometry evidence; measure retained normal/depth/bearing diversity; validate candidate and rival effects nonlinearly within justified parameter domains; and collect independent, measured physical fault/nuisance sessions. The current four recordings are spent development data and their optimized anchors are not physical truth. Small semi-synthetic perturbations test a consistent software question, but cannot certify the cause of a real sensor change.
 
 Until those gaps are addressed, V3 should remain an explanatory experimental sidecar with explicit ambiguity and conservative candidate acceptance. Additional thresholds, another sequential detector or more code around the same biased effects would not resolve the principal evidence gap.
+
+
+## Update: the "next discriminating experiment" was run
+
+Section 1 above named the experiment that would separate front-end correspondence bias from the geometric inference itself. It was run with the anchor's own pairs as a
+stand-in for known correspondences ([ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md)). Result: the same signed-residual inference attributes the injected group exactly in 15 of 28
+development trials, returns an ambiguity set containing it in 12 more, and raises no nominal false alarm, while the existing pairings give 4 to 5 exact and 15 to 19 wrong unique labels.
+Hypotheses 1, 3, 5 and 7 of the earlier list are confirmed with numbers (wrong pairing; fits that do not recover the truth; objective bias; faithful explanation of a wrong field).
+The one-normal information limit (section 2) is not the dominant cause on these scenes: with one normal per point and correct pairs, translation and focal changes are identified.
+Section 6 (unbounded rivals) was not tested; no justified fault bound exists. Section 4's association stability is now quantified (identity falls from 100 % to 30 to 50 % as the error grows).
