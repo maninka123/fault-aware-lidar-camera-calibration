@@ -8,7 +8,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 import appcore as core
 
-from ui_common import BLUE, BLUE_SOFT, LINE, MUTED, button, hbox, label
+from ui_common import BLUE, BLUE_SOFT, LINE, MUTED, button, hbox, label, open_path
 from option_help import OPTIONS, OptionHelpDialog
 from update_options import rmse_changes
 
@@ -168,10 +168,8 @@ class SourceLocation(QtWidgets.QFrame):
 
     def open(self):
         if self.path and self.path.exists():
-            try:
-                os.startfile(str(self.path))
-            except OSError as error:
-                QtWidgets.QMessageBox.information(self, 'Could not open', str(error))
+            if not open_path(self.path):
+                QtWidgets.QMessageBox.information(self, 'Could not open', f'No program could open {self.path}.')
 
 
 class SourceStrip(QtWidgets.QWidget):

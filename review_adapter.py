@@ -64,12 +64,16 @@ def read_json(path):
 
 
 # ------------------------------------------------------------------ can a comparison be run?
-def inputs_for(meta):
+def inputs_for(meta, check=None):
     """(inputs, reason). inputs: calibration, captures, cloud_units; reason is None when a comparison can be run.
 
     Uses only what the check saved about itself; a check that did not start from an existing calibration, or
     whose files have moved, is reported as unavailable instead of guessing."""
     meta = meta or {}
+    if check is not None and too_deep(check):
+        return None, ("This check sits in a folder that is too deep for Windows to hold the comparison's files "
+                      f"({len(str(check))} characters before they start; the limit is 260). Move the repository to a shorter "
+                      "path such as C:\\FaultAware, or enable long paths in Windows.")
     if meta.get("mode") == "scratch":
         return None, "This check calibrated from scratch, so there is no existing calibration to compare an update against."
     cal, cap = meta.get("calibration"), meta.get("captures")
@@ -92,6 +96,44 @@ def inputs_for(meta):
     return dict(calibration=str(cal), captures=str(cap), cloud_units=units or "m", confirm_units=bool(meta.get("confirm_cloud_units"))), None
 
 
+SAVED_PATH_RESERVE = len("\\" + REVIEW_DIR + "\\" + RUN_NAME + "\\stages\\image_edges_185316_547419.png") + 12
+
+
+def too_deep(check):
+    """True when the longest file the review saves into this check would pass Windows' 260 character limit."""
+    return os.name == "nt" and len(str(Path(check))) + SAVED_PATH_RESERVE > 259
+
+
+def _pid_alive(pid):
+    """Whether a process with this id is running (never signals it: os.kill(pid, 0) would terminate it on Windows)."""
+    try:
+        pid = int(pid)
+    except (TypeError, ValueError):
+        return False
+    if os.name == "nt":
+        import ctypes
+        handle = ctypes.windll.kernel32.OpenProcess(0x00100000, False, pid)   # SYNCHRONIZE
+        if not handle:
+            return False
+        try:
+            return ctypes.windll.kernel32.WaitForSingleObject(handle, 0) == 0x102   # WAIT_TIMEOUT: still running
+        finally:
+            ctypes.windll.kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def lock_holder(check):
+    """The id of another live process that is running this check's comparison, or None."""
+    info = read_json(work_root(check) / "lock.json")
+    if info and info.get("pid") != os.getpid() and _pid_alive(info.get("pid")):
+        return info.get("pid")
+    return None
+
+
 def command(check, inputs):
     """(python arguments, environment overrides, working folder) for the maintenance comparison of this check."""
     args = ["-X", "utf8", "-B", str(CODE / "maintain.py"), "--calibration", inputs["calibration"], "--data", inputs["captures"],
@@ -106,9 +148,13 @@ def command(check, inputs):
 def prepare(check, inputs, fault_status=None):
     """Create a clean scratch folder for the run and record what it belongs to (called when a run is started).
     A comparison already saved in the check stays where it is until a new one has finished."""
+    holder = lock_holder(check)
+    if holder:
+        raise RuntimeError(f"Another window (process {holder}) is already running the maintenance comparison for this check.")
     shutil.rmtree(_long(work_root(check)), ignore_errors=True)
     out = work_run(check)
     out.mkdir(parents=True, exist_ok=True)
+    (work_root(check) / "lock.json").write_text(json.dumps(dict(pid=os.getpid(), started=datetime.now().isoformat(timespec="seconds"))))
     review_root(check).mkdir(parents=True, exist_ok=True)
     (review_root(check) / "link.json").write_text(json.dumps(dict(
         check=Path(check).name, started=datetime.now().isoformat(timespec="seconds"), inputs=inputs,
@@ -146,8 +192,18 @@ def publish(check):
             shutil.copy2(_long(history), _long(review_root(check) / "history.csv"))
     except OSError as error:
         return False, f"The comparison finished but could not be saved into the check: {error}"
-    shutil.rmtree(_long(work_root(check)), ignore_errors=True)
+    release(check)
     return True, ""
+
+
+def release(check, keep_logs=False):
+    """Give up the scratch folder (and with it the lock). keep_logs keeps it so a failed run can still show its log."""
+    try:
+        (work_root(check) / "lock.json").unlink()
+    except OSError:
+        pass
+    if not keep_logs:
+        shutil.rmtree(_long(work_root(check)), ignore_errors=True)
 
 
 def _live(check):

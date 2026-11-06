@@ -133,6 +133,17 @@ QSplitter::handle {{ background: {LINE}; }}
 
 
 # ================================================================== small widgets
+def open_path(path):
+    """Open a file or folder with the system's default program (os.startfile exists on Windows only)."""
+    try:
+        if hasattr(os, "startfile"):
+            os.startfile(str(path))
+            return True
+    except OSError:
+        pass
+    return QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+
+
 def label(text="", name=None, wrap=False, rich=False, sel=False):
     w = QtWidgets.QLabel(text)
     if name:
@@ -345,7 +356,7 @@ class ImageDialog(QtWidgets.QDialog):
         lay.setContentsMargins(10, 10, 10, 10)
         view = ImageView(path, pixmap, clickable=False)
         lay.addWidget(view, 1)
-        row = hbox(label(caption, "muted"), button("Open in viewer", slot=lambda: os.startfile(path)) if path else QtWidgets.QWidget(),
+        row = hbox(label(caption, "muted"), button("Open in viewer", slot=lambda: open_path(path)) if path else QtWidgets.QWidget(),
                    button("Close", slot=self.accept), stretch_at=1)
         lay.addWidget(row)
         scr = QtWidgets.QApplication.primaryScreen().availableGeometry()

@@ -23,7 +23,7 @@ import appcore as core
 import result_sections
 from calibration_io import MODE_LABELS, write_calibration_txt
 from matrix_preview import MatrixPreview
-from ui_common import VERDICT
+from ui_common import VERDICT, open_path
 from ui_widgets import MODE_NAMES, OptionsResults, action_flow
 
 BLUE, GOOD, WARN, BAD = "#007aff", "#248a3d", "#9b6500", "#d70015"
@@ -164,7 +164,7 @@ class CalibrationReview(QtWidgets.QWidget):
     def set_check(self, folder, result, meta, verdict=None):
         """verdict: (title, colour, soft background, explanation) of the fault-aware result, shown beside the maintenance one."""
         self.folder, self.result, self.meta, self.verdict = Path(folder), result, meta or {}, verdict
-        self.inputs, self.reason = ra.inputs_for(self.meta)
+        self.inputs, self.reason = ra.inputs_for(self.meta, self.folder)
         self.rebuild()
 
     def is_running(self):
@@ -441,7 +441,7 @@ class CalibrationReview(QtWidgets.QWidget):
         self.export_button = _button("Save calibration TXT…", lambda: self.save_txt(info), "primary")
         buttons = [self.export_button,
                    _button("Save refined JSON…", lambda: self.save_refined(out)),
-                   _button("Open results folder", lambda: os.startfile(str(out))),
+                   _button("Open results folder", lambda: open_path(out)),
                    _button("Show report", lambda: self.show_report(out))]
         cl.addWidget(action_flow(buttons))
         cl.addWidget(_label("Accepting a calibration and writing to a device are not offered here: the fault-aware verdict decides whether "
@@ -529,7 +529,11 @@ class CalibrationReview(QtWidgets.QWidget):
                                               "one has finished. The fault-aware result and your calibration files are not touched.") != QtWidgets.QMessageBox.Yes:
                 return False
         self.publish_error = None
-        out = ra.prepare(self.folder, self.inputs, (self.result or {}).get("status"))
+        try:
+            out = ra.prepare(self.folder, self.inputs, (self.result or {}).get("status"))
+        except (RuntimeError, OSError) as error:
+            QtWidgets.QMessageBox.warning(self, "Could not start", str(error))
+            return False
         args, env_extra, cwd = ra.command(self.folder, self.inputs)
         exe = Path(sys.executable)
         if exe.name.lower() == "pythonw.exe":
@@ -574,12 +578,22 @@ class CalibrationReview(QtWidgets.QWidget):
         if code == 0:       # only a finished run replaces what the check already holds
             ok, message = ra.publish(finished)
             self.publish_error = None if ok else message
+            if not ok:
+                ra.release(finished, keep_logs=True)
+        else:
+            ra.release(finished, keep_logs=True)      # the log stays for the failure card; the lock does not
         if finished == self.folder:
             self.rebuild()
         self.changed.emit()
 
     def shutdown(self):
-        """Stop a running comparison when the app closes."""
+        """Stop a running comparison when the app closes, and give up its scratch lock."""
         self.timer.stop()
         if self.is_running():
             self.proc.terminate()
+            try:
+                self.proc.wait(timeout=5)
+            except Exception:  # noqa: BLE001 - closing must not hang on a stubborn child
+                self.proc.kill()
+            if self.running_folder is not None:
+                ra.release(self.running_folder, keep_logs=True)

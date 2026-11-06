@@ -33,7 +33,7 @@ from matrix_preview import MatrixPreview, ResultHeader
 import result_sections
 from capture_help import CaptureFormatDialog  # noqa: E402
 
-from ui_common import (BAD, BAD_SOFT, BG, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, MONO, ORANGE, PARAMS, QSS,  # noqa: E402
+from ui_common import (open_path, BAD, BAD_SOFT, BG, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, MONO, ORANGE, PARAMS, QSS,  # noqa: E402
                        STAGES, VERDICT, WARN, WARN_SOFT, Gauge, ImageView, ManualDialog, StepTracker, app_icon, badge_icon, button, calibration_view,
                        card, clear, dot_icon, hbox, image_grid, img_label, label, navigation_icon, np_to_pixmap, scroll, table)
 from calibration_io import MODE_LABELS, write_calibration_txt
@@ -645,7 +645,7 @@ class RunPage(QtWidgets.QWidget):
         self.export_txt_btn.setObjectName('exportCalibrationTxt')
         self.preview_mode(self.selected_result_mode)
         action_buttons = [self.export_txt_btn, button("Save refined JSON…", slot=lambda: self.save_refined(out)), self.accept_btn,
-                          button("Open results folder", slot=lambda: os.startfile(str(out))),
+                          button("Open results folder", slot=lambda: open_path(out)),
                           button("Show report", slot=lambda: self.show_report(out)),
                           button("Check again with these inputs", slot=lambda: self.check_again.emit(
                               info["inputs"].get("calibration", ""), info["inputs"].get("data", ""), info["inputs"].get("device", ""),

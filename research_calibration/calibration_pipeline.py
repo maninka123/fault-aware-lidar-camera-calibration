@@ -18,6 +18,7 @@ from .evidence_selection import select_captures
 from .decision_policy import decide
 from .reporting import AssessmentResult, serializable
 from .resources import check_resources
+from .progress_events import Events, number
 
 
 STRATEGIES = ('fault_aware','joint','no_observability','no_selection','single_variant','legacy_optimizer','legacy')
@@ -122,7 +123,10 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
     original=read_calibration(calibration)
     if strategy=='legacy':
         return _legacy_assess(original,calibration,captures,output)
+    events=Events(output)
+    events.emit('data',message='Decoding and stacking the captures')
     bundle=_bundle or load_capture_bundle(captures,output/'inputs',cfg.max_features_per_capture,cfg.seed,cloud_units,allow_unusual_units)
+    events.emit('features',captures=bundle.metadata,max_features=cfg.max_features_per_capture)
     if original.get('image_size') and list(original['image_size'])!=list(bundle.size):
         raise ValueError('Calibration and capture image resolutions differ')
     model=ProjectionModel(original,bundle.size,bundle.circle,cfg.max_angle_rad)
@@ -145,10 +149,13 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
     losses={h.name:[] for h in hypotheses}; folds={h.name:[] for h in hypotheses}
     ranks={h.name:[] for h in hypotheses}; supports={h.name:[] for h in hypotheses}
     selections=[]
+    events.emit('folds',total=len(train),outer=len(outer),hypotheses=[h.name for h in hypotheses],
+                min_relative_gain=cfg.min_relative_gain)
     for index,test in enumerate(train):
         check_resources()
         if progress:
             progress(f'{strategy}: comparison fold {index+1}/{len(train)} ({test.name})')
+        events.emit('fold',index=index,total=len(train),test=test.name)
         available=train[:index]+train[index+1:]
         selected,selection=_training_selection(available,model,baseline,parameter_scales(baseline),cfg,strategy)
         selections.append(dict(test_id=test.name,**selection))
@@ -156,6 +163,8 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
             fitted=fit_hypothesis(selected,model,baseline,h,cfg,strategy)
             metric=evaluate_capture(test,model,fitted['parameters'],baseline,cfg.evaluation_cap_px) if fitted['success'] else dict(valid=False,loss=None)
             value=metric.get('loss')
+            events.emit('fit',fold=index,test=test.name,hypothesis=h.name,loss=number(value),success=bool(fitted['success']),
+                        rank=int(fitted['rank']))
             losses[h.name].append(value if value is not None else float('nan'))
             ranks[h.name].append(fitted['rank'])
             supports[h.name].append(all(fitted.get('attribution_support',{}).get(group,False) for group in h.groups))
@@ -169,7 +178,10 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
                     {h.name:h.groups for h in hypotheses},attribution,min_captures=cfg.min_capture_blocks,
                     min_relative_gain=cfg.min_relative_gain,bootstrap_reps=cfg.bootstrap_reps,seed=cfg.seed)
     candidate_name=decision.get('candidate_hypothesis') or 'KEEP'
+    events.emit('decision',status=decision.get('status'),candidate=candidate_name,best_relative_gain=number(decision.get('best_relative_gain')),
+                min_relative_gain=cfg.min_relative_gain,reason=decision.get('reason'),mean_losses=decision.get('mean_losses'))
     candidate_h=next(h for h in hypotheses if h.name==candidate_name)
+    events.emit('candidate',hypothesis=candidate_name)
     selected,final_selection=_training_selection(train,model,baseline,parameter_scales(baseline),cfg,strategy)
     candidate=fit_hypothesis(selected,model,baseline,candidate_h,cfg,strategy)
     outer_metrics=[]
@@ -184,6 +196,7 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
         gain=float((before-after)/before) if before>0 else 0.
         valid_outer=bool(gain>=cfg.min_relative_gain and all(row['candidate']['coverage']>=cfg.min_coverage for row in outer_metrics)
                          and sum(row['candidate']['loss']<row['baseline']['loss'] for row in outer_metrics)/len(outer_metrics)>=2/3)
+    events.emit('outer',count=len(outer),gain=number(gain),passed=bool(valid_outer))
     uncertainty=candidate.get('uncertainty',dict(status='UNAVAILABLE'))
     accepted=bool(decision['status']=='CANDIDATE_SUPPORTED' and candidate['success'] and valid_outer
                   and uncertainty.get('status')=='CONDITIONAL_ONLY'
@@ -221,6 +234,7 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
         'REVIEW_SUPPORTED_CANDIDATE' if accepted else 'KEEP_REFERENCE_AND_COLLECT_MORE_DIVERSE_CAPTURES' if status!='KEEP_CURRENT' else 'KEEP_REFERENCE',
         updated,diagnostics)
     result.save(output)
+    events.emit('verdict',status=status,action=result.recommended_action)
     return result
 
 

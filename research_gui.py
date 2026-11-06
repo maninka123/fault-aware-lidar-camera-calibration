@@ -9,10 +9,13 @@ Runs the offline `research_calibration` CLI in a child process. Read-only: never
 device and never overwrites the input calibration.
 """
 import json
+import logging
+import logging.handlers
 import os
 import re
 import shutil
 import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -28,6 +31,8 @@ from ui_common import ManualDialog, np_to_pixmap  # noqa: E402
 import app_icon  # noqa: E402
 import result_visuals  # noqa: E402
 import calibration_review  # noqa: E402
+import processing_view  # noqa: E402
+from version import VERSION  # noqa: E402
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
 CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
@@ -244,6 +249,59 @@ QScrollBar:vertical {{ background: transparent; width: 10px; }}
 QScrollBar::handle:vertical {{ background: #c9c9d0; border-radius: 5px; min-height: 24px; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
 """
+
+
+def path_problem(output, captures):
+    """A message when Windows would refuse the files this check writes (260 character limit), else None."""
+    if os.name != "nt":
+        return None
+    try:
+        names = [p.name for p in Path(captures).glob("capture_*")] or [p.stem for p in Path(captures).glob("*.npz")]
+    except OSError:
+        names = []
+    # the longest file written is <output>\inputs\stacked\data\<capture name>.npz (Windows allows 259 characters)
+    longest = len(str(output)) + len("\\inputs\\stacked\\data\\") + (max(len(n) for n in names) if names else 44) + len(".npz")
+    if longest <= 259:
+        return None
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\FileSystem") as key:
+            if winreg.QueryValueEx(key, "LongPathsEnabled")[0] == 1:
+                return None
+    except (OSError, ImportError):
+        pass
+    return (f"The results of this check would need file paths of about {longest} characters, and Windows stops at 260. "
+            "Move the repository to a shorter folder (for example C:\\FaultAware) or turn on long paths in Windows, then run the check again.")
+
+
+LOG_DIR = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "FaultAwareCalibration"
+
+
+def setup_logging():
+    """A rotating log file next to the user's other app data, so a problem can be reported with its details."""
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        handler = logging.handlers.RotatingFileHandler(LOG_DIR / "app.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+        root = logging.getLogger("faultaware")
+        root.setLevel(logging.INFO)
+        root.addHandler(handler)
+        return root
+    except OSError:
+        return logging.getLogger("faultaware")
+
+
+def excepthook(kind, value, tb):
+    """Without a hook PyQt5 aborts the whole app on an error inside a slot, with no message at all."""
+    text = "".join(traceback.format_exception(kind, value, tb))
+    logging.getLogger("faultaware").error("Unhandled error\n%s", text)
+    try:
+        box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Critical, "Something went wrong",
+                                    "The app hit an unexpected problem. Your calibration files were not changed.\n\n"
+                                    f"{kind.__name__}: {value}\n\nDetails were saved to:\n{LOG_DIR / 'app.log'}")
+        box.exec_()
+    except Exception:  # noqa: BLE001 - reporting must not raise
+        pass
 
 
 def nav_icon(kind):
@@ -518,6 +576,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setMinimumSize(1000, 680)
         self.output = None
         self.process = None
+        self.history_cache = {}
+        self.run_output = None      # folder of the check that is running (self.output follows what the user opens)
+        self.stopping = False
         self.data = None
         self.cal_info = None
         self.result_cal = None
@@ -562,6 +623,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.runs.setWordWrap(True)
         self.runs.itemClicked.connect(lambda it: self.open_run(it.data(QtCore.Qt.UserRole)))
         sl.addWidget(self.runs, 1)
+        version = label(f"Version {VERSION} · log: {LOG_DIR}", "footnote")
+        version.setToolTip("Include the version and the log file when you report a problem.")
+        sl.addWidget(version)
 
         # ---- pages
         self.pages = QtWidgets.QStackedWidget()
@@ -580,6 +644,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.refresh_runs()
         self.update_ready()
         self.sync_nav()
+
+    def closeEvent(self, event):
+        """Never leave a check running unseen: ask first, then stop it (and the review) cleanly."""
+        if self.is_running():
+            answer = QtWidgets.QMessageBox.question(self, "A check is running", "Stop the running check and close the app? "
+                                                    "Nothing is changed; the partial output stays in its folder.")
+            if answer != QtWidgets.QMessageBox.Yes:
+                event.ignore()
+                return
+            self.stopping = True
+            self.process.kill()
+            self.process.waitForFinished(3000)
+        self.review.shutdown()
+        if self.devices is not None:
+            self.devices.shutdown()
+        event.accept()
 
     # ---- sidebar navigation
     def sync_nav(self, *_):
@@ -761,7 +841,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress.setRange(0, 1)
         outer.addWidget(self.progress)
         self.stack = QtWidgets.QStackedWidget()
-        self.stack.addWidget(self.build_log())
+        self.processing = processing_view.ProcessingView()
+        self.log = self.processing.log
+        self.stack.addWidget(self.processing)
         self.stack.addWidget(self.build_result())
         self.review = calibration_review.CalibrationReview()
         self.stack.addWidget(self.review)
@@ -771,6 +853,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pager = Pager(["Processing", "Result", "Calibration review", "Report"])
         bar.addWidget(self.pager)
         bar.addStretch()
+        self.stop_btn = QtWidgets.QPushButton("Stop check")
+        self.stop_btn.setToolTip("Stop this check now. Nothing is changed; the partial output is left in its folder.")
+        self.stop_btn.clicked.connect(self.stop_run)
+        self.stop_btn.hide()
+        bar.addWidget(self.stop_btn)
         self.cal_btn = QtWidgets.QPushButton("View calibration after this check…")
         self.cal_btn.clicked.connect(self.view_result_calibration)
         self.cal_btn.hide()
@@ -876,12 +963,6 @@ class MainWindow(QtWidgets.QMainWindow):
         lay.addLayout(row)
         return wrap
 
-    def build_log(self):
-        self.log = QtWidgets.QPlainTextEdit()
-        self.log.setReadOnly(True)
-        self.log.setMaximumBlockCount(2000)
-        return self.log
-
     # ---- helpers
     def clear(self, layout):
         while layout.count():
@@ -957,20 +1038,23 @@ class MainWindow(QtWidgets.QMainWindow):
         for f in folders:
             rf = self.result_file(f)
             meta = self.meta_of(f)
-            running = self.is_running() and self.output is not None and Path(self.output) == f
+            running = self.is_running() and self.run_output is not None and Path(self.run_output) == f
             status, color = "stopped with an error" if not running else "running…", MUTED
             if running:
                 color = BLUE
             elif rf:
                 try:
-                    r = json.loads(rf.read_text(encoding="utf-8"))
-                    st = r.get("status", "")
-                    status = STATUS.get(st, (st.replace("_", " ").lower(),))[0].lower()
-                    color = STATUS.get(st, (None, MUTED))[1]
-                    gain = ((r.get("diagnostics") or {}).get("decision") or {}).get("best_relative_gain")
-                    if gain is not None:
-                        status += f" · {gain * 100:.2f} % gain"
-                except (OSError, ValueError):
+                    stamp = (str(rf), rf.stat().st_mtime_ns)
+                    if stamp not in self.history_cache:       # hundreds of checks must not mean hundreds of JSON parses per refresh
+                        r = json.loads(rf.read_text(encoding="utf-8"))
+                        st = r.get("status", "")
+                        text = STATUS.get(st, (st.replace("_", " ").lower(),))[0].lower()
+                        gain = ((r.get("diagnostics") or {}).get("decision") or {}).get("best_relative_gain")
+                        if gain is not None:
+                            text += f" · {gain * 100:.2f} % gain"
+                        self.history_cache[stamp] = (text, STATUS.get(st, (None, MUTED))[1])
+                    status, color = self.history_cache[stamp]
+                except (OSError, ValueError, AttributeError):
                     pass
             try:
                 when = datetime.strptime(f.name[4:19], "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M")
@@ -991,6 +1075,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.result_file(folder):
             self.load(folder)
         else:
+            if not self.is_running():
+                self.processing.reset()
             self.fail("This check has no result. It may have stopped before finishing.")
         self.pages.setCurrentIndex(1)
 
@@ -1183,9 +1269,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ---- running
     def run(self):
+        if self.is_running():
+            return self.warn("A check is already running. Wait for it to finish or stop it first.")
         scratch = self.mode == "scratch"
-        self.output = ROOT / "research_artifacts" / datetime.now().strftime("gui_%Y%m%d_%H%M%S")
-        self.output.parent.mkdir(parents=True, exist_ok=True)
+        output = ROOT / "research_artifacts" / datetime.now().strftime("gui_%Y%m%d_%H%M%S")
+        for n in range(2, 100):          # two checks started in the same second must not share a folder
+            if not output.exists() and not self.meta_file(output).exists():
+                break
+            output = output.with_name(f"{output.name[:19]}_{n}")
+        problem = path_problem(output, self.cap.path)
+        if problem:
+            return self.warn(problem)
+        try:
+            output.parent.mkdir(parents=True, exist_ok=True)
+        except OSError as err:
+            return self.warn(f"Cannot create the results folder: {err}")
+        self.output = self.run_output = output
+        self.stopping = False
         self.meta_file(self.output).write_text(json.dumps(dict(
             calibration="" if scratch else self.cal.path, captures=self.cap.path, mode=self.mode,
             strategy=None if scratch else self.strategy.currentData(),
@@ -1200,7 +1300,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_state("Running…")
         self.style_banner(BLUE, "blue")
         self.b_title.setText("Running…")
-        self.b_body.setText("This can take a few minutes. Open the Log tab to follow it." if not scratch else
+        self.b_body.setText("This can take a few minutes. Follow it in the Processing tab." if not scratch else
                             "Estimating a new calibration, then checking it. This takes about 10 minutes.")
         self.cards_frame.hide()
         self.table_frame.hide()
@@ -1229,13 +1329,22 @@ class MainWindow(QtWidgets.QMainWindow):
         p.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         p.readyReadStandardOutput.connect(self.read_output)
         p.finished.connect(self.finished_run)
-        p.errorOccurred.connect(lambda e: self.fail("Could not start the check."))
+        p.errorOccurred.connect(lambda err: self.fail("Could not start the check.") if err == QtCore.QProcess.FailedToStart else None)
         exe = Path(sys.executable)
         if exe.name.lower() == "pythonw.exe":
             exe = exe.with_name("python.exe")
         self.process = p
+        self.processing.begin(self.output, scratch, processing_view.count_captures(self.cap.path))
+        self.stop_btn.show()
         p.start(str(exe), ["-X", "utf8", "-B", "-W", "ignore::RuntimeWarning", "-m", "research_calibration"] + args)
         self.refresh_runs()
+
+    def stop_run(self):
+        """Stop the running check. kill(), not terminate(): terminate() does nothing to a console process on Windows."""
+        if not self.is_running():
+            return
+        self.stopping = True
+        self.process.kill()
 
     def set_sources(self, folder):
         meta = self.meta_of(folder)
@@ -1248,31 +1357,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.clear(self.tiles)
 
     def read_output(self):
+        if self.process is None:
+            return
         t = bytes(self.process.readAllStandardOutput()).decode("utf-8", errors="replace").rstrip()
         if t:
-            self.log.appendPlainText(t)
+            self.processing.feed_log(t)
 
     def finished_run(self, code, *_):
         self.read_output()
+        self.stop_btn.hide()
         self.progress.setRange(0, 1)
         self.update_ready()
-        if code == 0 and self.result_file(self.output):
-            self.load(self.output)
-            if self.meta_of(self.output).get("with_review"):
+        folder = self.run_output or self.output
+        if self.stopping:
+            self.stopping = False
+            self.processing.cancelled()
+            self.fail("Stopped by you. Your calibration is unchanged.", title="Check stopped")
+        elif code == 0 and folder and self.result_file(folder):
+            self.processing.finish(True)
+            self.load(folder)
+            if self.meta_of(folder).get("with_review"):
                 self.review.start(auto=True)   # the user asked for it on the setup page; it never alters the result just shown
         else:
             lines = [l for l in self.log.toPlainText().splitlines() if l.strip()]
+            self.processing.finish(False, "The check stopped: " + (lines[-1] if lines else "no further information."))
             self.fail("The check stopped, and your calibration is unchanged. "
-                      + (lines[-1] if lines else "See the Log tab."))
+                      + (lines[-1] if lines else "See the log in the Processing tab."))
+        self.run_output = None
         self.refresh_runs()
 
-    def fail(self, msg):
+    def fail(self, msg, title="Could not finish"):
         self.progress.setRange(0, 1)
         self.update_ready()
         self.set_state("Stopped")
         self.run_title.setText("Check stopped")
         self.style_banner(BAD, "bad")
-        self.b_title.setText("Could not finish")
+        self.b_title.setText(title)
         self.b_body.setText(msg)
         self.cards_frame.hide()
         self.table_frame.hide()
@@ -1387,6 +1507,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table_frame.setVisible(bool(names))
         self.visuals.set_result(folder, r, self.reference_calibration(meta))
         self.review.set_check(folder, r, meta, (title, color, SOFT[soft], meaning + (f" {reason}" if reason else "")))
+        if not self.is_running():
+            self.processing.show_result(folder, r)
 
         md = self.result_file(folder).with_name("report.md")
         self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
@@ -1447,11 +1569,16 @@ def main():
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("UNSW.FaultAwareCalibration")
         except Exception:
             pass
+    setup_logging()
+    sys.excepthook = excepthook
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
     app.setWindowIcon(app_icon.app_icon())
     win = MainWindow()
+    logging.getLogger("faultaware").info("Started version %s", VERSION)
     app.aboutToQuit.connect(lambda: win.devices and win.devices.shutdown())
     app.aboutToQuit.connect(win.review.shutdown)
     if "--prefill" in sys.argv:  # python research_gui.py --prefill <calibration> <captures folder>

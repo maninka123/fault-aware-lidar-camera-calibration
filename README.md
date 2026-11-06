@@ -16,7 +16,9 @@ Built on the existing [Calibration optimizer](docs/ORIGINAL_APP_README.md) (edge
 
 ## Quick start
 
-Python 3.10/3.11, `pip install -r requirements.txt`.`n`nDesktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Same inputs as the maintenance app: calibration as `.json`, exported/targetless `.txt`, or typed values; captures as raw `capture_*/rig_0.bag`, stacked `.npz`, or image + PCD pairs (with PCD units). Check an existing calibration or calibrate from scratch (raw/stacked); past checks are listed in the sidebar.
+Python 3.10/3.11, `pip install -r requirements.txt.
+
+Desktop app: double-click **start_research_gui.bat** (or `python research_gui.py`). Same inputs as the maintenance app: calibration as `.json`, exported/targetless `.txt`, or typed values; captures as raw `capture_*/rig_0.bag`, stacked `.npz`, or image + PCD pairs (with PCD units). Check an existing calibration or calibrate from scratch (raw/stacked); past checks are listed in the sidebar.
 
 ```powershell
 python -B verify_research.py                     # 28 baseline + 37 research tests
@@ -32,11 +34,29 @@ print(result.status, result.recommended_action)
 
 Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_variant`, `legacy_optimizer`, `legacy`. `calibrate_from_scratch` / `initialize` runs the targetless initializer. Details: [RESEARCH_README.md](RESEARCH_README.md), [data formats](docs/DATA_FORMAT.md).
 
+## Desktop app
+
+Windows 10/11, Python 3.10/3.11. Start it with **start_research_gui.bat** (or the shortcut). Other systems are untested.
+
+- **New check** takes an existing calibration and a folder of recorded captures. **Devices** connects to a sensor, reads its calibration and captures a sample to check (read-only: nothing is ever written to a device).
+- **Processing** follows the check stage by stage: captures appearing as they are stacked, edges per capture, and every explanation's held-out result drawn as each fold completes. **Stop check** ends it safely. Finished checks can be replayed from their saved results.
+- **Result** is the fault-aware assessment. **Calibration review** shows the original maintenance analysis of the same calibration and captures (four update choices, RMSE, parameter changes, leave-one-out evidence, matrices, images). It is a separate calculation: it runs after a new check when the option on the setup page is ticked, or on demand for any older check, and never changes the fault-aware verdict.
+- Every check is saved under `research_artifacts/<check>/` (the maintenance comparison in its `review/` folder). Your calibration files are never modified.
+
+## Troubleshooting
+
+- **"Windows stops at 260 characters"**: the repository sits too deep. Move it to a short folder such as `C:\FaultAware`, or turn on long paths in Windows.
+- **A problem report** needs the version (bottom of the sidebar) and the log `%LOCALAPPDATA%\FaultAwareCalibration\app.log`. The log contains file paths from your machine.
+- **Closing the app during a check** asks first and stops the check. A stopped or failed check keeps its partial folder and is marked as such in the list.
+- **Temporary files**: the maintenance comparison runs in `%LOCALAPPDATA%\FaultAwareReview` and removes it when it finishes.
+
 ## Status and limits
 
 - Recorded 10-capture result: best candidate gained 0.62 % (< 1 % threshold), so the reference was kept.
 - No evidence yet that capture selection or the correspondence ensemble beats random/feature-count baselines.
 - No independently labelled faults, nominal-session false-alarm tests, or other rigs/cameras.
+- The scores are a nearest-edge proxy, not true reprojection error; no ground truth exists for these recordings.
+- The maintenance comparison and the fault-aware assessment answer different questions and can disagree; the app shows both and says so.
 
 ## Docs
 
