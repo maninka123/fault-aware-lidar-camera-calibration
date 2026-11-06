@@ -14,7 +14,8 @@ def cluster_uncertainty(jacobian, residuals, cluster_ids, scales, observable_bas
     clusters = np.unique(ids)
     result = dict(method='capture-cluster conditional sandwich',clusters=len(clusters),
                   calibrated_coverage=False,standard_deviations=[None]*len(D),covariance=None,
-                  unobservable_directions=null_space(B.T),limitations=[
+                  # Empty basis: everything is unobservable (LAPACK rejects the 0-row problem).
+                  unobservable_directions=null_space(B.T) if B.shape[1] else np.eye(len(D)),limitations=[
                       'Conditional on correspondences, selected subspace and extraction model.',
                       'Capture clusters may remain dependent within one scene/session.'])
     if len(clusters)<min_clusters or not B.shape[1]:

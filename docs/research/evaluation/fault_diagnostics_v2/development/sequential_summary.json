@@ -1,0 +1,94 @@
+{
+  "combined": {
+    "nominal": {
+      "n": 6,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    },
+    "persistent": {
+      "n": 24,
+      "alarm": 17,
+      "persistent_label": 14,
+      "early_alarms": 0,
+      "median_delay": 2.0
+    },
+    "temporary": {
+      "n": 18,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    }
+  },
+  "edge": {
+    "nominal": {
+      "n": 6,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    },
+    "persistent": {
+      "n": 24,
+      "alarm": 14,
+      "persistent_label": 11,
+      "early_alarms": 0,
+      "median_delay": 2.0
+    },
+    "temporary": {
+      "n": 18,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    }
+  },
+  "intensity": {
+    "nominal": {
+      "n": 6,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    },
+    "persistent": {
+      "n": 24,
+      "alarm": 8,
+      "persistent_label": 8,
+      "early_alarms": 0,
+      "median_delay": 2.0
+    },
+    "temporary": {
+      "n": 18,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    }
+  },
+  "production_loss": {
+    "nominal": {
+      "n": 6,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    },
+    "persistent": {
+      "n": 24,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    },
+    "temporary": {
+      "n": 18,
+      "alarm": 0,
+      "persistent_label": 0,
+      "early_alarms": 0,
+      "median_delay": null
+    }
+  }
+}

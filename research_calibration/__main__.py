@@ -9,7 +9,8 @@ from .benchmark import dataset_paths,run_benchmark,DEFAULT_METHODS
 
 def main():
     parser=argparse.ArgumentParser(description='Offline fault-aware calibration research backend; sequential CPU execution')
-    parser.add_argument('command',choices=('assess','benchmark','initialize'))
+    parser.add_argument('command',choices=('assess','benchmark','initialize','diagnose'),
+                        help='diagnose = production assess plus the experimental fault diagnostics (fault_diagnostics.json)')
     parser.add_argument('--dataset',help='Hash-verified local dataset ID in research_data/manifest.json')
     parser.add_argument('--calibration',type=Path)
     parser.add_argument('--captures',type=Path)
@@ -31,6 +32,13 @@ def main():
     if not captures or (args.command!='initialize' and not calibration): parser.error('Capture and reference paths are required')
     if args.command=='benchmark':
         run_benchmark(calibration,captures,args.output,cfg,args.methods)
+    elif args.command=='diagnose':
+        from .fault_diagnostics.runner import assess_with_diagnostics
+        payload,result=assess_with_diagnostics(calibration,captures,output=args.output,config=cfg,strategy=args.strategy)
+        proposed=payload['experimental']['proposed']
+        print('Production: '+result.status+': '+result.recommended_action)
+        print('Experimental (not a production verdict): '+proposed['status']+' - '+proposed.get('reason',''))
+        print('Persistence over capture time: '+payload['persistence']['status'])
     else:
         result=calibrate_from_scratch(captures,output=args.output,config=cfg) if args.command=='initialize' else assess(
             calibration,captures,args.strategy,output=args.output,config=cfg,cloud_units=args.cloud_units,allow_unusual_units=args.confirm_cloud_units,progress=lambda s:print(s,flush=True))

@@ -108,7 +108,8 @@
           ],
           "xyz_dtype": "int16"
         }
-      ]
+      ],
+      "evaluation_role": "development_v2"
     },
     {
       "id": "enclosure_off_ten",
@@ -388,29 +389,261 @@
           ],
           "xyz_dtype": "int16"
         }
-      ]
-    }
-  ],
-  "additional_available_caches": [
+      ],
+      "evaluation_role": "development_v2"
+    },
     {
       "id": "enclosure_on_twelve",
       "data_directory": "Calibration maintenance/results/rig_20261104_202917/stacked/data",
       "capture_count": 12,
-      "compressed_bytes": 70421453
-    },
-    {
-      "id": "october_device_one",
-      "data_directory": "Calibration maintenance/results/rig_20261104_220224/stacked/data",
-      "capture_count": 11,
-      "compressed_bytes": 27041903
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+        "bytes": 14945,
+        "sha256": "f64be8f4471523be700a5f03db767050af3c5afcf046bab4764af2255859c8e5"
+      },
+      "reference_note": "Board-based multi-capture calibration of the same device and day (enclosure on); independent of the edge method.",
+      "evaluation_role": "held_out_v2",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_165955_605473_enclosure_on.npz",
+          "bytes": 5968565,
+          "sha256": "5b851248ef873e5f33ca83fc24691607fbef6c871feef44a36d84164dbe922b7"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170052_309772_enclosure_on.npz",
+          "bytes": 5982031,
+          "sha256": "eb95defaaab9b033bd2dd55cc929d0d48fdfb04ffbbced241e026d67ea1a3294"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170145_052888_enclosure_on.npz",
+          "bytes": 5974712,
+          "sha256": "ae90f3c9fe2b589a3aa09c64a2cb3632d7ad088e12069e2590be1a2646fd4081"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170224_805786_enclosure_on.npz",
+          "bytes": 5984435,
+          "sha256": "e947744f99420691d83a55d9348b082bb222f038e7706db6b7a133db5cb86280"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170317_673169_enclosure_on.npz",
+          "bytes": 5949805,
+          "sha256": "cd7580a5037b4ba1ce4a3196d72c53f2bdc61b02f41c097df66de11f75c84d7b"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170402_786850_enclosure_on.npz",
+          "bytes": 5974726,
+          "sha256": "52d35ace4fa23e91904e804326120a8b047baf4248d503e285c40a7815d8a95e"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170443_138288_enclosure_on.npz",
+          "bytes": 5717923,
+          "sha256": "be78fe1f9460a87df07d23497b700d2dc836f8e90ad1e0f0fa30b8fedaaf18c6"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170517_810874_enclosure_on.npz",
+          "bytes": 5958757,
+          "sha256": "3d2baa128468147680c206087de76966fe2078175d273a9507d96879a08e9c3c"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170634_684567_enclosure_on.npz",
+          "bytes": 5792269,
+          "sha256": "229f2606ff5cb94413b38f721b59bdf804a51567e35f51c812af8257bf1a5c44"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170733_752938_enclosure_on.npz",
+          "bytes": 5932068,
+          "sha256": "88a100623907b65d9d2c33c3beb4421bf955cec05513c9a6c6aa0edcc303674c"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170811_052552_enclosure_on.npz",
+          "bytes": 5523963,
+          "sha256": "d28071c460f15a63c2a0c4a5c9ae75b7c88892116c96c91ef0ff7f0a80994839"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_202917/stacked/data/capture_20260929_170845_292661_enclosure_on.npz",
+          "bytes": 5662199,
+          "sha256": "bee5ec72c61e7a8a79e97ad840660b3db8966c8e0ae02f9fefb0e1166d63913e"
+        }
+      ]
     },
     {
       "id": "october_device_four",
       "data_directory": "Calibration maintenance/results/rig_20261104_221306/stacked/data",
       "capture_count": 15,
-      "compressed_bytes": 54053136
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_4/calibration.json",
+        "bytes": 15309,
+        "sha256": "e24e92bd3d7ba65bc29f381419baa71085e06aaab151d34f4ee7b3b3016b00d9"
+      },
+      "reference_note": "Board-based calibration of this device (pair_4, held-out board error 0.75 px); independent of the edge method.",
+      "evaluation_role": "held_out_v2",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231616_064042_enclosure_on.npz",
+          "bytes": 3946023,
+          "sha256": "23760ac95b7ceae43c96a2f3b671e5ec02db0b1f5ba90755b61f6e8bd12c5082"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231643_861921_enclosure_on.npz",
+          "bytes": 4007901,
+          "sha256": "e76d0847420b330c051847efd7a36307668147cc17db728145eaf454a71455f9"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231716_127043_enclosure_on.npz",
+          "bytes": 5622630,
+          "sha256": "cbf8095378590767fce98e232b7f1dd8e32f4d01fc0f233de89dd0b4a0238ce0"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231725_753480_enclosure_on.npz",
+          "bytes": 5075225,
+          "sha256": "af99d38e00302b0adb63677ae677e9b36e46a8907c11d11a3f66026897bf8777"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231754_522424_enclosure_on.npz",
+          "bytes": 3897345,
+          "sha256": "0a8bf0989699bbe4712ba55b3b2089976c281f0e4c76640ebb5a43acc5269168"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231911_899569_enclosure_on.npz",
+          "bytes": 2754527,
+          "sha256": "79f383d125922ad5202f140a39db1a3597d0fea0ea51034016334c2694e1363f"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_231938_494140_enclosure_on.npz",
+          "bytes": 3293651,
+          "sha256": "563303ead044ee548629aa4c5195029c1b648650aa9710de8dbc7c754993413b"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232029_494878_enclosure_on.npz",
+          "bytes": 2049474,
+          "sha256": "6cc34008ca4d7ed661c826d0ff7c6b3ae906371cef3bd016eb44bcf6ffa7773f"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232052_588083_enclosure_on.npz",
+          "bytes": 4264844,
+          "sha256": "5bf2786f9f2f78a8126a80f1c018f85f2b51044387b6c14a86657e14b8376768"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232205_849581_enclosure_on.npz",
+          "bytes": 3945463,
+          "sha256": "3087a667be1ec5b6c52d6630a31a05ac943eac96b2ba2514d00b2bc9c5eff19b"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232230_404781_enclosure_on.npz",
+          "bytes": 2100928,
+          "sha256": "ecd2669d4745e851fd7f7218405eef806b3a692d4b4aa7d3198d3694c19a28e6"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232314_020820_enclosure_on.npz",
+          "bytes": 4027941,
+          "sha256": "008c65230586cd2cc527954a49e4f39f49a097d65ce48bd120a8662f0f5076a2"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232345_122160_enclosure_on.npz",
+          "bytes": 4606055,
+          "sha256": "456c58b6345177c3f3cadd0711694eba83f00e90ded831b4686405701941bf95"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232410_666583_enclosure_on.npz",
+          "bytes": 2970601,
+          "sha256": "0293072946d17b2e83d6d316b6467a99e00f5aceebd8391c18e87f546e824e36"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_221306/stacked/data/capture_20261028_232428_596838_enclosure_on.npz",
+          "bytes": 1490528,
+          "sha256": "a02adb6be2065078a64acee1d28a87e9a78be28388fd1edae04dcb0c48b02728"
+        }
+      ]
+    },
+    {
+      "id": "october_device_one",
+      "data_directory": "Calibration maintenance/results/rig_20261104_220224/stacked/data",
+      "capture_count": 11,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_1/calibration.json",
+        "bytes": 15867,
+        "sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+      },
+      "reference_note": "Board-based calibration of this device (pair_1, only 3 usable boards, weak translation); used for development.",
+      "evaluation_role": "development_v2",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215552_249295_enclosure_on.npz",
+          "bytes": 3650541,
+          "sha256": "00c63988c8ec6f22c1da3ae9b8bf5c5e16d6166d01dc4581ef650dc4f5272da1"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215624_570536_enclosure_on.npz",
+          "bytes": 5058537,
+          "sha256": "921b9c2f3ca76f12844813654b9009cea08ef3db41fb5945625ec90c8b2c3bb2"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215705_407905_enclosure_on.npz",
+          "bytes": 2680579,
+          "sha256": "ef8f025d013c5c44a8b6c47509df1e7b332b639de715ac03e428536e940a2daa"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215731_915876_enclosure_on.npz",
+          "bytes": 1945540,
+          "sha256": "bf7e7f73f9e6ac979dc1b951c5c6a2ae789a077ad5d62889578909681519a8ab"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215815_295216_enclosure_on.npz",
+          "bytes": 2024545,
+          "sha256": "1e305e2a83a3c39703aa4702cd421c6b463f7363bb6d1630e76cea36aed30c56"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215843_069172_enclosure_on.npz",
+          "bytes": 2035247,
+          "sha256": "a38e74cb7278e6743804a7c9a92c974a376f3dd2ca8dfc9a83028774daeee266"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215906_427054_enclosure_on.npz",
+          "bytes": 2026621,
+          "sha256": "861f68a02a2b5a2c851d9375dd71beef77ae5858750386ad2c4c386f031cb776"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_215954_389129_enclosure_on.npz",
+          "bytes": 2015634,
+          "sha256": "13a0914113df9b8e0682bbd337ac7ec162ea6ef31a8e232a3ec30e5f841c0427"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_220017_248964_enclosure_on.npz",
+          "bytes": 1512809,
+          "sha256": "b9f07b240e98192108e20e9d67f7c2a7487eba64d3839072ff29496af95d4c6f"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_220040_247482_enclosure_on.npz",
+          "bytes": 2322958,
+          "sha256": "d7c79a94466df33cb5702d55becd944c286bd9d8a7ae79181a06395493178b18"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261104_220224/stacked/data/capture_20261028_220049_645848_enclosure_on.npz",
+          "bytes": 1768892,
+          "sha256": "0baa89c28153c3dc88485eeade63e7f551dfc54246f8bac905abd1c4fbd95138"
+        }
+      ]
     }
   ],
+  "additional_available_caches": [],
   "limitations": [
     "No physical drift labels independently verified.",
     "Historical output is not a newly reproduced result or ground truth.",
@@ -418,5 +651,6 @@
     "Array timestamps do not establish cross-sensor synchronization.",
     "Do not mix training and held-out points when fitting, selecting data or measuring observability.",
     "Historical simulated drift outputs are excluded."
-  ]
+  ],
+  "evaluation_roles_v2": "Fault diagnostics v2: development recordings were inspected while the method was designed; held_out_v2 recordings were not evaluated before docs/research/PREREGISTRATION_V2.md fixed the protocol."
 }

@@ -78,3 +78,55 @@ Final commands and evidence are in [VERIFICATION_RESULTS.md](VERIFICATION_RESULT
 Core backend, numerical verification, real recorded maintenance comparisons, ablation tooling, legacy execution, a minimal desktop bridge and research documentation are delivered. No code or data has been published.
 
 Unsupported: independently measured initialization accuracy, other camera families/sensors, moving timing effects, nominal false-alarm tests, physical fault-label accuracy, calibrated interval/risk claims and independent multi-session generalization. Missing full-paper access and unresolved robust-FDI overlap prevent novelty certification. This is a prototype with a critical research assessment, not an automatically positive conference-readiness conclusion.
+
+## 8. Fault diagnostics v2 (6 November 2026, branch `research/fault-diagnostics-v2`)
+
+Method: [FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md). Review: [PRIOR_ART_REVIEW_V2.md](PRIOR_ART_REVIEW_V2.md).
+Protocol: [PREREGISTRATION_V2.md](PREREGISTRATION_V2.md).
+
+### Production code touched (behaviour unchanged except one crash fix)
+
+- `calibration_pipeline.assess(..., fold_observer=None)`. A read-only callback receives copies of each fold's
+  fitted parameters and of the final candidate. The default `None` leaves every result unchanged; a parity test
+  compares results with and without it.
+- `legacy_adapter.load_capture_bundle(..., intensity_points=0)`. When the value is above zero, it also keeps a
+  reflectivity sample and the capture time, using a separate random generator. The default leaves the bundle
+  unchanged.
+- `observability.hypothesis_basis` and `uncertainty.cluster_uncertainty`. An empty supported basis used to make
+  `scipy.linalg.null_space` fail inside LAPACK. Now every direction is reported unobservable. This path only
+  occurred when a capture had no depth edges, which happened in the synthetic tests; the recorded data have
+  depth edges.
+- `__main__`: a new `diagnose` command.
+
+### New modules: `research_calibration/fault_diagnostics/`
+
+| Module | Purpose |
+|---|---|
+| `config` | `DiagnosticsConfig`, the frozen constants |
+| `cues` | Decoy-referenced edge and intensity contrasts |
+| `evidence` | Per-fold counterfactual table, including the chance-predicted production gain |
+| `policy` | Experimental verdicts and ablation switches |
+| `sequential` | Clipped CUSUM, conformal test martingale and the persistent/transient label |
+| `perturbations` | Known calibration changes and nuisances (verification only) |
+| `runner` | Production assessment plus `fault_diagnostics.json` |
+
+### Development history (development recordings only)
+
+1. **Measured the loss bias** (`tools/probe_loss_bias.py`).
+2. **Round 1** (`october_device_one`, one replicate). With a 0.005 edge margin and an intensity *veto*, the
+   method alarmed on the nominal anchor, on global blur and on one desynchronised capture. Fold refits from a
+   converged anchor gain up to 0.7 contrast points.
+   - Changes: margin set to 0.01; intensity *agreement* required; single-capture corruptions directed at
+     comparison (non-outer) captures.
+3. **Round 2** (partial). Ambiguity sets listed every superset.
+   - Change: a parsimony rule, keeping only the minimal tied explanations.
+4. **Round 3** (`october_device_one` and `enclosure_off_ten`, three replicates). The doubled edges-only margin
+   cost 7 of 15 detections on `enclosure_off_ten`.
+   - Change: removed, so the single-cue margin equals the base margin.
+5. **Sequential, development.** A single extreme capture raised CUSUM alarms, and the spread of a 4-capture
+   window was too small.
+   - Changes: Huber clip at 2 (below the threshold of 4); spread floor of 0.25·|median|; cues already at chance
+     are reported as uninformative.
+
+The held-out recordings (`enclosure_on_twelve`, `october_device_four`) were not opened by any v2 code before the
+preregistration commit.
