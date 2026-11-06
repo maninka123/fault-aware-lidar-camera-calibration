@@ -46,18 +46,20 @@ def build(run):
                 t['seconds'][dst] = r['shared_seconds'] + r.get('method_seconds', {}).get(src, 0.)
     for r in read(run / 'original_optimizer/trials.jsonl'):
         t = slot(r['dataset'], r['replicate'], r['condition'], r['condition_type'])
-        t['scores']['original_optimizer'] = norm_pipeline(r['score']['production'])
+        # Under the legacy_optimizer strategy the policy applied to the frozen maintenance fits is scored under this key.
+        t['scores']['original_optimizer'] = norm_pipeline(r['score']['legacy_optimizer'])
         t['seconds']['original_optimizer'] = r['shared_seconds']
     for path in sorted(run.glob('pairing_*/trials.jsonl')):
         for r in read(path):
             t = slot(r['dataset'], r['replicate'], r['condition'], r['condition_type'])
             for m, v in r['methods'].items():
-                name = 'improved_v3' if m == 'geometric' else m
-                t['scores'][name] = dict(alarm=bool(v['score']['alarm']), exact=bool(v['score']['exact']), wrong=bool(v['score']['wrong']),
-                                        ambiguous_has_truth=bool(v['score']['ambiguous_has_truth']))
-                t['seconds'][name] = sum(v['seconds'].values())
-                if 'recovery' in v and v['recovery'].get('error_after_px') is not None:
-                    t['recovery'][name] = dict(before=r['error_before_px'], after=v['recovery']['error_after_px'])
+                # The headline method is reported as "improved_v3" and also kept under its variant name "geometric", so every table finds it.
+                for name in (('improved_v3', 'geometric') if m == 'geometric' else (m,)):
+                    t['scores'][name] = dict(alarm=bool(v['score']['alarm']), exact=bool(v['score']['exact']), wrong=bool(v['score']['wrong']),
+                                            ambiguous_has_truth=bool(v['score']['ambiguous_has_truth']))
+                    t['seconds'][name] = sum(v['seconds'].values())
+                    if 'recovery' in v and v['recovery'].get('error_after_px') is not None:
+                        t['recovery'][name] = dict(before=r['error_before_px'], after=v['recovery']['error_after_px'])
     return list(trials.values())
 
 
@@ -85,6 +87,11 @@ def main(run):
     # --- matched comparison on nominal + drift trials common to every compared method
     methods = [m for m in COMPARED if any(m in t['scores'] for t in trials)]
     common = [t for t in trials if t['condition_type'] in ('nominal', 'drift') and all(m in t['scores'] for m in methods)]
+    if not common:
+        msg = 'No trial has results from every compared method; nothing can be compared. Check the run folder logs.'
+        (Path(run) / 'generalization_summary.md').write_text('# Generalization results (generated)\n\n' + msg + '\n', encoding='utf-8')
+        print(msg)
+        return
     tab = per_group(common, methods)
     out = dict(methods=methods, per_group=tab, roles=roles)
     for m in methods:
@@ -114,7 +121,9 @@ def main(run):
         lines += ['', '## Nuisance-only trials (spurious lines, ghost edges; improved-V3 variants only)', '', '| Group | ' + ' | '.join(IMPROVED_VARIANTS) + ' |', '|---|' + '---|' * len(IMPROVED_VARIANTS)]
         for g in sorted({t['group'] for t in nui}):
             rows = [t for t in nui if t['group'] == g]
-            lines.append(f'| {g} | ' + ' | '.join(f"{sum(t['scores'][v]['alarm'] for t in rows if v in t['scores'])}/{len(rows)}" for v in IMPROVED_VARIANTS) + ' |')
+            cell = lambda v: (f"{sum(t['scores'][v]['alarm'] for t in rows if v in t['scores'])}/{sum(1 for t in rows if v in t['scores'])}"
+                              if any(v in t['scores'] for t in rows) else 'n/a')
+            lines.append(f'| {g} | ' + ' | '.join(cell(v) for v in IMPROVED_VARIANTS) + ' |')
     # --- calibration recovery (improved V3 variants)
     lines += ['', '## Calibration recovery (median projection error vs the anchor on alarmed drift trials; improved-V3 variants; px, before -> after)', '',
               '| Group | ' + ' | '.join(IMPROVED_VARIANTS) + ' |', '|---|' + '---|' * len(IMPROVED_VARIANTS)]

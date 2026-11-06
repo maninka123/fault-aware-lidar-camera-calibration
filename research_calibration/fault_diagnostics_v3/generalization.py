@@ -34,6 +34,10 @@ def load_registry(path):
 def validate_registry(registry, *, require_fingerprints=True):
     """Raise LeakageError for overlapping capture groups, reused references across devices or mislabelled prior use."""
     groups = registry['groups']
+    for g in groups:
+        absent = [k for k in ('id', 'device', 'session', 'capture_count', 'captures', 'reference_sha256') if k not in g]
+        if absent:
+            raise LeakageError(f"Registry group {g.get('id', '?')} lacks required fields: {', '.join(absent)}")
     ids = [g['id'] for g in groups]
     if len(set(ids)) != len(ids):
         raise LeakageError('Duplicate group identifiers')
@@ -200,6 +204,10 @@ def rates(m):
 
 def worst_and_gap(per_group, rate_name, higher_is_better, held_out=None):
     """Worst group (by the metric's direction) and the generalization gap: mean over other groups minus the held-out/worst group."""
+    if not per_group:
+        raise ValueError('No groups to compare')
+    if held_out is not None and held_out not in per_group:
+        raise ValueError(f'Held-out group {held_out} has no results')
     values = {g: rates(m)[rate_name] for g, m in per_group.items()}
     pick = (min if higher_is_better else max)
     worst = pick(values, key=values.get)
@@ -218,6 +226,10 @@ def selection_cost(m):
 
 def select_variant(metrics_by_group, variants, training_groups):
     """Choose the variant with the lowest summed cost over TRAINING groups only. ``metrics_by_group[g][variant]`` is read for g in training."""
+    if not training_groups:
+        raise ValueError('No training groups: a variant cannot be selected without evidence')
+    if not variants:
+        raise ValueError('No variants to choose from')
     best, best_cost = None, None
     for v in variants:
         parts = [selection_cost(metrics_by_group[g][v]) for g in training_groups]

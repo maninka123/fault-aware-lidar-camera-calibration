@@ -50,6 +50,7 @@ python -B -m research_calibration assess --calibration current.json --captures m
 | [Engine and command line](docs/RESEARCH_README.md) | The assessment engine, strategies, Python API |
 | [Data formats](docs/DATA_FORMAT.md) | Calibration files and capture layouts |
 | [Method and report](docs/research/FINAL_TECHNICAL_REPORT.md) | Mathematical method, verification, prior art |
+| [Experimental diagnostics V2/V3](docs/research/v3/README.md) | Optional research layer, not used by the app: method, root-cause analysis, results, [generalization audit](docs/research/v3/GENERALIZATION_AUDIT.md) |
 
 ## Status and limits
 
@@ -58,6 +59,7 @@ python -B -m research_calibration assess --calibration current.json --captures m
 - No independently labelled faults, nominal-session false-alarm tests, or other rigs and cameras.
 - Scores are a nearest-edge proxy, not true reprojection error; no ground truth exists for these recordings.
 - The maintenance comparison and the fault-aware assessment answer different questions and can disagree; the app shows both and says so.
+- The experimental V2/V3 diagnostics (`python -m research_calibration diagnose` / `diagnose-v3`) are optional and never change a verdict, a file or a device. Exact fault attribution on recorded data and generalization to new scenes and sensors are **not established** (see the [generalization audit](docs/research/v3/GENERALIZATION_AUDIT.md)).
 - Writing to a device has been tested against an in-memory stand-in, not real hardware. Try it first on a spare device.
 
 Recordings are not distributed; `research_data/manifest.json` references local paths and hashes.

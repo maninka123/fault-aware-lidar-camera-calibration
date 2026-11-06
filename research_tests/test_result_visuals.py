@@ -108,3 +108,36 @@ class AlignmentAndOverlayTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EmptyAndOddCaptures(unittest.TestCase):
+    """The overlay card must survive captures it cannot draw."""
+
+    def card_for(self, xyz):
+        import tempfile
+        from PyQt5 import QtWidgets
+        global _APP
+        _APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        folder = tempfile.mkdtemp()
+        self.addCleanup(lambda: __import__("shutil").rmtree(folder, ignore_errors=True))
+        path = Path(folder) / "capture_20260101_000000_000001_x.npz"
+        np.savez(path, image=np.zeros((366, 484, 3), np.uint8), xyz_mm=xyz)
+        card = rv.OverlayCard([path], CAL, CAL, dict(cx=241.5, cy=182.5, radius=183.), False, {}, None)
+        self.addCleanup(card.deleteLater)
+        return card
+
+    def test_a_capture_without_lidar_points_is_explained_not_a_crash(self):
+        card = self.card_for(np.zeros((0, 3), np.int16))
+        self.assertIn("no usable LiDAR points", card.summary.text())
+        card.slider.setValue(50)                      # moving the slider afterwards must also be harmless
+        card.canvas.update()
+
+    def test_a_single_point_or_nonfinite_points_are_also_refused_gracefully(self):
+        self.assertIn("no usable LiDAR points", self.card_for(np.array([[1000, 0, 0]], np.int16)).summary.text())
+
+    def test_a_normal_capture_still_draws(self):
+        rng = np.random.default_rng(0)
+        xyz = np.c_[rng.uniform(3000, 9000, 500), rng.uniform(-1000, 1000, 500), rng.uniform(-1000, 1000, 500)].astype(np.int16)
+        card = self.card_for(xyz)
+        self.assertIsNotNone(card.canvas.P)
+        self.assertIn("Size of this change", card.summary.text())

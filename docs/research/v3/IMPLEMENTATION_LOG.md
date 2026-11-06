@@ -49,3 +49,7 @@ Final corrections, verification counts and measured comparisons are recorded in 
     result and its limitation are retained. (Part D) active selection: the earlier benchmark offers one dominant candidate that every information selector picks first, so it cannot separate the finite-effect objective from D/E; no new objective was
     developed, and the established D/E/contrast selectors are the recommended simple choice. No experiment with a pool designed to separate them was run. (Temporal) the V2 monitor is reused unchanged; no new temporal evidence was produced. (Gate 5)
     independent simulated or physical validation: no new data exists.
+
+19. **Generalization audit** (commit `cdb4b22` freeze, run on that commit, then amendments). Audited all recordings (content hashes, device, session, ORB scene similarity, descriptors), found that the four Oct 28 devices are one scene, built the grouped framework (`generalization.py`, leakage tests), froze the protocol and constants by hash, ran
+    every method on eight groups at reduced conditions (user's request for speed), and wrote [GENERALIZATION_AUDIT.md](GENERALIZATION_AUDIT.md). A separate pipeline for unseen data (`unseen.py`, `tools/unseen_pipeline_v3.py`) is tested on synthetic registries only. Post-run amendments to reporting code (join bug that printed a false zero, wrong decision key, guard clauses) are
+    recorded in `FROZEN_GENERALIZATION.json`. Corner-case pass: overlay card with a no-point capture, empty and missing inputs in the new framework; tests added.

@@ -178,7 +178,7 @@
     "research_calibration/fault_diagnostics_v3/diagnostic_inference.py": "2bbe404e85485c42c2506b2691c7b9dce25ffdd785447f001996e59d60868f3f",
     "research_calibration/fault_diagnostics_v3/hypothesis_separation.py": "ac23a2d4bffd2be455100f95278fbb54c23c590fdd6c5402ee9d540c484c2a0f",
     "research_calibration/fault_diagnostics_v3/geometry_signatures.py": "83695b5f47735f5b3421a794ced47979edbe32df0de84992ee6c8fec54abfc61",
-    "research_calibration/fault_diagnostics_v3/generalization.py": "3cf7d48bf154cd74c91b83695b2cf04cf7b4b45dd266b4bcdd2e564581c26117",
+    "research_calibration/fault_diagnostics_v3/generalization.py": "a9cad93720cc8ba5272e5354832433a0f90e8ef0899be4eab2b1f708dc3d527e",
     "research_calibration/fault_diagnostics/policy.py": "746d52525f5fdcc3d1bf9c9416d07451f3ccbfecd6954e32fb4f2f5f5896e96a",
     "research_calibration/fault_diagnostics/cues.py": "985b4bfd315d14d5cd4bcb4f83c6a8bd9fe4af7ed6b574960e82e9f5bd44caab",
     "research_calibration/fault_diagnostics/config.py": "4044a9623154cfcb45feaa30dc250bf9ff6f1664a68b1febcb0601f28d0ec536",
@@ -187,7 +187,13 @@
     "tools/evaluate_fault_diagnostics_v3.py": "262dbcba75de02701ec36a361d6f7cd799be0030d6a2b928084ed1c041c72e2d",
     "tools/evaluate_fault_diagnostics.py": "9cd8f482ca23408614af1226cff8703a19e11936603b90ddb92db5447c2a49bf",
     "tools/analyze_attribution_root_cause_v3.py": "9de373c5399c3c714fbc4d13d0eee9cca0461bddecbcf6210583582236caaee9",
-    "tools/summarize_generalization_v3.py": "61758f4a2f58ced921441fe8e6da777bfc103443346bebbe23e7d8eb83dbf35d",
+    "tools/summarize_generalization_v3.py": "3423207b556b830b40e3f93911abbebfb9979745bc0ce935b63f9db88567f920",
     "docs/research/v3/PROTOCOL_GENERALIZATION.md": "8bd63a958877709d4d05a6144f7a0d2bc0e22541783486355bb8d3f70f6527e7"
-  }
+  },
+  "amendments": [
+    {
+      "note": "Refrozen after the run. Reporting/guard code changed, no computed result: summarizer key for the original-optimizer decision, headline-method naming join (false zero in the nuisance table, empty recovery and selection tables), guard clauses for empty inputs, missing held-out group, missing registry fields, selection without training groups. Original freeze and the run source commit: cdb4b22.",
+      "run_source_commit": "cdb4b2254ba624ff4a6a3fad45ca555ab93afcf1"
+    }
+  ]
 }

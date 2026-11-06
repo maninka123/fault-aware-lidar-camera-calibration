@@ -204,5 +204,30 @@ class Reporting(unittest.TestCase):
                 G.assert_no_leakage(fold, reg)
 
 
+class GuardClauses(unittest.TestCase):
+    def test_selection_without_training_groups_or_variants_is_refused(self):
+        with self.assertRaises(ValueError):
+            G.select_variant({}, ['x'], [])
+        with self.assertRaises(ValueError):
+            G.select_variant({'t': {}}, [], ['t'])
+
+    def test_gap_with_no_groups_or_a_missing_held_out_group_is_refused(self):
+        with self.assertRaises(ValueError):
+            G.worst_and_gap({}, 'exact_rate', True)
+        good = dict(no_change_alarms=0, no_change_trials=1, detections=1, drift_trials=1, exact=1, wrong_unique=0, ambiguous_with_truth=0)
+        with self.assertRaises(ValueError):
+            G.worst_and_gap(dict(a=good), 'exact_rate', True, held_out='b')
+        self.assertIsNone(G.worst_and_gap(dict(a=good), 'exact_rate', True)['gap'])     # one group: no "others" to compare with
+
+    def test_rates_survive_zero_trials(self):
+        empty = dict(no_change_alarms=0, no_change_trials=0, detections=0, drift_trials=0, exact=0, wrong_unique=0, ambiguous_with_truth=0)
+        self.assertEqual(G.rates(empty)['exact_rate'], 0.0)
+
+    def test_a_registry_group_missing_required_fields_is_refused_with_a_clear_message(self):
+        with self.assertRaises(G.LeakageError) as ctx:
+            G.validate_registry(dict(groups=[dict(id='x')]))
+        self.assertIn('lacks required fields', str(ctx.exception))
+
+
 if __name__ == '__main__':
     unittest.main()

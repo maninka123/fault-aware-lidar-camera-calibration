@@ -39,3 +39,7 @@ Start with [ROOT_CAUSE_ANALYSIS.md](ROOT_CAUSE_ANALYSIS.md) and [PROTOCOL_CORRES
 (alternating estimation, a documented negative result, plus `diagnose_pairs`). Tools: `tools/analyze_attribution_root_cause_v3.py`, `tools/evaluate_pairing_v3.py`, `tools/run_research_tests.py` (one process per test module; use it
 instead of a single `unittest discover` run in a clean checkout, see IMPLEMENTATION_LOG.md item 17). The summary of what this achieved is in [RESEARCH_READINESS.md](RESEARCH_READINESS.md): safer pairing and a measured explanation of
 why recorded attribution fails; exact recorded attribution is not solved.
+
+## Generalization audit
+
+[GENERALIZATION_AUDIT.md](GENERALIZATION_AUDIT.md) reports the dataset audit, leakage-free grouped framework, frozen protocol ([PROTOCOL_GENERALIZATION.md](PROTOCOL_GENERALIZATION.md)), per-group results for all methods and the datasets still needed. Conclusion: generalization is **not established**. A pipeline for genuinely new data is `tools/unseen_pipeline_v3.py`.

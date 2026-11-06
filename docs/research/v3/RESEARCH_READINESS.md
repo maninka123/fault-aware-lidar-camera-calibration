@@ -64,3 +64,7 @@ rule, hardware path or maintenance code is changed. Remaining merge risks: the d
 Most valuable next experiments (unchanged in kind, sharpened by this study): independent correspondence information, since pairing at the current estimate cannot be both unbiased and informative. Options, in order of
 cost: fiducial or calibration-target frames inserted into otherwise natural sessions (the Nov 5 board recordings already contain boards); a nominal-period correspondence map re-used across later sessions; multi-view structure;
 then physical sessions with independently measured mount rotations, translations and intrinsics.
+
+## Update after the generalization audit
+
+On eight groups (four never used in any V2/V3 experiment or design) no method attributes the injected group reliably (improved V3 0 of 40, original V3 0 of 40, V2 2 of 40), improved V3 does not show better false-alarm behaviour than the original V3 on groups outside development (`pair3_oct28`), and the four Oct 28 devices turned out to be one scene. **Generalization is not established.** See [GENERALIZATION_AUDIT.md](GENERALIZATION_AUDIT.md) for the groups, results, amendments and the datasets needed.

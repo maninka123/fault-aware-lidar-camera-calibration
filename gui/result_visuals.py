@@ -592,6 +592,14 @@ class OverlayCard(QtWidgets.QFrame):
                 P = P[np.random.default_rng(0).choice(len(P), 60000, replace=False)]
             self.cache = {path: (np.array(z["image"]), P)}
         image, P = self.cache[path]
+        if len(P) < 2 or not np.isfinite(P).all():
+            # Nothing to draw (and the distance scale needs points): say so instead of failing inside the figure.
+            self.canvas.P = None
+            self.canvas.pix = None
+            self.canvas.update()
+            self.summary.setText("This capture has no usable LiDAR points, so there is nothing to draw on its photo.")
+            self.state.setText("")
+            return
         self.canvas.set_scene(image, P, self.ref, self.cand, self.circle)
         self.changed()
         real = self.canvas.real
@@ -613,7 +621,7 @@ class OverlayCard(QtWidgets.QFrame):
         a = float(self.amp.currentData())
         s = self.scale()
         self.canvas.render(s)
-        if not self.has_ref:
+        if not self.has_ref or self.canvas.P is None:
             return
         if self.slider.value() == 0:
             txt = "Showing the <b>current calibration</b>."

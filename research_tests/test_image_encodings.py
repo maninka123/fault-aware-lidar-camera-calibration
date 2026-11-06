@@ -44,3 +44,20 @@ def test_existing_encodings_and_clear_error_for_unknown():
         assert 'bayer_rggb8' in str(error)
     else:
         raise AssertionError('expected ValueError')
+
+
+import unittest  # noqa: E402
+
+
+class ImageEncodingTests(unittest.TestCase):
+    """The functions above are plain pytest-style functions, which unittest discovery does not collect; run them under unittest too."""
+
+    def test_bayer_patterns_recover_a_smooth_colour_image(self):
+        test_bayer_patterns_recover_a_smooth_colour_image()
+
+    def test_existing_encodings_and_clear_error_for_unknown(self):
+        test_existing_encodings_and_clear_error_for_unknown()
+
+
+if __name__ == "__main__":
+    unittest.main()
