@@ -17,8 +17,10 @@ enforced by `research_tests/test_parity.py`: if a control disappears, that test 
 | Leave-one-capture / region-out evidence | Calibration review → Evidence (click a capture to see its images) |
 | Matrices with the changes marked | Calibration review → top of the tab (option / current / difference) |
 | Save calibration TXT, save refined JSON, open results folder, show report | Calibration review → Export and review; **Report** tab |
-| Follow a run stage by stage | **Processing** tab (with live results, Stop and Replay) |
+| Follow a run stage by stage | **Processing** tab: a timeline of stages with live results, Stop and Replay; the maintenance comparison is its last stage |
 | History of checks | Sidebar list, with *accepted* and *written to device* marks |
+| Remembering your last inputs | Calibration, captures, options, dialog folders and window size are restored on start (*Forget* clears them) |
+| The written report | **Report** tab, savable as a PDF |
 | **Accept** a calibration into the accepted history | Result → **Use the result** |
 | **Write** a calibration to a connected device | Result → Use the result (only for checks captured from a device) |
 | **Restore** the previous calibration on the device | Result → Use the result |

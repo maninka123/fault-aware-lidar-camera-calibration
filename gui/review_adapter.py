@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import os
 import shutil
 import sys
@@ -223,6 +224,31 @@ def progress_text(check):
 def core_stage_table():
     from ui_common import STAGES  # the maintenance app's own stage titles
     return STAGES
+
+
+# stages of a maintenance comparison, in the order the maintenance backend reports them
+REVIEW_STEPS = ["data", "features", "health", "options", "search", "refined", "evidence", "verdict"]
+SUB = re.compile(r"check\s+(\d+)\s+of\s+(\d+)")
+
+
+def live_progress(check):
+    """How far a running (or just finished) comparison has got, from its own saved files:
+    dict(done, step, message, sub, images). sub is (i, n) while it compares the update choices capture by capture."""
+    folder = _live(check)
+    prog = read_json(folder / "progress.json") or {}
+    stages = [s for s in prog.get("stages", []) if isinstance(s, dict) and s.get("stage") != "start"]
+    reached = {s.get("stage") for s in stages}
+    step = next((k for k in REVIEW_STEPS if k not in reached), None)
+    images = []
+    for s in stages:
+        for rel in s.get("images") or []:
+            p = folder / str(rel)
+            if str(rel).lower().endswith(".png") and p.is_file():
+                images.append(p)
+    tail = [l for l in log_tail(check, 3) if l.strip()]
+    line = re.sub(r"^\[\s*[\d.]+s\]\s*", "", tail[-1]) if tail else ""
+    m = SUB.search(line)
+    return dict(done=len(reached & set(REVIEW_STEPS)), step=step, message=line, sub=(int(m.group(1)), int(m.group(2))) if m else None, images=images)
 
 
 def log_tail(check, n=12):

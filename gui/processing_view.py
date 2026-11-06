@@ -24,6 +24,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from result_visuals import GainChart
+import review_adapter as ra
+from review_adapter import REVIEW_STEPS
 
 BLUE, GOOD, WARN, BAD = "#007aff", "#248a3d", "#9b6500", "#d70015"
 SOFT = dict(blue="#edf5ff", good="#eaf6ed", warn="#fff6e5", bad="#fff0f1", grey="#eeeef2")
@@ -54,12 +56,26 @@ STAGES = [
      "result says so."),
     ("verdict", "Verdict", "Verdict", ""),
 ]
+REVIEW_STAGE = ("review", "Review", "Run the maintenance comparison",
+                "The original calibration maintenance analysis runs on the same calibration and captures: the four update choices, "
+                "edge RMSE, parameter changes, leave-one-out evidence and the image comparison. It is a separate calculation and never "
+                "changes the verdict above. Its results are in the Calibration review tab when this finishes.")
 SCRATCH_STAGES = [
     ("data", "Data", "Load and stack the captures", STAGES[0][3]),
     ("scratch", "Calibrating", "Estimate a calibration from scratch",
      "A calibration is estimated from the captures alone, then assessed. This takes about ten minutes; the log shows progress."),
     ("verdict", "Result", "Result", ""),
 ]
+
+# one-line captions for the stage list (the pages keep the long titles)
+SHORT = {"data": "Load and stack the captures", "features": "Find edges in each capture", "folds": "Test on held-out captures",
+         "decision": "Decide whether to change", "candidate": "Fit the best explanation", "outer": "Check on unused captures",
+         "verdict": "Final result", "scratch": "Estimate from scratch", "review": "Maintenance comparison"}
+# the maintenance app's own stage names, for the review stage
+REVIEW_TITLES = {"data": "Stacking the captures", "features": "Detecting edges", "health": "Checking the current calibration",
+                 "options": "Comparing the update choices", "search": "Searching for refinements", "refined": "Refining the calibration",
+                 "evidence": "Leave-one-out evidence", "verdict": "Writing the verdict"}
+
 
 DECODED = re.compile(r"decoded\s+(\S+?):\s+still window\s+([\d.]+)\s*s,\s+(\d+)\s+images,\s+(\d+)\s+LiDAR frames")
 FOLD = re.compile(r"comparison fold\s+(\d+)\s*/\s*(\d+)\s*\(([^)]*)\)")
@@ -92,9 +108,9 @@ def num(value):
 class RunModel:
     """Everything the Processing tab knows about one check, built from events. Tolerates any input."""
 
-    def __init__(self, scratch=False, total=None):
+    def __init__(self, scratch=False, total=None, review=False):
         self.scratch = scratch
-        self.stages = SCRATCH_STAGES if scratch else STAGES
+        self.stages = SCRATCH_STAGES if scratch else (STAGES + [REVIEW_STAGE] if review else STAGES)
         self.keys = [s[0] for s in self.stages]
         self.state = {k: "pending" for k in self.keys}
         self.started, self.ended, self.message = {}, {}, {}
@@ -116,6 +132,7 @@ class RunModel:
         self.outer = None
         self.verdict = None
         self.failure = None
+        self.review = dict(done=0, total=len(REVIEW_STEPS), step=None, title="", sub=None, images=[], summary=None, message="")
         self.cancelled = False
         self.folds_t0 = None
         self.version = 0                   # increments on every change (the view redraws when it moves)
@@ -228,7 +245,7 @@ class RunModel:
                               passed=bool(ev.get("passed")))
             self._end("outer")
         elif stage == "verdict":
-            for k in self.keys[:-1]:
+            for k in self.keys[:self.keys.index("verdict")]:
                 if self.state[k] in ("pending", "active"):
                     self._end(k)
             self.verdict = dict(status=ev.get("status"), action=ev.get("action"))
@@ -244,8 +261,52 @@ class RunModel:
             self.version += 1
         return changed
 
+    # ---- the maintenance comparison (its progress comes from its own files, not from progress.jsonl)
+    def enable_review(self):
+        self._t = None
+        """Add the review as a last stage (a check that is already finished gets it when the review starts)."""
+        if "review" not in self.keys and not self.scratch:
+            self.stages = list(self.stages) + [REVIEW_STAGE]
+            self.keys.append("review")
+            self.state["review"] = "pending"
+            self.version += 1
+
+    def review_begin(self):
+        self._t = None
+        self.enable_review()
+        if "review" in self.state and self.state["review"] == "pending":
+            self._begin("review")
+            self.review.update(done=0, step=None, title="Starting", sub=None, summary=None, message="")
+            self.version += 1
+
+    def review_progress(self, done_steps, step, message="", sub=None, images=()):
+        if self.state.get("review") != "active":
+            return
+        r = self.review
+        title = REVIEW_TITLES.get(step, step or "Working")
+        new = (min(done_steps, r["total"]), step, title, message, sub, list(images))
+        if new != (r["done"], r["step"], r["title"], r["message"], r["sub"], r["images"]):
+            r.update(done=new[0], step=step, title=title, message=message, sub=sub, images=list(images))
+            self.version += 1
+
+    def review_done(self, summary=None):
+        self._t = None
+        if "review" in self.state and self.state["review"] in ("pending", "active"):
+            self._begin("review")
+            self._end("review")
+            self.review.update(done=self.review["total"], summary=summary)
+            self.version += 1
+
+    def review_failed(self, message):
+        self._t = None
+        if "review" in self.state:
+            self.state["review"] = "failed"
+            self.review["message"] = str(message or "The maintenance comparison did not finish.")
+            self.version += 1
+
     def apply_log_line(self, line):
         """Understand the lines the child process prints. Returns True when something was recognised."""
+        self._t = None
         text = str(line or "")
         m = DECODED.search(text)
         if m:
@@ -266,8 +327,14 @@ class RunModel:
         return False
 
     def mark_failed(self, message):
+        self._t = None
         """The run stopped with an error: the active stage (or the first pending one) turns red. Only the first failure counts."""
         if self.failure:
+            return
+        if self.state.get("review") == "active":
+            self.state["review"] = "failed"
+            self.failure = str(message or "The check stopped.")
+            self.version += 1
             return
         key = next((k for k in self.keys if self.state[k] == "active"), None) or next((k for k in self.keys if self.state[k] == "pending"), self.keys[-1])
         self.started.setdefault(key, time.monotonic())
@@ -736,12 +803,174 @@ def _card():
     return f, lay
 
 
-class ProcessingView(QtWidgets.QWidget):
-    """The tab. begin() starts following a run; poll() is called by a timer; show_result() shows a finished check."""
-    stage_changed = QtCore.pyqtSignal(str)
+class ImageStrip(QtWidgets.QWidget):
+    """The newest images a stage produced, with captions; new ones fade in. Unreadable or half-written files are retried."""
+    LIMIT = 8
 
     def __init__(self):
         super().__init__()
+        self.grid = QtWidgets.QGridLayout(self)
+        self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setSpacing(10)
+        self.shown = []
+        self.more = QtWidgets.QLabel("")
+        self.more.setObjectName("footnote")
+        self.anim = []
+
+    def clear(self):
+        while self.grid.count():
+            item = self.grid.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self.shown, self.anim = [], []
+
+    def set_images(self, items):
+        """items: [(path, caption)], oldest first. Shows the newest LIMIT."""
+        wanted = list(items)[-self.LIMIT:]
+        if [str(p) for p, _c in wanted] == [str(p) for p, _c in self.shown]:
+            return
+        fresh = {str(p) for p, _c in wanted} - {str(p) for p, _c in self.shown}
+        self.clear()
+        for n, (path, caption) in enumerate(wanted):
+            pm = QtGui.QPixmap(str(path))
+            if pm.isNull():
+                continue
+            self.shown.append((path, caption))
+            tile = QtWidgets.QFrame()
+            tile.setStyleSheet(f"QFrame {{ background: white; border: 1px solid {LINE}; border-radius: 10px; }} QLabel {{ border: none; }}")
+            tl = QtWidgets.QVBoxLayout(tile)
+            tl.setContentsMargins(6, 6, 6, 6)
+            tl.setSpacing(3)
+            img = QtWidgets.QLabel()
+            img.setPixmap(pm.scaledToHeight(96, Qt.SmoothTransformation))
+            img.setAlignment(Qt.AlignCenter)
+            tl.addWidget(img)
+            cap = QtWidgets.QLabel(caption)
+            cap.setAlignment(Qt.AlignCenter)
+            cap.setStyleSheet(f"color: {MUTED}; font-size: 12px;")
+            tl.addWidget(cap)
+            self.grid.addWidget(tile, n // 4, n % 4)
+            if str(path) in fresh:
+                effect = QtWidgets.QGraphicsOpacityEffect(tile)
+                tile.setGraphicsEffect(effect)
+                anim = QtCore.QPropertyAnimation(effect, b"opacity", tile)
+                anim.setDuration(450)
+                anim.setStartValue(0.0)
+                anim.setEndValue(1.0)
+                anim.finished.connect(lambda t=tile: t.setGraphicsEffect(None))
+                anim.start()
+                self.anim.append(anim)
+
+
+class StageDelegate(QtWidgets.QStyledItemDelegate):
+    """One stage as a timeline row: numbered badge (a tick when done, a pulsing ring while running), the stage name, a
+    one-line caption, and how long it took. A line joins the badges and turns green as stages complete."""
+    HEIGHT = 62
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.phase = 0.0
+
+    def sizeHint(self, option, index):
+        return QtCore.QSize(option.rect.width(), self.HEIGHT)
+
+    def paint(self, p, option, index):
+        d = index.data(Qt.UserRole) or {}
+        state = d.get("state", "pending")
+        p.save()
+        p.setRenderHint(QtGui.QPainter.Antialiasing)
+        r = QtCore.QRectF(option.rect).adjusted(4, 3, -4, -3)
+        selected = bool(option.state & QtWidgets.QStyle.State_Selected)
+        hover = bool(option.state & QtWidgets.QStyle.State_MouseOver) and state != "pending"
+        if selected or hover:
+            p.setPen(QtGui.QPen(QtGui.QColor(BLUE), 1.2) if selected else Qt.NoPen)
+            p.setBrush(QtGui.QColor(SOFT["blue"] if selected else "#f1f3f7"))
+            p.drawRoundedRect(r, 12, 12)
+        cx, cy, rad = r.left() + 26, r.center().y(), 14
+        # the timeline between badges
+        if not d.get("first"):
+            p.setPen(QtGui.QPen(QtGui.QColor(GOOD if d.get("prev_done") else LINE), 2))
+            p.drawLine(QtCore.QPointF(cx, r.top() - 3), QtCore.QPointF(cx, cy - rad - 1))
+        if not d.get("last"):
+            p.setPen(QtGui.QPen(QtGui.QColor(GOOD if state == "done" else LINE), 2))
+            p.drawLine(QtCore.QPointF(cx, cy + rad + 1), QtCore.QPointF(cx, r.bottom() + 3))
+        colour, text, fg = {"done": (GOOD, "✓", "white"), "active": (BLUE, str(d.get("number", "")), "white"),
+                            "failed": (BAD, "!", "white")}.get(state, ("#e4e4ea", str(d.get("number", "")), MUTED))
+        if state == "active":
+            pulse = 0.5 + 0.5 * math.sin(self.phase * 2 * math.pi)
+            ring = QtGui.QColor(BLUE)
+            ring.setAlphaF(0.28 * (1 - pulse))
+            p.setPen(Qt.NoPen)
+            p.setBrush(ring)
+            p.drawEllipse(QtCore.QPointF(cx, cy), rad + 2 + 5 * pulse, rad + 2 + 5 * pulse)
+        p.setPen(Qt.NoPen)
+        p.setBrush(QtGui.QColor(colour))
+        p.drawEllipse(QtCore.QPointF(cx, cy), rad, rad)
+        f = QtGui.QFont(option.font)
+        f.setPixelSize(13)
+        f.setBold(True)
+        p.setFont(f)
+        p.setPen(QtGui.QColor(fg))
+        p.drawText(QtCore.QRectF(cx - rad, cy - rad, 2 * rad, 2 * rad), Qt.AlignCenter, text)
+        # text
+        x0, x1 = cx + rad + 12, r.right() - 10
+        took = d.get("duration") or ""
+        f.setPixelSize(12)
+        f.setBold(False)
+        p.setFont(f)
+        took_w = p.fontMetrics().horizontalAdvance(took) + 4 if took else 0
+        p.setPen(QtGui.QColor(MUTED))
+        if took:
+            p.drawText(QtCore.QRectF(x1 - took_w, cy - 20, took_w, 22), Qt.AlignRight | Qt.AlignVCenter, took)
+        title_color = {"done": INK, "active": BLUE, "failed": BAD}.get(state, MUTED)
+        f.setPixelSize(14)
+        f.setBold(state in ("active", "failed", "done"))
+        p.setFont(f)
+        p.setPen(QtGui.QColor(title_color))
+        room = max(10, x1 - x0 - took_w - 6)
+        p.drawText(QtCore.QRectF(x0, cy - 21, room, 22), Qt.AlignLeft | Qt.AlignVCenter,
+                   p.fontMetrics().elidedText(d.get("title", ""), Qt.ElideRight, int(room)))
+        f.setPixelSize(12)
+        f.setBold(False)
+        p.setFont(f)
+        p.setPen(QtGui.QColor(MUTED if state != "pending" else "#a1a1a8"))
+        p.drawText(QtCore.QRectF(x0, cy + 2, x1 - x0, 20), Qt.AlignLeft | Qt.AlignVCenter,
+                   p.fontMetrics().elidedText(d.get("caption", ""), Qt.ElideRight, int(x1 - x0)))
+        p.restore()
+
+
+class StageList(QtWidgets.QListWidget):
+    """The stages of a check as a timeline."""
+
+    def __init__(self):
+        super().__init__()
+        self.setObjectName("stages")
+        self.delegate = StageDelegate(self)
+        self.setItemDelegate(self.delegate)
+        self.setMouseTracking(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.setStyleSheet("QListWidget#stages { background: transparent; border: none; outline: none; }")
+        self.setMinimumWidth(270)
+        self.setMaximumWidth(330)
+
+    def set_phase(self, phase):
+        self.delegate.phase = phase
+        self.viewport().update()
+
+
+class ProcessingView(QtWidgets.QWidget):
+    """The tab. begin() starts following a run; poll() is called by a timer; show_result() shows a finished check."""
+    stage_changed = QtCore.pyqtSignal(str)
+    stop_review = QtCore.pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.review_check = None
+        self._review_tick = 0
         self.model = RunModel()
         self.tail = None
         self.folder = None
@@ -759,12 +988,7 @@ class ProcessingView(QtWidgets.QWidget):
         outer.addWidget(self.bar)
         split = QtWidgets.QSplitter()
         split.setHandleWidth(10)
-        self.list = QtWidgets.QListWidget()
-        self.list.setObjectName("runs")
-        self.list.setMinimumWidth(240)
-        self.list.setMaximumWidth(320)
-        self.list.setWordWrap(True)
-        self.list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.list = StageList()
         self.list.currentRowChanged.connect(self._row_selected)
         self.list.itemClicked.connect(lambda *_: setattr(self, "follow", False))
         self.stack = QtWidgets.QStackedWidget()
@@ -799,9 +1023,10 @@ class ProcessingView(QtWidgets.QWidget):
         self.reset()
 
     # ---------------------------------------------------------------- lifecycle
-    def reset(self, scratch=False, total=None):
+    def reset(self, scratch=False, total=None, review=False):
         self.timer.stop()
-        self.model = RunModel(scratch, total)
+        self.review_check = None
+        self.model = RunModel(scratch, total, review)
         self.tail, self.folder, self.follow, self.replaying, self.replay_events = None, None, True, False, []
         self.shown_version = -1
         self._build_pages()
@@ -810,9 +1035,10 @@ class ProcessingView(QtWidgets.QWidget):
         self.bar.set_model(self.model)
         self._refresh_list()
 
-    def begin(self, output, scratch=False, total=None):
-        """Start following a running check whose output folder is `output`."""
-        self.reset(scratch, total)
+    def begin(self, output, scratch=False, total=None, review=False):
+        """Start following a running check whose output folder is `output`. review=True adds the maintenance comparison
+        as the last stage, shown here as it runs after the fault-aware result."""
+        self.reset(scratch, total, review and not scratch)
         self.folder = Path(output)
         self.tail = EventTail(self.folder / "progress.jsonl")
         self.model.live = True
@@ -838,7 +1064,46 @@ class ProcessingView(QtWidgets.QWidget):
                 self.model.apply(ev)
         if self.folder is not None and not self.model.scratch:
             self.pages["data"]["thumbs"].add_folder(self.folder / "inputs" / "stacked" / "data")
+        self._poll_review()
         self._sync()
+
+    def _poll_review(self, force=False):
+        """Read the running comparison's own progress files (about twice a second)."""
+        if self.review_check is None or self.model.state.get("review") != "active":
+            return
+        self._review_tick += 1
+        if not force and self._review_tick % 15:
+            return
+        try:
+            info = ra.live_progress(self.review_check)
+        except Exception:  # noqa: BLE001 - a half-written progress file is simply read again next time
+            return
+        self.model.review_progress(info["done"], info["step"], info["message"], info["sub"], info["images"])
+
+    def add_review(self, check):
+        """The maintenance comparison of a finished check has started: it becomes the last stage, shown live."""
+        self.review_check = Path(check)
+        self.model.live = True
+        if "review" not in self.model.keys:
+            self.model.enable_review()
+            self._make_page("review", REVIEW_STAGE[2], REVIEW_STAGE[3])
+        self.model.review_begin()
+        self.follow = True
+        self.timer.start()
+        self._sync(force=True)
+
+    def review_finished(self, ok, message=""):
+        """The comparison ended: done (its summary is read) or failed with a reason."""
+        if self.model.state.get("review") not in ("pending", "active"):
+            return
+        self._poll_review(force=True)
+        if ok and self.review_check is not None:
+            summary = ra.read_json(ra.run_folder(self.review_check) / "summary.json") or {}
+            self.model.review_done(summary)
+        else:
+            self.model.review_failed(message)
+        self.review_check = None
+        self._sync(force=True)
 
     def finish(self, ok, message=""):
         """The child process ended. Final read; mark failure when it did not succeed."""
@@ -857,10 +1122,11 @@ class ProcessingView(QtWidgets.QWidget):
         self.timer.stop()
         self.tail = None
 
-    def show_result(self, folder, result):
-        """A finished check (new or older): every stage done, with the saved results; Replay plays it back."""
+    def show_result(self, folder, result, review=None):
+        """A finished check (new or older): every stage done, with the saved results; Replay plays it back.
+        review: None (no maintenance comparison), 'done' (saved in the check) or 'running'."""
         events = saved_events(folder) or events_from_result(result, folder)
-        self.reset(False, None)
+        self.reset(False, None, bool(review))
         self.folder = Path(folder)
         for ev in events:
             self.model.apply(ev)
@@ -870,9 +1136,16 @@ class ProcessingView(QtWidgets.QWidget):
         thumbs.add_folder(self.folder / "inputs" / "stacked" / "data", fade=False)
         self.replay_events = events
         self.replay_button.setVisible(len(events) > 3)
+        if review == "done":
+            self.model.enable_review()
+            self.model.review_done(ra.read_json(ra.run_folder(folder) / "summary.json") or {})
+        elif review == "running":
+            self.review_check = self.folder
+            self.model.review_begin()
+            self.timer.start()
         self._sync(force=True)
         self._finalize_visuals()
-        key = "verdict" if self.model.state.get("verdict") == "done" else self.model.keys[0]
+        key = "review" if review == "running" else ("verdict" if self.model.state.get("verdict") == "done" else self.model.keys[0])
         self.select_stage(key)
 
     def replay(self):
@@ -880,7 +1153,10 @@ class ProcessingView(QtWidgets.QWidget):
         if not self.replay_events or self.replaying:
             return
         events, folder = list(self.replay_events), self.folder
-        self.reset(False, None)
+        had_review = "review" in self.model.keys
+        summary = self.model.review.get("summary")
+        self.reset(False, None, had_review)
+        self._replay_review = (had_review, summary)
         self.folder = folder
         self.replaying = True
         self.follow = True
@@ -898,6 +1174,10 @@ class ProcessingView(QtWidgets.QWidget):
             w.deleteLater()
         self.pages = {}
         for key, _tab, title, hint in self.model.stages:
+            self._make_page(key, title, hint)
+
+    def _make_page(self, key, title, hint):
+        if True:
             card, lay = _card()
             head = QtWidgets.QHBoxLayout()
             t = _label(title, "headline")
@@ -954,6 +1234,24 @@ class ProcessingView(QtWidgets.QWidget):
             elif key in ("candidate", "outer", "verdict"):
                 page["detail"] = _label("", "muted", rich=True)
                 lay.addWidget(page["detail"])
+            elif key == "review":
+                page["bar"] = QtWidgets.QProgressBar()
+                page["bar"].setTextVisible(False)
+                page["bar"].setRange(0, len(REVIEW_STEPS))
+                page["now"] = _label("", "muted", rich=True)
+                page["sub"] = QtWidgets.QProgressBar()
+                page["sub"].setTextVisible(False)
+                page["sub"].hide()
+                page["images"] = ImageStrip()
+                page["summary"] = _label("", "muted", rich=True)
+                page["stop"] = QtWidgets.QPushButton("Stop the comparison")
+                page["stop"].clicked.connect(self.stop_review.emit)
+                for w in (page["bar"], page["now"], page["sub"], page["images"], page["summary"]):
+                    lay.addWidget(w)
+                row = QtWidgets.QHBoxLayout()
+                row.addWidget(page["stop"])
+                row.addStretch(1)
+                lay.addLayout(row)
             lay.addStretch(1)
             scroll = QtWidgets.QScrollArea()
             scroll.setWidgetResizable(True)
@@ -996,13 +1294,14 @@ class ProcessingView(QtWidgets.QWidget):
         current = self.list.currentRow()
         self.list.blockSignals(True)
         self.list.clear()
-        for key, _tab, title, _hint in m.stages:
+        for n, (key, tab, _title, _hint) in enumerate(m.stages):
             st = m.state[key]
-            mark = {"done": "✓", "active": "●", "failed": "!"}.get(st, "○")
             seconds = m.duration(key)
-            took = f" · {_secs(seconds)}" if seconds is not None and st in ("active", "done") else ""
-            item = QtWidgets.QListWidgetItem(f"{mark}  {title}{took}")
-            item.setForeground(QtGui.QColor({"done": INK, "active": BLUE, "failed": BAD}.get(st, MUTED)))
+            item = QtWidgets.QListWidgetItem()
+            item.setData(Qt.UserRole, dict(
+                number=n + 1, title=tab, caption=SHORT.get(key, ""), state=st, first=n == 0, last=n == len(m.stages) - 1,
+                prev_done=n > 0 and m.state[m.keys[n - 1]] == "done",
+                duration=_secs(seconds) if seconds is not None and st in ("active", "done") else ""))
             if st == "pending":
                 item.setFlags(Qt.ItemIsEnabled)
             self.list.addItem(item)
@@ -1015,7 +1314,7 @@ class ProcessingView(QtWidgets.QWidget):
         for key, page in self.pages.items():
             st = m.state[key]
             page["msg"].setText(m.failure if st == "failed" and m.failure else m.message.get(key, "") or
-                                {"pending": "Waiting for the earlier stages.", "done": "Done.", "active": "Working…"}[st])
+                                {"pending": "Waiting for the earlier stages.", "done": "Done.", "active": "Working…", "failed": "This stage did not finish."}.get(st, ""))
             seconds = m.duration(key)
             page["clock"].setText(_secs(seconds) if seconds is not None and st in ("active", "done") else "")
         data = self.pages["data"]
@@ -1052,6 +1351,32 @@ class ProcessingView(QtWidgets.QWidget):
                 "No captures were kept aside, so the final independent test was not run." if not o["count"] else
                 f"{o['count']} untouched captures tested: gain {o['gain'] * 100:.2f} %, " + ("passed." if o["passed"] else "not passed.") if o["gain"] is not None
                 else f"{o['count']} untouched captures were tested; the test could not be scored.")
+        if "review" in self.pages:
+            page, r, st = self.pages["review"], m.review, m.state["review"]
+            page["bar"].setRange(0, r["total"])
+            page["bar"].setValue(r["done"])
+            page["stop"].setVisible(st == "active")
+            if st == "pending":
+                page["now"].setText("Waiting for the check to finish.")
+            elif st == "active":
+                page["now"].setText(f"<b>{r['title'] or 'Starting'}</b>" + (f" · {r['message']}" if r["message"] and r["message"] != r["title"] else ""))
+            elif st == "done":
+                page["now"].setText("Finished. Everything is in the Calibration review tab.")
+            else:
+                page["now"].setText(f"<span style='color:{BAD}'>{r['message'] or m.failure or 'The comparison did not finish.'}</span>")
+            sub = r["sub"] if st == "active" else None
+            page["sub"].setVisible(bool(sub))
+            if sub:
+                page["sub"].setRange(0, max(sub[1], 1))
+                page["sub"].setValue(min(sub[0], sub[1]))
+            page["images"].set_images([(p, short_id(Path(p).stem.split("_")[-3] if False else Path(p).stem)) for p in r["images"]])
+            s = r["summary"]
+            if st == "done" and isinstance(s, dict) and s.get("verdict"):
+                shift = num(s.get("shift_median_px"))
+                page["summary"].setText(f"<b>Maintenance recommendation: {str(s['verdict']).capitalize()}.</b>" +
+                                        (f" Typical point shift of the refined calibration: {shift:.2f} px." if shift is not None else ""))
+            else:
+                page["summary"].setText("")
         if "verdict" in self.pages and m.verdict:
             self.pages["verdict"]["detail"].setText(f"<b>{str(m.verdict.get('status') or '').replace('_', ' ').capitalize()}</b>. "
                                                     "Open the Result tab for the full assessment.")
@@ -1099,6 +1424,8 @@ class ProcessingView(QtWidgets.QWidget):
     def _tick(self):
         self.phase = (self.phase + 0.03) % 1.0
         self.bar.tick(self.phase)
+        if self.model.active:
+            self.list.set_phase(self.phase)
         if self.replaying:
             if getattr(self, "_replay_wait", 0) > 0:
                 self._replay_wait -= 1
@@ -1111,7 +1438,14 @@ class ProcessingView(QtWidgets.QWidget):
                 self.replaying = False
                 self.replay_button.setEnabled(True)
                 self.follow = False
-        self.poll() if self.tail is not None else self._sync()
+                had, summary = getattr(self, "_replay_review", (False, None))
+                if had:
+                    self.model.review_done(summary)
+        if self.tail is not None:
+            self.poll()
+        else:
+            self._poll_review()
+            self._sync()
         moving = False
         if "folds" in self.pages:
             moving |= self.pages["folds"]["race"].step()

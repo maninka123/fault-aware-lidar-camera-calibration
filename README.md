@@ -55,8 +55,11 @@ Strategies: `fault_aware`, `joint`, `no_observability`, `no_selection`, `single_
 Windows 10/11, Python 3.10/3.11. Start it with **start_research_gui.bat** (or the shortcut). Other systems are untested.
 
 - **New check** takes an existing calibration and a folder of recorded captures. **Devices** connects to a sensor, reads its calibration and captures a sample to check (read-only: nothing is ever written to a device).
+- The app **remembers** your last calibration, captures folder, options, where you last browsed, and the window size and position (in `%LOCALAPPDATA%\FaultAwareCalibration\settings.json`). It never starts a check by itself; *Forget* on the New check page clears it. Loading a calibration shows its camera and LiDAR matrices side by side straight away.
 - **Processing** follows the check stage by stage: captures appearing as they are stacked, edges per capture, and every explanation's held-out result drawn as each fold completes. **Stop check** ends it safely. Finished checks can be replayed from their saved results.
 - **Use the result** (bottom of Result) accepts a calibration into `accepted/`, writes it to the connected device or restores the previous one, and re-runs a check with the same inputs. Everything the maintenance app does is here: see [docs/FEATURES.md](docs/FEATURES.md).
+- When *Also run the maintenance comparison* is ticked, the comparison runs as the last Processing stage, so every tab is complete when the check finishes.
+- **Report** is the written account of a check as a designed page (verdict, how the explanations compared, what the data could see, changes, inputs, limits). It can be saved as a PDF or copied as a summary.
 - **Result** is the fault-aware assessment. **Calibration review** shows the original maintenance analysis of the same calibration and captures (four update choices, RMSE, parameter changes, leave-one-out evidence, matrices, images). It is a separate calculation: it runs after a new check when the option on the setup page is ticked, or on demand for any older check, and never changes the fault-aware verdict.
 - Every check is saved under `research_artifacts/<check>/` (the maintenance comparison in its `review/` folder). Your calibration files are never modified.
 

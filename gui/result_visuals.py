@@ -653,11 +653,16 @@ class GainChart(QtWidgets.QWidget):
         QtWidgets.QToolTip.showText(e.globalPos(), txt, self)
 
 
+def _dict(value):
+    return value if isinstance(value, dict) else {}
+
+
 def gain_rows(r):
-    diag = r.get("diagnostics") or {}
-    dec = diag.get("decision") or {}
-    losses = dec.get("mean_losses") or {}
-    folds = (r.get("validation") or {}).get("folds") or {}
+    r = _dict(r)
+    diag = _dict(r.get("diagnostics"))
+    dec = _dict(diag.get("decision"))
+    losses = _dict(dec.get("mean_losses"))
+    folds = _dict(_dict(r.get("validation")).get("folds"))
     if not losses or "KEEP" not in losses:
         return [], None
     keep = losses["KEEP"]

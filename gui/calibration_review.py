@@ -122,6 +122,7 @@ def collapsible(card, expanded=True):
 class CalibrationReview(QtWidgets.QWidget):
     """The tab. set_check() shows a finished fault-aware check; it starts nothing."""
     changed = QtCore.pyqtSignal()   # a comparison started or ended (the host may refresh its lists)
+    show_processing = QtCore.pyqtSignal()   # the user asked to watch the running comparison in the Processing tab
 
     def __init__(self):
         super().__init__()
@@ -219,6 +220,8 @@ class CalibrationReview(QtWidgets.QWidget):
             kind, text = ra.agreement((self.result or {}).get("status"), info["summary"]["verdict"])
             colour = {"agree": GOOD, "differ": WARN, "info": MUTED}[kind]
             lay.addWidget(_label(f"<span style='color:{colour}'><b>{'Agreement' if kind == 'agree' else 'Different answers' if kind == 'differ' else 'Note'}:</b></span> {text}", rich=True))
+            if ra.is_stale(info, self.meta):
+                lay.addWidget(_label(f"<b style='color:{WARN}'>The check now points at different files than this comparison used.</b>", rich=True))
         return card
 
     @staticmethod
@@ -270,9 +273,10 @@ class CalibrationReview(QtWidgets.QWidget):
         lay.addWidget(bar)
         self.progress_label = _label(ra.progress_text(self.folder), "muted")
         lay.addWidget(self.progress_label)
-        lay.addWidget(_label("This takes a few minutes. You can keep using the other tabs; this tab updates when it finishes.", "small"))
+        lay.addWidget(_label("This takes a few minutes and is also shown step by step in the Processing tab. This tab updates when it finishes.", "small"))
         row = QtWidgets.QHBoxLayout()
         row.addWidget(_button("Stop", self.stop))
+        row.addWidget(_button("Show in Processing", self.show_processing.emit))
         row.addStretch(1)
         lay.addLayout(row)
         return card
@@ -307,12 +311,11 @@ class CalibrationReview(QtWidgets.QWidget):
         old.deleteLater()
         self.lay.insertWidget(0, self.verdict_card(info))
 
-        self.lay.addWidget(self.meta_card(info))
-        # as in the maintenance app's Result header: the matrices come first, under the verdicts, expanded,
-        # with the option's changes marked; choosing an option card below updates them
+        # as in the maintenance app's Result header: its own matrix preview comes first, under the verdicts, expanded,
+        # with the option's changes marked; choosing an option card below updates it
         self.matrices = MatrixPreview()
-        self.lay.addWidget(self.matrix_block())
-        self.lay.addWidget(self.nav_strip())
+        self.sections["Matrices"] = self.matrices
+        self.lay.addWidget(self.matrices)
 
         comparison = s.get("strategy_comparison")
         # A. update comparison
@@ -366,83 +369,23 @@ class CalibrationReview(QtWidgets.QWidget):
         self.lay.addWidget(self.export_card(info))
         self.preview_mode(self.options.active_mode if self.options is not None else s["mode"])
 
-    def meta_card(self, info):
-        s = info["summary"]
-        stale = ra.is_stale(info, self.meta)
-        text = (f"Maintenance comparison run {s['date'].replace('T', ' ')} on {len(s['captures'])} captures with the same calibration "
-                f"and capture folder as this check. It is a separate calculation, saved in this check’s {ra.REVIEW_DIR} folder.")
-        card = QtWidgets.QFrame()
-        card.setObjectName("card")
-        lay = QtWidgets.QHBoxLayout(card)
-        lay.setContentsMargins(20, 12, 20, 12)
-        lay.addWidget(_label(text + ("  <b style='color:%s'>The check now points at different files than this comparison used.</b>" % WARN if stale else ""),
-                             "small", rich=True), 1)
-        again = _button("Run again…", self.start)
-        again.setEnabled(self.ready_to_run())
-        lay.addWidget(again)
-        return card
-
-    def nav_strip(self):
-        wrap = QtWidgets.QWidget()
-        row = QtWidgets.QHBoxLayout(wrap)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(8)
-        row.addWidget(_label("Jump to", "small", wrap=False))
-        for name in ("Compare", "Quality", "Parameters", "Images", "Evidence", "Matrices", "Export"):
-            b = _button(name, name=None)
-            b.setObjectName("chip")
-            b.clicked.connect(lambda _=False, n=name: self.jump(n))
-            row.addWidget(b)
-        row.addStretch(1)
-        return wrap
-
-    def jump(self, name):
-        w = self.sections.get(name)
-        if w is not None:
-            w.show()
-            QtCore.QTimer.singleShot(0, lambda: self.scroll.verticalScrollBar().setValue(max(0, w.mapTo(self.body, QtCore.QPoint(0, 0)).y() - 8)))
-
-    def matrix_block(self):
-        """The maintenance app's own matrix preview (K, distortion, T with Δ markers and its Hide / Show), plus a switch
-        between the option's values with their changes, the current values, and the differences alone."""
-        block = QtWidgets.QWidget()
-        self.sections["Matrices"] = block
-        bl = QtWidgets.QVBoxLayout(block)
-        bl.setContentsMargins(0, 0, 0, 0)
-        bl.setSpacing(8)
-        row = QtWidgets.QHBoxLayout()
-        row.setSpacing(8)
-        row.addWidget(_label("Matrices show", "small", wrap=False))
-        self.view_buttons = {}
-        group = QtWidgets.QButtonGroup(block)
-        for key, text, tip in (("candidate", "Option with changes", "The selected option’s values; changed ones carry their Δ"),
-                               ("current", "Current", "The calibration in use now"),
-                               ("difference", "Differences only", "Only how much each value changes")):
-            b = _button(text)
-            b.setCheckable(True)
-            b.setToolTip(tip)
-            b.setChecked(key == "candidate")
-            b.clicked.connect(lambda _=False, k=key: self.matrices.set_view(k))
-            group.addButton(b)
-            row.addWidget(b)
-            self.view_buttons[key] = b
-        row.addStretch(1)
-        row.addWidget(_label("Pick an option card below to preview its matrices", "small", wrap=False))
-        bl.addLayout(row)
-        bl.addWidget(self.matrices)
-        return block
-
     def export_card(self, info):
         out = info["out"]
         card, cl = _frame("Export and review", "Take a candidate out of this app for review. Nothing here changes the calibration in use.")
         self.sections["Export"] = card
         self.export_label = _label("", "small")
         cl.addWidget(self.export_label)
+        s = info["summary"]
+        cl.addWidget(_label(f"Maintenance comparison run {s['date'].replace('T', ' ')} on {len(s['captures'])} captures, with the same calibration and "
+                            f"captures as this check. It is a separate calculation, saved in this check’s {ra.REVIEW_DIR} folder.", "footnote"))
         self.export_button = _button("Save calibration TXT…", lambda: self.save_txt(info), "primary")
+        again = _button("Run the comparison again…", self.start)
+        again.setEnabled(self.ready_to_run())
         buttons = [self.export_button,
                    _button("Save refined JSON…", lambda: self.save_refined(out)),
                    _button("Open results folder", lambda: open_path(out)),
-                   _button("Show report", lambda: self.show_report(out))]
+                   _button("Show report", lambda: self.show_report(out)),
+                   again]
         cl.addWidget(action_flow(buttons))
         cl.addWidget(_label("Accepting a calibration and writing to a device are not offered here: the fault-aware verdict decides whether "
                             "anything should change, and a candidate existing is not a reason to accept it. The calibration file this check "

@@ -94,7 +94,7 @@ class Parity(unittest.TestCase):
             review = calibration_review.CalibrationReview()
             review.set_check(check, {"status": "KEEP_CURRENT"}, {"mode": "check"}, None)
             have = texts(review)
-            for button in ("Save calibration TXT…", "Save refined JSON…", "Open results folder", "Show report", "Run again…"):
+            for button in ("Save calibration TXT…", "Save refined JSON…", "Open results folder", "Show report", "Run the comparison again…"):
                 self.assertIn(button, have)
             for section in ("Compare", "Quality", "Parameters", "Images", "Evidence", "Matrices", "Export"):
                 self.assertIn(section, review.sections)

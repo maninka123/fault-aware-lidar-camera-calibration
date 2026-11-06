@@ -32,7 +32,10 @@ import app_icon  # noqa: E402
 import result_visuals  # noqa: E402
 import calibration_review  # noqa: E402
 import processing_view  # noqa: E402
+import report_view  # noqa: E402
+import matrix_view  # noqa: E402
 import review_adapter  # noqa: E402
+import settings_store  # noqa: E402
 import use_result  # noqa: E402
 from version import VERSION  # noqa: E402
 
@@ -579,6 +582,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.output = None
         self.process = None
         self.history_cache = {}
+        self.store = None            # set by main(): what to remember between sessions (tests and screenshots leave it off)
         self.pending_device = None   # device capture folder of the check about to start (kept in its metadata)
         self.run_output = None      # folder of the check that is running (self.output follows what the user opens)
         self.stopping = False
@@ -650,18 +654,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         """Never leave a check running unseen: ask first, then stop it (and the review) cleanly."""
-        if self.is_running():
-            answer = QtWidgets.QMessageBox.question(self, "A check is running", "Stop the running check and close the app? "
+        if self.is_running() or self.review.is_running():
+            answer = QtWidgets.QMessageBox.question(self, "A check is running", "Stop the running check or calibration review and close the app? "
                                                     "Nothing is changed; the partial output stays in its folder.")
             if answer != QtWidgets.QMessageBox.Yes:
                 event.ignore()
                 return
-            self.stopping = True
-            self.process.kill()
-            self.process.waitForFinished(3000)
+            if self.is_running():
+                self.stopping = True
+                self.process.kill()
+                self.process.waitForFinished(3000)
         self.review.shutdown()
         if self.devices is not None:
             self.devices.shutdown()
+        self.remember(geometry=self.saveGeometry().toBase64().data().decode("ascii"))
         event.accept()
 
     # ---- sidebar navigation
@@ -738,6 +744,20 @@ class MainWindow(QtWidgets.QMainWindow):
         v.addWidget(label("New check", "largeTitle", wrap=False))
         v.addWidget(label("Choose a calibration and recorded captures. We’ll check which parameters the data can "
                           "support changing, and keep your calibration unless the evidence is strong enough.", "muted"))
+        self.restored_row = QtWidgets.QWidget()
+        rr = QtWidgets.QHBoxLayout(self.restored_row)
+        rr.setContentsMargins(0, 0, 0, 0)
+        self.restored_text = label("", "footnote", wrap=False)
+        rr.addWidget(self.restored_text)
+        forget = QtWidgets.QPushButton("Forget")
+        forget.setObjectName("link")
+        forget.setCursor(QtCore.Qt.PointingHandCursor)
+        forget.setToolTip("Stop remembering the calibration, captures and options")
+        forget.clicked.connect(self.forget_remembered)
+        rr.addWidget(forget)
+        rr.addStretch(1)
+        self.restored_row.hide()
+        v.addWidget(self.restored_row)
 
         self.cal = Step(1, "Existing calibration", "The camera settings and alignment in use now",
                         "Choose a suggested calibration…", sug["calibrations"])
@@ -796,6 +816,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.strategy = QtWidgets.QComboBox()
         for name, key in STRATEGIES:
             self.strategy.addItem(name, key)
+        self.strategy.currentIndexChanged.connect(lambda _i: self.remember(strategy=self.strategy.currentData()))
         grid.addWidget(self.mode_combo, 1, 0)
         grid.addWidget(self.strategy, 1, 1)
         grid.setColumnStretch(0, 1)
@@ -807,7 +828,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     "calibration and captures (a few more minutes). Its results appear in the Calibration review tab and "
                                     "never change the fault-aware result. You can also run it later from that tab.")
         l3.addWidget(self.auto_review)
-        self.auto_review.toggled.connect(lambda _on: self.update_ready())
+        self.auto_review.toggled.connect(lambda on: (self.remember(auto_review=bool(on)), self.update_ready()))
         self.run_btn = QtWidgets.QPushButton("Check calibration")
         self.run_btn.setObjectName("primary")
         self.run_btn.clicked.connect(self.run)
@@ -859,6 +880,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.addWidget(self.build_result())
         self.review = calibration_review.CalibrationReview()
         self.review.changed.connect(self.on_review_changed)
+        self.review.show_processing.connect(lambda: self.pager.select(0))
+        self.processing.stop_review.connect(self.review.stop)
         self.stack.addWidget(self.review)
         self.stack.addWidget(self.build_report())
         outer.addWidget(self.banner)
@@ -878,6 +901,7 @@ class MainWindow(QtWidgets.QMainWindow):
         outer.addLayout(bar)
         outer.addWidget(self.stack, 1)
         self.pager.changed.connect(self.stack.setCurrentIndex)
+        self.pager.changed.connect(self.sync_cal_btn)
         return page
 
     def set_state(self, text):
@@ -964,21 +988,8 @@ class MainWindow(QtWidgets.QMainWindow):
         return scroll
 
     def build_report(self):
-        self.report = QtWidgets.QTextBrowser()
-        self.report.setOpenExternalLinks(True)
-        wrap = QtWidgets.QWidget()
-        lay = QtWidgets.QVBoxLayout(wrap)
-        lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(self.report)
-        row = QtWidgets.QHBoxLayout()
-        row.addStretch()
-        self.folder_btn = QtWidgets.QPushButton("Show in folder")
-        self.folder_btn.setEnabled(False)
-        self.folder_btn.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(
-            QtCore.QUrl.fromLocalFile(str(self.output))))
-        row.addWidget(self.folder_btn)
-        lay.addLayout(row)
-        return wrap
+        self.report_view = report_view.ReportView()
+        return self.report_view
 
     # ---- helpers
     def clear(self, layout):
@@ -1008,6 +1019,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.visuals.hide()
         self.review.clear()
         self.use_card.clear()
+        self.report_view.clear()
         self.cal_btn.hide()
 
     @staticmethod
@@ -1048,12 +1060,74 @@ class MainWindow(QtWidgets.QMainWindow):
         except (OSError, ValueError):
             return {}
 
+    def remember(self, **values):
+        if self.store is not None:
+            self.store.update(**values)
+
+    def start_dir(self, key):
+        return self.store.existing(key, "dir") if self.store is not None else None
+
+    def forget_remembered(self):
+        if self.store is not None:
+            self.store.clear()
+        self.restored_row.hide()
+
+    def restore_state(self):
+        """Pick up where the last session left off: the calibration and captures (if they still exist), the options and
+        the window. Never starts a check. Returns whether inputs were restored."""
+        s = self.store
+        if s is None:
+            return False
+        restored = []
+        try:
+            index = self.mode_combo.findData(s.get("mode")) if s.get("mode") else -1
+            if index >= 0:
+                self.mode_combo.setCurrentIndex(index)
+            index = self.strategy.findData(s.get("strategy")) if s.get("strategy") else -1
+            if index >= 0:
+                self.strategy.setCurrentIndex(index)
+            if s.get("auto_review") is not None:
+                self.auto_review.setChecked(bool(s.get("auto_review")))
+            cal = s.existing("calibration", "file")
+            if cal and self.mode != "scratch":
+                self.load_cal(cal)
+                if self.cal.path:
+                    restored.append("calibration")
+            cap = s.existing("captures", "dir")
+            if cap:
+                self.load_data(cap)
+                if self.cap.path:
+                    restored.append("captures")
+            if s.get("geometry"):
+                self.restoreGeometry(QtCore.QByteArray.fromBase64(s.get("geometry").encode("ascii")))
+        except Exception:  # noqa: BLE001 - remembering is a convenience and must never stop the app
+            logging.getLogger("faultaware").exception("Could not restore the last session")
+        self.restored_row.setVisible(bool(restored))
+        if restored:
+            self.restored_text.setText("Picked up from your last session: " + " and ".join(restored) + ".")
+        return bool(restored)
+
+    def review_stage_state(self, folder):
+        """What the Processing tab should show for the maintenance comparison of this check."""
+        if self.review.is_running() and self.review.running_folder == Path(folder):
+            return "running"
+        return "done" if review_adapter.state(folder) == "ready" else None
+
     def on_review_changed(self):
-        """A maintenance comparison started or finished: its options join (or leave) the Use the result list."""
+        """A maintenance comparison started or finished: Processing and the Use the result options follow."""
+        watched = self.processing.review_check
+        if watched is not None and not self.review.is_running() and self.processing.model.state.get("review") == "active":
+            ok = review_adapter.state(watched) == "ready"
+            self.processing.review_finished(ok, self.review.publish_error or "The comparison did not finish. Its log is in the Calibration review tab.")
         folder = self.review.folder
         if folder is not None and self.use_card.folder == folder:
             ready = review_adapter.state(folder) == "ready"
             self.use_card.set_review(review_adapter.load(folder) if ready else None)
+            self.report_view.set_review(review_adapter.read_json(review_adapter.run_folder(folder) / "summary.json") if ready else None)
+
+    def sync_cal_btn(self, *_):
+        """'View calibration after this check…' belongs to the Result tab only."""
+        self.cal_btn.setVisible(bool(self.result_cal) and self.stack.currentIndex() == 1)
 
     def check_again(self):
         """Back to New check with the calibration, captures and options of the check that is open."""
@@ -1148,6 +1222,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return self.update_ready()
         self.cal.show_error("")
         self.cal.path = info["path"]
+        self.remember(calibration=info["path"])
         self.cal_info = info
         i = info["intrinsics"]
         size = f" · {i['image_size'][0]}×{i['image_size'][1]}" if i.get("image_size") else ""
@@ -1155,6 +1230,13 @@ class MainWindow(QtWidgets.QMainWindow):
                                  f"fy {core.fmt(i['fy'])}{size} · {info['extrinsics']['mounting_label']}")
         self.cal.summary.show()
         self.cal.clear_extra()
+        try:                                  # the matrices, side by side, without opening anything
+            shown_cal = json.loads(Path(info["path"]).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            shown_cal = None
+        pair = matrix_view.MatrixPair(shown_cal) if isinstance(shown_cal, dict) else None
+        if pair is not None and pair.valid:
+            self.cal.extra.addWidget(pair)
         link = QtWidgets.QPushButton("View all values…")
         link.setObjectName("link")
         link.setCursor(QtCore.Qt.PointingHandCursor)
@@ -1166,9 +1248,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_ready()
 
     def open_cal(self):
-        start = str(Path(self.cal.path).parent) if self.cal.path else str(core.PROJECT)
+        start = str(Path(self.cal.path).parent) if self.cal.path else (self.start_dir("cal_dir") or str(core.PROJECT))
         p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Existing calibration", start, CAL_FILTER)
         if p:
+            self.remember(cal_dir=str(Path(p).parent))
             self.cal.combo.setCurrentIndex(0)
             self.load_cal(p)
 
@@ -1200,6 +1283,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data = info
         self.cap.show_error("")
         self.cap.path = info["path"]
+        self.remember(captures=info["path"])
         kind = {"raw": "raw captures, decoded during the check", "stacked": "stacked captures",
                 "paired": "image + PCD pairs"}[info["kind"]]
         self.cap.summary.setText(f"<b>{len(info['captures'])} {kind}</b> &nbsp; "
@@ -1241,8 +1325,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_ready()
 
     def open_data(self):
-        p = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose captures folder", self.cap.path or str(ROOT))
+        start = str(Path(self.cap.path).parent) if self.cap.path else (self.start_dir("data_dir") or str(ROOT))
+        p = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose captures folder", start)
         if p:
+            self.remember(data_dir=str(Path(p).parent))
             self.cap.combo.setCurrentIndex(0)
             self.load_data(p)
 
@@ -1291,6 +1377,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # ---- step 3
     def mode_changed(self):
         self.mode = self.mode_combo.currentData()
+        self.remember(mode=self.mode)
         scratch = self.mode == "scratch"
         self.cal.setEnabled(not scratch)
         self.strategy.setEnabled(not scratch)
@@ -1368,6 +1455,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.visuals.hide()
         self.review.clear()
         self.use_card.clear()
+        self.report_view.clear()
         self.cal_btn.hide()
         self.tiles_clear()
         self.pager.select(0)
@@ -1396,7 +1484,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if exe.name.lower() == "pythonw.exe":
             exe = exe.with_name("python.exe")
         self.process = p
-        self.processing.begin(self.output, scratch, processing_view.count_captures(self.cap.path))
+        self.processing.begin(self.output, scratch, processing_view.count_captures(self.cap.path),
+                              review=bool(self.auto_review.isChecked() and not scratch))
         self.stop_btn.show()
         p.start(str(exe), ["-X", "utf8", "-B", "-W", "ignore::RuntimeWarning", "-m", "research_calibration"] + args)
         self.refresh_runs()
@@ -1439,7 +1528,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.processing.finish(True)
             self.load(folder)
             if self.meta_of(folder).get("with_review"):
-                self.review.start(auto=True)   # the user asked for it on the setup page; it never alters the result just shown
+                # the user asked for it on the setup page; it never alters the result just shown, and it is followed in Processing
+                started = self.review.start(auto=True)
+                self.processing.add_review(folder)
+                if not started:
+                    self.processing.review_finished(False, self.review.reason or "The maintenance comparison could not be started.")
         else:
             lines = [l for l in self.log.toPlainText().splitlines() if l.strip()]
             self.processing.finish(False, "The check stopped: " + (lines[-1] if lines else "no further information."))
@@ -1461,6 +1554,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.visuals.hide()
         self.review.clear()
         self.use_card.clear()
+        self.report_view.clear()
         self.cal_btn.hide()
         self.tiles_clear()
 
@@ -1487,7 +1581,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.run_title.setText(Path(meta.get('captures', '')).name or self.title_of(folder))
         self.set_sources(folder)
         self.result_cal = r.get("updated_calibration") if isinstance(r.get("updated_calibration"), dict) else None
-        self.cal_btn.setVisible(bool(self.result_cal))
+        self.sync_cal_btn()
         self.cal_btn.setText("View calibration produced…" if status == "INITIAL_CALIBRATION_CANDIDATE"
                              else "View calibration after this check…")
         self.style_banner(color, soft)
@@ -1570,15 +1664,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table_frame.setVisible(bool(names))
         self.visuals.set_result(folder, r, self.reference_calibration(meta))
         self.review.set_check(folder, r, meta, (title, color, SOFT[soft], meaning + (f" {reason}" if reason else "")))
-        if not self.is_running():
-            self.processing.show_result(folder, r)
+        if not self.is_running() and self.processing.model.state.get("review") != "active":     # never replace a live view
+            self.processing.show_result(folder, r, self.review_stage_state(folder))
         ready = review_adapter.state(folder) == "ready"
         self.use_card.set_check(folder, r, meta, review_adapter.load(folder) if ready else None,
                                 (title, color, SOFT[soft], meaning))
 
-        md = self.result_file(folder).with_name("report.md")
-        self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
-        self.folder_btn.setEnabled(True)
+        self.report_view.set_result(folder, r, (title, color, SOFT[soft], meaning), PARAM_NAMES, PARAM_UNITS,
+                                    review_adapter.read_json(review_adapter.run_folder(folder) / "summary.json") if ready else None)
         self.pager.select(1)
 
     @staticmethod
@@ -1644,6 +1737,10 @@ def main():
     app.setStyleSheet(QSS)
     app.setWindowIcon(app_icon.app_icon())
     win = MainWindow()
+    shot = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--shot=")), None)
+    explicit = "--prefill" in sys.argv or any(not a.startswith("--") for a in sys.argv[1:])   # inputs were given on the command line
+    if not shot:
+        win.store = settings_store.Store()
     logging.getLogger("faultaware").info("Started version %s", VERSION)
     app.aboutToQuit.connect(lambda: win.devices and win.devices.shutdown())
     app.aboutToQuit.connect(win.review.shutdown)
@@ -1658,6 +1755,8 @@ def main():
         win.open_run(args[0])
     win.resize(1240, 1700 if "--tall" in sys.argv else 860)
     win.show()
+    if win.store is not None and not explicit:
+        QtCore.QTimer.singleShot(0, win.restore_state)     # after the window is up, so a big captures folder never delays it
     if shot:  # offscreen screenshot for visual checks
         win.pager.select(int(next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--tab=")), "1")))
         QtCore.QTimer.singleShot(500, lambda: (win.grab().save(shot), app.quit()))
