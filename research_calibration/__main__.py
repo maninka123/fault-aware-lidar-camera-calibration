@@ -9,7 +9,7 @@ from .benchmark import dataset_paths,run_benchmark,DEFAULT_METHODS
 
 def main():
     parser=argparse.ArgumentParser(description='Offline fault-aware calibration research backend; sequential CPU execution')
-    parser.add_argument('command',choices=('assess','benchmark','initialize','diagnose'),
+    parser.add_argument('command',choices=('assess','benchmark','initialize','diagnose','diagnose-v3'),
                         help='diagnose = production assess plus the experimental fault diagnostics (fault_diagnostics.json)')
     parser.add_argument('--dataset',help='Hash-verified local dataset ID in research_data/manifest.json')
     parser.add_argument('--calibration',type=Path)
@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--cloud-units',choices=('m','mm'),default='m',help='Units of image+PCD clouds')
     parser.add_argument('--confirm-cloud-units',action='store_true',help='Accept unusual coordinate ranges after review')
     parser.add_argument('--config',type=Path,help='JSON overrides for ResearchConfig')
+    parser.add_argument('--signature-config',type=Path,help='JSON overrides for experimental V3 SignatureConfig')
     args=parser.parse_args()
     # Legacy decoders resolve relative paths against their own folders; always hand them absolute paths.
     for name in ('output','calibration','captures'):
@@ -32,6 +33,12 @@ def main():
     if not captures or (args.command!='initialize' and not calibration): parser.error('Capture and reference paths are required')
     if args.command=='benchmark':
         run_benchmark(calibration,captures,args.output,cfg,args.methods)
+    elif args.command=='diagnose-v3':
+        from .fault_diagnostics_v3 import diagnose_v3
+        signature_config=json.loads(args.signature_config.read_text(encoding='utf-8')) if args.signature_config else None
+        payload=diagnose_v3(calibration,captures,output=args.output,config=cfg,signature_config=signature_config,
+                            cloud_units=args.cloud_units,allow_unusual_units=args.confirm_cloud_units)
+        print('V3 experimental: '+payload['v3']['status']+' - '+payload['v3'].get('reason',''))
     elif args.command=='diagnose':
         from .fault_diagnostics.runner import assess_with_diagnostics
         payload,result=assess_with_diagnostics(calibration,captures,output=args.output,config=cfg,strategy=args.strategy)

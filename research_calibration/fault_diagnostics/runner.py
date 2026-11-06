@@ -65,7 +65,7 @@ def persistence_report(caps, model, current, cfg):
 
 
 def assess_with_diagnostics(calibration, captures, *, output, config=None, diagnostics=None, bundle=None,
-                            strategy='fault_aware', ablations=None, write=True):
+                            strategy='fault_aware', ablations=None, write=True, records_out=None):
     cfg = config if isinstance(config, ResearchConfig) else ResearchConfig(**(config or {}))
     diag = diagnostics or DiagnosticsConfig()
     ablations = ablations or ABLATIONS
@@ -83,6 +83,11 @@ def assess_with_diagnostics(calibration, captures, *, output, config=None, diagn
     started = time.perf_counter()
     result = assess(calibration, captures, strategy, output=production_folder, config=cfg, _bundle=bundle,
                     fold_observer=records.append)
+    if records_out is not None:
+        # Optional experimental consumer. Detached copies cannot affect fits,
+        # production decisions, or the records used by V2 below.
+        import copy
+        records_out.extend(copy.deepcopy(records))
     production_seconds = time.perf_counter() - started
     begin = time.perf_counter()
     original = read_calibration(calibration)
