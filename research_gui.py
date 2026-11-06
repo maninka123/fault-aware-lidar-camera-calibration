@@ -709,6 +709,13 @@ class MainWindow(QtWidgets.QMainWindow):
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 1)
         l3.addLayout(grid)
+        self.auto_review = QtWidgets.QCheckBox("Also run the maintenance comparison for the Calibration review tab")
+        self.auto_review.setChecked(True)
+        self.auto_review.setToolTip("After the fault-aware result is ready, the original calibration maintenance analysis runs on the same "
+                                    "calibration and captures (a few more minutes). Its results appear in the Calibration review tab and "
+                                    "never change the fault-aware result. You can also run it later from that tab.")
+        l3.addWidget(self.auto_review)
+        self.auto_review.toggled.connect(lambda _on: self.update_ready())
         self.run_btn = QtWidgets.QPushButton("Check calibration")
         self.run_btn.setObjectName("primary")
         self.run_btn.clicked.connect(self.run)
@@ -1142,6 +1149,7 @@ class MainWindow(QtWidgets.QMainWindow):
         scratch = self.mode == "scratch"
         self.cal.setEnabled(not scratch)
         self.strategy.setEnabled(not scratch)
+        self.auto_review.setEnabled(not scratch)
         self.run_btn.setText("Calibrate" if scratch else "Check calibration")
         self.update_ready()
 
@@ -1166,7 +1174,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 reason = "Confirm the PCD coordinate units to continue."
         self.run_btn.setEnabled(not reason and not self.is_running())
         self.hint.setText(reason or ("Takes about 10 minutes. Nothing is written to a device." if scratch
-                                      else "Takes a few minutes. Nothing is written to a device."))
+                                      else "Takes a few minutes" + (", then the Calibration review runs for a few more" if self.auto_review.isChecked() else "")
+                                      + ". Nothing is written to a device."))
         self.step3.set_done(False)
 
     def is_running(self):
@@ -1181,8 +1190,8 @@ class MainWindow(QtWidgets.QMainWindow):
             calibration="" if scratch else self.cal.path, captures=self.cap.path, mode=self.mode,
             strategy=None if scratch else self.strategy.currentData(),
             cloud_units=self.pair_units.currentData() if self.data and self.data["kind"] == "paired" else None,
-            confirm_cloud_units=bool(self.data and self.data["kind"] == "paired" and self.units_confirm.isChecked()))),
-            encoding="utf-8")
+            confirm_cloud_units=bool(self.data and self.data["kind"] == "paired" and self.units_confirm.isChecked()),
+            with_review=bool(self.auto_review.isChecked() and not scratch))), encoding="utf-8")
         self.set_sources(self.output)
         self.log.clear()
         self.run_btn.setEnabled(False)
@@ -1249,6 +1258,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_ready()
         if code == 0 and self.result_file(self.output):
             self.load(self.output)
+            if self.meta_of(self.output).get("with_review"):
+                self.review.start(auto=True)   # the user asked for it on the setup page; it never alters the result just shown
         else:
             lines = [l for l in self.log.toPlainText().splitlines() if l.strip()]
             self.fail("The check stopped, and your calibration is unchanged. "

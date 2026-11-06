@@ -130,6 +130,7 @@ class CalibrationReview(QtWidgets.QWidget):
         self.inputs = self.reason = None
         self.proc = None
         self.running_folder = None
+        self.publish_error = None
         self.progress_label = None
         self.selected_mode = None
         self.export_calibrations = {}
@@ -247,7 +248,7 @@ class CalibrationReview(QtWidgets.QWidget):
             "leave-one-out evidence, matrices and the image comparison.", "muted"))
         lay.addWidget(_label(
             "It is a separate calculation from the fault-aware assessment, so it is not run automatically. Starting it takes a few "
-            "minutes. Its results are saved inside this check (<i>maintenance_review/</i>) and nothing else changes.", "muted", rich=True))
+            "minutes. Its results are saved inside this check (<i>" + ra.REVIEW_DIR + "/</i>) and nothing else changes.", "muted", rich=True))
         row = QtWidgets.QHBoxLayout()
         self.run_button = _button("Run maintenance comparison", self.start, "primary")
         self.run_button.setEnabled(self.ready_to_run())
@@ -278,6 +279,8 @@ class CalibrationReview(QtWidgets.QWidget):
 
     def failed_card(self, headline):
         card, lay = _frame(headline)
+        if self.publish_error:
+            lay.addWidget(_label(self.publish_error, "muted"))
         tail = ra.log_tail(self.folder)
         if tail:
             log = QtWidgets.QPlainTextEdit("\n".join(tail))
@@ -305,14 +308,16 @@ class CalibrationReview(QtWidgets.QWidget):
         self.lay.insertWidget(0, self.verdict_card(info))
 
         self.lay.addWidget(self.meta_card(info))
+        # as in the maintenance app's Result header: the matrices come first, under the verdicts, expanded,
+        # with the option's changes marked; choosing an option card below updates them
+        self.matrices = MatrixPreview()
+        self.lay.addWidget(self.matrix_block())
         self.lay.addWidget(self.nav_strip())
 
         comparison = s.get("strategy_comparison")
         # A. update comparison
         card, cl = _frame("Update comparison", "The four things a calibration update could change, tested on captures left out of each fit.")
         self.sections["Compare"] = card
-        self.matrices = MatrixPreview()
-        self.matrices.toggle.hide()      # the card above has its own Hide / Show
         if comparison:
             self.matrices.set_calibrations(comparison.get("calibrations", {}))
             self.options = OptionsResults(comparison)
@@ -357,9 +362,6 @@ class CalibrationReview(QtWidgets.QWidget):
             self.sections["Evidence"] = collapsible(evidence)
             self.lay.addWidget(evidence)
 
-        # F. matrices
-        self.lay.addWidget(self.matrix_card())
-
         # G. export and review actions
         self.lay.addWidget(self.export_card(info))
         self.preview_mode(self.options.active_mode if self.options is not None else s["mode"])
@@ -368,7 +370,7 @@ class CalibrationReview(QtWidgets.QWidget):
         s = info["summary"]
         stale = ra.is_stale(info, self.meta)
         text = (f"Maintenance comparison run {s['date'].replace('T', ' ')} on {len(s['captures'])} captures with the same calibration "
-                "and capture folder as this check. It is a separate calculation, saved in this check’s maintenance_review folder.")
+                f"and capture folder as this check. It is a separate calculation, saved in this check’s {ra.REVIEW_DIR} folder.")
         card = QtWidgets.QFrame()
         card.setObjectName("card")
         lay = QtWidgets.QHBoxLayout(card)
@@ -400,16 +402,22 @@ class CalibrationReview(QtWidgets.QWidget):
             w.show()
             QtCore.QTimer.singleShot(0, lambda: self.scroll.verticalScrollBar().setValue(max(0, w.mapTo(self.body, QtCore.QPoint(0, 0)).y() - 8)))
 
-    def matrix_card(self):
-        card, cl = _frame("Calibration matrices", "The camera matrix, distortion and the LiDAR → camera transform of the option you select "
-                          "above. Changed values are marked; hover a value for its exact numbers.")
-        self.sections["Matrices"] = card
+    def matrix_block(self):
+        """The maintenance app's own matrix preview (K, distortion, T with Δ markers and its Hide / Show), plus a switch
+        between the option's values with their changes, the current values, and the differences alone."""
+        block = QtWidgets.QWidget()
+        self.sections["Matrices"] = block
+        bl = QtWidgets.QVBoxLayout(block)
+        bl.setContentsMargins(0, 0, 0, 0)
+        bl.setSpacing(8)
         row = QtWidgets.QHBoxLayout()
+        row.setSpacing(8)
+        row.addWidget(_label("Matrices show", "small", wrap=False))
         self.view_buttons = {}
-        group = QtWidgets.QButtonGroup(card)
-        for key, text, tip in (("candidate", "Candidate with changes", "The option’s values, changed ones marked with their difference"),
+        group = QtWidgets.QButtonGroup(block)
+        for key, text, tip in (("candidate", "Option with changes", "The selected option’s values; changed ones carry their Δ"),
                                ("current", "Current", "The calibration in use now"),
-                               ("difference", "Difference only", "Only how much each value changes")):
+                               ("difference", "Differences only", "Only how much each value changes")):
             b = _button(text)
             b.setCheckable(True)
             b.setToolTip(tip)
@@ -419,9 +427,10 @@ class CalibrationReview(QtWidgets.QWidget):
             row.addWidget(b)
             self.view_buttons[key] = b
         row.addStretch(1)
-        cl.addLayout(row)
-        cl.addWidget(self.matrices)
-        return collapsible(card)
+        row.addWidget(_label("Pick an option card below to preview its matrices", "small", wrap=False))
+        bl.addLayout(row)
+        bl.addWidget(self.matrices)
+        return block
 
     def export_card(self, info):
         out = info["out"]
@@ -510,13 +519,16 @@ class CalibrationReview(QtWidgets.QWidget):
         d.exec_()
 
     # ---------------------------------------------------------------- running (only when the user asks)
-    def start(self):
+    def start(self, auto=False):
+        """Run the maintenance comparison of the open check. auto=True is the new-check option the user ticked on the
+        setup page (no extra question); otherwise it is the button. Returns whether a run was started."""
         if self.folder is None or self.inputs is None or self.is_running():
-            return
-        if ra.state(self.folder) != "none":
-            if QtWidgets.QMessageBox.question(self, "Run again?", "This replaces the earlier maintenance comparison of this check. "
-                                              "The fault-aware result and your calibration files are not touched.") != QtWidgets.QMessageBox.Yes:
-                return
+            return False
+        if not auto and ra.state(self.folder) != "none":
+            if QtWidgets.QMessageBox.question(self, "Run again?", "This replaces the earlier maintenance comparison of this check once the new "
+                                              "one has finished. The fault-aware result and your calibration files are not touched.") != QtWidgets.QMessageBox.Yes:
+                return False
+        self.publish_error = None
         out = ra.prepare(self.folder, self.inputs, (self.result or {}).get("status"))
         args, env_extra, cwd = ra.command(self.folder, self.inputs)
         exe = Path(sys.executable)
@@ -530,12 +542,13 @@ class CalibrationReview(QtWidgets.QWidget):
             log.close()
             self.proc = None
             QtWidgets.QMessageBox.warning(self, "Could not start", str(error))
-            return
+            return False
         self.log_file = log
         self.running_folder = self.folder
         self.timer.start()
         self.rebuild()
         self.changed.emit()
+        return True
 
     def stop(self):
         if self.is_running():
@@ -555,8 +568,12 @@ class CalibrationReview(QtWidgets.QWidget):
         except (OSError, AttributeError):
             pass
         finished = self.running_folder
+        code = self.proc.returncode
         self.proc = None
         self.running_folder = None
+        if code == 0:       # only a finished run replaces what the check already holds
+            ok, message = ra.publish(finished)
+            self.publish_error = None if ok else message
         if finished == self.folder:
             self.rebuild()
         self.changed.emit()

@@ -66,7 +66,7 @@ class AdapterTests(unittest.TestCase):
         args, env, cwd = ra.command("C:/x/check", dict(calibration="a.json", captures="d", cloud_units="m"))
         self.assertTrue(args[3].endswith("maintain.py"))
         self.assertIn("compare", args)
-        self.assertEqual(env["MAINTENANCE_RESULTS_DIR"], str(ra.review_root("C:/x/check")))
+        self.assertEqual(env["MAINTENANCE_RESULTS_DIR"], str(ra.work_root("C:/x/check")))
 
     def test_state_follows_the_saved_files(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -92,6 +92,103 @@ class AdapterTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 ra.check_export_path(cal, [str(cal)])
             self.assertEqual(ra.check_export_path(Path(tmp) / "new.txt", [str(cal)]), (Path(tmp) / "new.txt").resolve())
+
+
+class ScratchFolderTests(unittest.TestCase):
+    """The comparison runs in a short scratch folder (Windows rejects paths over 260 characters) and only a
+    finished run is published into the check."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        patcher = mock.patch.dict(os.environ, {"LOCALAPPDATA": self.tmp.name})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self.tmp.cleanup)
+        self.check = Path(self.tmp.name) / "a_check_with_a_long_enough_name_to_matter"
+        self.check.mkdir()
+
+    def fake_run(self, finished=True):
+        run = ra.work_run(self.check)
+        (run / "images").mkdir(parents=True)
+        (run / "stacked" / "data").mkdir(parents=True)
+        (run / "decode").mkdir()
+        (run / "stacked" / "data" / "capture_20261105_185316_547419_enclosure_off.npz").write_bytes(b"cache")
+        (run / "images" / "185316_547419.png").write_bytes(b"png")
+        (run / "progress.json").write_text(json.dumps(dict(finished=finished, stages=[])))
+        if finished:
+            (run / "summary.json").write_text("{}")
+        (ra.work_root(self.check) / "history.csv").write_text("run,x\n1,2\n")
+        return run
+
+    def test_scratch_folder_is_short_and_per_check(self):
+        run = ra.work_run(self.check)
+        longest = len(str(run / "stacked" / "data" / "capture_20261105_185316_547419_enclosure_off.npz"))
+        self.assertLess(longest, 260 - 80, "caches must fit well inside the Windows limit wherever the repository is")
+        self.assertNotEqual(ra.work_root(self.check), ra.work_root(self.check / "other"))
+
+    def test_command_runs_in_the_scratch_folder_not_the_check(self):
+        _args, env, _cwd = ra.command(self.check, dict(calibration="a", captures="b", cloud_units="m"))
+        self.assertEqual(env["MAINTENANCE_RESULTS_DIR"], str(ra.work_root(self.check)))
+
+    def test_publish_copies_results_without_the_caches_and_cleans_up(self):
+        self.fake_run()
+        ok, message = ra.publish(self.check)
+        self.assertTrue(ok, message)
+        self.assertEqual(ra.state(self.check), "ready")
+        self.assertTrue((ra.run_folder(self.check) / "images" / "185316_547419.png").exists())
+        self.assertFalse((ra.run_folder(self.check) / "stacked").exists())
+        self.assertFalse((ra.run_folder(self.check) / "decode").exists())
+        self.assertTrue((ra.review_root(self.check) / "history.csv").exists())
+        self.assertFalse(ra.work_root(self.check).exists())
+
+    def test_a_failed_rerun_never_destroys_the_saved_comparison(self):
+        self.fake_run()
+        ra.publish(self.check)
+        saved = digest(ra.run_folder(self.check))
+        ra.prepare(self.check, dict(calibration="a", captures="b"))
+        self.fake_run(finished=False)
+        ok, _message = ra.publish(self.check)
+        self.assertFalse(ok)
+        self.assertEqual(saved, digest(ra.run_folder(self.check)))
+        self.assertEqual(ra.state(self.check), "ready")
+
+    def test_unfinished_run_is_reported_as_partial(self):
+        self.fake_run(finished=False)
+        self.assertEqual(ra.state(self.check), "partial")
+
+
+@unittest.skipUnless(CHECKS, "no saved fault-aware check on this machine")
+class AutoRunOnNewChecks(unittest.TestCase):
+    def setUp(self):
+        sys.argv = ["research_gui.py"]
+        import research_gui as g
+        APP.setStyleSheet(g.QSS)
+        self.win = g.MainWindow()
+        self.addCleanup(self.win.review.shutdown)
+
+    def finish(self, with_review):
+        from PyQt5 import QtCore
+        with tempfile.TemporaryDirectory() as tmp:
+            check, meta, _result = make_check(tmp)
+            meta["with_review"] = with_review
+            check.with_name(check.name + ".gui.json").write_text(json.dumps(meta), encoding="utf-8")
+            self.win.output, self.win.process = check, QtCore.QProcess()
+            with mock.patch.object(self.win.review, "start", return_value=True) as start, mock.patch.object(self.win, "refresh_runs"):
+                self.win.finished_run(0)
+            return start
+
+    def test_option_is_on_by_default_and_off_for_calibrating_from_scratch(self):
+        self.assertTrue(self.win.auto_review.isChecked())
+        self.win.mode_combo.setCurrentIndex(self.win.mode_combo.findData("scratch"))
+        self.assertFalse(self.win.auto_review.isEnabled())
+        self.win.mode_combo.setCurrentIndex(self.win.mode_combo.findData("check"))
+        self.assertTrue(self.win.auto_review.isEnabled())
+
+    def test_a_new_check_with_the_option_starts_the_review_after_its_result(self):
+        self.finish(True).assert_called_once_with(auto=True)
+
+    def test_a_new_check_without_the_option_does_not(self):
+        self.finish(False).assert_not_called()
 
 
 @unittest.skipUnless(CHECKS, "no saved fault-aware check on this machine")

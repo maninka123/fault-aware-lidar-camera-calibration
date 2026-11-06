@@ -1,4 +1,4 @@
-"""App icon: a camera lens with a small "verified" tick badge on a flat teal tile.
+"""App icon: a camera lens with a small "verified" tick badge on a flat blue tile.
 
 Drawn in code so it stays sharp at every size.  `python app_icon.py` writes
 assets/app_icon.png and assets/app_icon.ico (used by the desktop shortcut).
@@ -13,7 +13,7 @@ SIZES = (16, 24, 32, 48, 64, 128, 256)
 
 
 def draw_icon(size):
-    """Return a size x size QImage of the icon: a flat teal tile, a lens and a small tick badge."""
+    """Return a size x size QImage of the icon: a flat blue tile, a lens and a small tick badge."""
     n = 1024.0
     img = QtGui.QImage(size, size, QtGui.QImage.Format_ARGB32)
     img.fill(QtCore.Qt.transparent)
@@ -23,22 +23,22 @@ def draw_icon(size):
     c = QtCore.QPointF(n / 2 - 30, n / 2 - 30)
 
     p.setPen(QtCore.Qt.NoPen)
-    p.setBrush(QtGui.QColor("#0f8f7e"))
+    p.setBrush(QtGui.QColor("#1565d8"))
     p.drawRoundedRect(QtCore.QRectF(40, 40, n - 80, n - 80), 230, 230)
 
     p.setBrush(QtGui.QColor("white"))
     p.drawEllipse(c, 300, 300)
-    p.setBrush(QtGui.QColor("#0b5c52"))
+    p.setBrush(QtGui.QColor("#0a2f7a"))
     p.drawEllipse(c, 215, 215)
     p.setBrush(QtGui.QColor("white"))
     p.drawEllipse(QtCore.QPointF(c.x() - 75, c.y() - 80), 45, 45)
 
     bc = QtCore.QPointF(c.x() + 290, c.y() + 290)
-    p.setBrush(QtGui.QColor("#0f8f7e"))
+    p.setBrush(QtGui.QColor("#1565d8"))
     p.drawEllipse(bc, 150, 150)
-    p.setBrush(QtGui.QColor("#ffb020"))
+    p.setBrush(QtGui.QColor("#ffffff"))
     p.drawEllipse(bc, 122, 122)
-    pen = QtGui.QPen(QtGui.QColor("white"), 34)
+    pen = QtGui.QPen(QtGui.QColor("#1565d8"), 34)
     pen.setCapStyle(QtCore.Qt.RoundCap)
     pen.setJoinStyle(QtCore.Qt.RoundJoin)
     p.setPen(pen)

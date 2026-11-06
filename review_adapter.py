@@ -7,8 +7,12 @@ decides whether one is possible, describes the state, builds the command, and re
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import shutil
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -19,8 +23,10 @@ if str(CODE) not in sys.path:
 
 import appcore as core  # noqa: E402  (maintenance logic, no GUI)
 
-REVIEW_DIR = "maintenance_review"   # inside the check's folder
-RUN_NAME = "maintenance"            # results/<name> of the maintenance run inside that folder
+# Short names on purpose: Windows refuses paths over 260 characters, and a check folder already sits deep in the repository.
+REVIEW_DIR = "review"               # inside the check's folder
+RUN_NAME = "run"                    # the maintenance run inside that folder
+SKIP = ("stacked", "decode")        # large caches the review never reads; they stay in the scratch folder
 FAULT_KEEP = {"KEEP_CURRENT", "INSUFFICIENT_EVIDENCE", "INVALID_OR_UNRELIABLE_DATA"}
 MAINTENANCE_UPDATE = {"UPDATE RECOMMENDED", "LARGE CHANGE"}
 
@@ -30,7 +36,24 @@ def review_root(check):
 
 
 def run_folder(check):
+    """The finished comparison saved inside the check."""
     return review_root(check) / RUN_NAME
+
+
+def work_root(check):
+    """Short scratch folder the comparison runs in (decoded captures need paths the check's own folder is too deep for)."""
+    base = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / "FaultAwareReview"
+    return base / hashlib.sha1(str(Path(check).resolve()).encode("utf-8")).hexdigest()[:8]
+
+
+def work_run(check):
+    return work_root(check) / RUN_NAME
+
+
+def _long(path):
+    """Extended-length form of a path, which Windows accepts beyond 260 characters."""
+    p = str(Path(path).resolve())
+    return "\\\\?\\" + p if os.name == "nt" and not p.startswith("\\\\?\\") else p
 
 
 def read_json(path):
@@ -75,15 +98,18 @@ def command(check, inputs):
             "--name", RUN_NAME, "--mode", "compare", "--device", "fault-aware", "--cloud-units", inputs["cloud_units"]]
     if inputs.get("confirm_units"):
         args.append("--confirm-cloud-units")
-    env = {"MAINTENANCE_RESULTS_DIR": str(review_root(check)), "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1",
+    env = {"MAINTENANCE_RESULTS_DIR": str(work_root(check)), "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1",
            "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"}
     return args, env, str(CODE)
 
 
 def prepare(check, inputs, fault_status=None):
-    """Create the comparison's folder and record what it belongs to (called when the user starts a run)."""
-    out = run_folder(check)
+    """Create a clean scratch folder for the run and record what it belongs to (called when a run is started).
+    A comparison already saved in the check stays where it is until a new one has finished."""
+    shutil.rmtree(_long(work_root(check)), ignore_errors=True)
+    out = work_run(check)
     out.mkdir(parents=True, exist_ok=True)
+    review_root(check).mkdir(parents=True, exist_ok=True)
     (review_root(check) / "link.json").write_text(json.dumps(dict(
         check=Path(check).name, started=datetime.now().isoformat(timespec="seconds"), inputs=inputs,
         fault_aware_status=fault_status, backend="maintain.py --mode compare",
@@ -92,18 +118,46 @@ def prepare(check, inputs, fault_status=None):
 
 
 # ------------------------------------------------------------------ what exists
+def finished(folder):
+    prog = read_json(Path(folder) / "progress.json")
+    return bool(prog and prog.get("finished") and (Path(folder) / "summary.json").exists())
+
+
 def state(check):
-    """'ready' (finished, summary saved), 'partial' (started, not finished) or 'none'."""
-    out = run_folder(check)
-    prog = read_json(out / "progress.json")
-    if prog and prog.get("finished") and (out / "summary.json").exists():
+    """'ready' (a finished comparison is saved in the check), 'partial' (a run started and did not finish) or 'none'."""
+    if finished(run_folder(check)):
         return "ready"
-    return "partial" if prog is not None or (out / "run.log").exists() else "none"
+    scratch = work_run(check)
+    if scratch.exists() and not finished(scratch):
+        return "partial"
+    return "partial" if run_folder(check).exists() else "none"
+
+
+def publish(check):
+    """Copy a finished run from the scratch folder into the check (without the large caches). (ok, message)."""
+    src, dst = work_run(check), run_folder(check)
+    if not finished(src):
+        return False, "The comparison did not finish, so nothing was saved into the check."
+    try:
+        shutil.rmtree(_long(dst), ignore_errors=True)
+        shutil.copytree(_long(src), _long(dst), ignore=shutil.ignore_patterns(*SKIP))
+        history = work_root(check) / "history.csv"
+        if history.exists():
+            shutil.copy2(_long(history), _long(review_root(check) / "history.csv"))
+    except OSError as error:
+        return False, f"The comparison finished but could not be saved into the check: {error}"
+    shutil.rmtree(_long(work_root(check)), ignore_errors=True)
+    return True, ""
+
+
+def _live(check):
+    """Where progress and the log are read from: the scratch folder while a run is going or was left behind."""
+    return work_run(check) if work_run(check).exists() else run_folder(check)
 
 
 def progress_text(check):
     """Name of the stage the running comparison has reached, for the progress line."""
-    prog = read_json(run_folder(check) / "progress.json") or {}
+    prog = read_json(_live(check) / "progress.json") or {}
     done = [s["stage"] for s in prog.get("stages", []) if s.get("stage") != "start"]
     titles = dict((k, t) for k, _, t, _ in core_stage_table())
     nxt = next((k for k in core.STAGES if k not in done), None)
@@ -116,7 +170,7 @@ def core_stage_table():
 
 
 def log_tail(check, n=12):
-    p = run_folder(check) / "run.log"
+    p = _live(check) / "run.log"
     try:
         return p.read_text(errors="replace").splitlines()[-n:]
     except OSError:
