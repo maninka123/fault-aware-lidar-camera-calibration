@@ -824,7 +824,7 @@ class ImageStrip(QtWidgets.QWidget):
                 item.widget().deleteLater()
         self.shown, self.anim = [], []
 
-    def set_images(self, items):
+    def set_images(self, items, fade=True):
         """items: [(path, caption)], oldest first. Shows the newest LIMIT."""
         wanted = list(items)[-self.LIMIT:]
         if [str(p) for p, _c in wanted] == [str(p) for p, _c in self.shown]:
@@ -850,7 +850,7 @@ class ImageStrip(QtWidgets.QWidget):
             cap.setStyleSheet(f"color: {MUTED}; font-size: 12px;")
             tl.addWidget(cap)
             self.grid.addWidget(tile, n // 4, n % 4)
-            if str(path) in fresh:
+            if fade and str(path) in fresh:
                 effect = QtWidgets.QGraphicsOpacityEffect(tile)
                 tile.setGraphicsEffect(effect)
                 anim = QtCore.QPropertyAnimation(effect, b"opacity", tile)
@@ -1080,6 +1080,14 @@ class ProcessingView(QtWidgets.QWidget):
             return
         self.model.review_progress(info["done"], info["step"], info["message"], info["sub"], info["images"])
 
+    @staticmethod
+    def _published_images(check):
+        """The comparison's saved overlay images (not the animated ones), newest names last."""
+        try:
+            return sorted(Path(ra.run_folder(check)).joinpath("images").glob("*.png"))
+        except OSError:
+            return []
+
     def add_review(self, check):
         """The maintenance comparison of a finished check has started: it becomes the last stage, shown live."""
         self.review_check = Path(check)
@@ -1100,6 +1108,7 @@ class ProcessingView(QtWidgets.QWidget):
         if ok and self.review_check is not None:
             summary = ra.read_json(ra.run_folder(self.review_check) / "summary.json") or {}
             self.model.review_done(summary)
+            self.model.review["images"] = self._published_images(self.review_check)     # the scratch copies are gone now
         else:
             self.model.review_failed(message)
         self.review_check = None
@@ -1139,6 +1148,7 @@ class ProcessingView(QtWidgets.QWidget):
         if review == "done":
             self.model.enable_review()
             self.model.review_done(ra.read_json(ra.run_folder(folder) / "summary.json") or {})
+            self.model.review["images"] = self._published_images(folder)
         elif review == "running":
             self.review_check = self.folder
             self.model.review_begin()
@@ -1369,7 +1379,7 @@ class ProcessingView(QtWidgets.QWidget):
             if sub:
                 page["sub"].setRange(0, max(sub[1], 1))
                 page["sub"].setValue(min(sub[0], sub[1]))
-            page["images"].set_images([(p, short_id(Path(p).stem.split("_")[-3] if False else Path(p).stem)) for p in r["images"]])
+            page["images"].set_images([(p, short_id(Path(p).stem)) for p in r["images"]], fade=(st == "active"))
             s = r["summary"]
             if st == "done" and isinstance(s, dict) and s.get("verdict"):
                 shift = num(s.get("shift_median_px"))

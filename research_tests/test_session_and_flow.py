@@ -355,6 +355,19 @@ class ReviewInProcessingTests(unittest.TestCase):
         view.review_finished(True)
         self.assertEqual(view.model.state["review"], "failed")
 
+    def test_a_finished_review_shows_its_saved_images(self):
+        view = pv.ProcessingView()
+        run = ra.run_folder(self.check)
+        (run / "images").mkdir(parents=True)
+        img = QtGui.QImage(40, 30, QtGui.QImage.Format_RGB32)
+        img.fill(0x336699)
+        for name in ("185316_547419.png", "shift_by_range.png"):
+            img.save(str(run / "images" / name))
+        (run / "images" / "185316_547419_flicker.gif").write_bytes(b"GIF89a")
+        (run / "summary.json").write_text(json.dumps(dict(verdict="NO UPDATE NEEDED")))
+        view.show_result(self.check, {"status": "KEEP_CURRENT"}, "done")
+        self.assertEqual(len(view.pages["review"]["images"].shown), 2, "png overlays only, not the animated ones")
+
     def test_an_older_check_with_a_saved_review_shows_it_as_done(self):
         view = pv.ProcessingView()
         run = ra.run_folder(self.check)

@@ -30,7 +30,7 @@ Local executed evidence:
 - `research_artifacts/guarded_initialization_v2/`: full inherited coarse search, refinement, outputs and watchdog samples; exit code 0.
 - `research_artifacts/initialization_scope_verified/`: final report scoping and conditional assessment replayed from that saved initial calibration, without repeating the coarse search.
 
-Local artifacts are ignored by Git because they contain machine paths. A durable computed summary is [evaluation/results_summary.json](evaluation/results_summary.json). It includes versions, source hashes, configurations, folds/outer outcomes and all aggregate comparisons. [tools/build_research_summary.py](../../build_research_summary.py) rebuilds it and the figure from actual run JSON.
+Local artifacts are ignored by Git because they contain machine paths. A durable computed summary is [evaluation/results_summary.json](evaluation/results_summary.json). It includes versions, source hashes, configurations, folds/outer outcomes and all aggregate comparisons. [tools/build_research_summary.py](../../tools/build_research_summary.py) rebuilds it and the figure from actual run JSON.
 
 ## Numerical and integration checks
 

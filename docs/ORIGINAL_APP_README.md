@@ -6,9 +6,9 @@ Check calibration drift, compare updates, and review the results before applying
 
 A Windows desktop tool you can adapt to your camera and LiDAR. The included live integration is customized for [Sensor_Computer](https://github.com/maninka123/Sensor_Computer); configure the topics, coordinate frames, camera model and device connection for your setup.
 
-[Quick start](#quick-start) · [Example results](#example-results) · [Data formats](docs/DATA_FORMAT.md) · [Validation](docs/VALIDATION.md)
+[Quick start](#quick-start) · [Example results](#example-results) · [Data formats](DATA_FORMAT.md) · [Validation](VALIDATION.md)
 
-![Updated calibration review with error measurements and update options](docs/images/overview.png)
+![Updated calibration review with error measurements and update options](images/overview.png)
 
 *Historical development-build preview. The research branch adds an offline backend and a small research entry point; this image is not a screenshot of those additions.*
 
@@ -44,7 +44,7 @@ One recorded comparison: **10 held-out checks**, evaluated on the same visible e
 | Camera only | 13.8% | 21.01 px | 2.26 px |
 | Camera + alignment | 15.1% | 20.04 px | 22.33 px |
 
-**Alignment only reduced edge RMSE by 28.0%.** The final verdict was **Large change: check the mounting before updating**. This example is one dataset, not a general accuracy benchmark. [Results and saved measurements →](docs/RESULTS.md)
+**Alignment only reduced edge RMSE by 28.0%.** The final verdict was **Large change: check the mounting before updating**. This example is one dataset, not a general accuracy benchmark. [Results and saved measurements →](RESULTS.md)
 
 ### Read the numbers
 
@@ -66,9 +66,9 @@ The comparison favours a simpler update unless extra changes show a consistent h
 <details>
 <summary>Updated matrix and evidence previews</summary>
 
-![Bracketed camera and LiDAR transformation matrices](docs/images/matrix-preview.png)
+![Bracketed camera and LiDAR transformation matrices](images/matrix-preview.png)
 
-![Compact capture and image-region evidence tables](docs/images/evidence.png)
+![Compact capture and image-region evidence tables](images/evidence.png)
 
 The development UI previews each option's matrices, highlights changed values, and lets you collapse the matrix panel. Previewing an option does not apply it.
 
@@ -76,15 +76,15 @@ The development UI previews each option's matrices, highlights changed values, a
 
 ## Inputs and outputs
 
-- **Calibration:** [JSON example](examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
-- **Captures:** image/PCD pairs, recorded bags or stacked arrays. PCD defaults to metres; millimetres are selectable. [Folder layouts →](docs/DATA_FORMAT.md)
+- **Calibration:** [JSON example](../examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
+- **Captures:** image/PCD pairs, recorded bags or stacked arrays. PCD defaults to metres; millimetres are selectable. [Folder layouts →](DATA_FORMAT.md)
 - **Results:** candidate calibration, summary, report and plots in `Calibration maintenance/results/<run>/`.
 
 For live data, the included ROS 1 integration reads `/camera/image_raw` and `/livox/lidar`. Topics are configurable. Adapting another camera model or device may require code changes.
 
 ## Validation
 
-- Tests cover update decisions, geometry, input checks and interface behaviour. [Validation notes →](docs/VALIDATION.md)
+- Tests cover update decisions, geometry, input checks and interface behaviour. [Validation notes →](VALIDATION.md)
 - **View pairs** checks file matches, readability, image sizes and coordinate ranges. Ranges are clues, not proof of units or synchronization.
 - Recordings, credentials and machine-specific settings are excluded. Live-device writes were not exercised in the recorded-data checks.
 
