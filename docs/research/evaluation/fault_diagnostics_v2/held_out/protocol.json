@@ -1,0 +1,175 @@
+{
+  "role": "held_out",
+  "datasets": [
+    "enclosure_on_twelve",
+    "october_device_four"
+  ],
+  "replicates": 3,
+  "drifts": [
+    [
+      "R",
+      0.5
+    ],
+    [
+      "R",
+      1.0
+    ],
+    [
+      "T",
+      0.03
+    ],
+    [
+      "T",
+      0.06
+    ],
+    [
+      "I_pp",
+      3.0
+    ],
+    [
+      "I_focal",
+      0.02
+    ],
+    [
+      "RT",
+      [
+        0.5,
+        0.03
+      ]
+    ]
+  ],
+  "nuisances": [
+    "ghost_all",
+    "spurious_lines_all",
+    "occlusion_all",
+    "blur_all",
+    "low_light_all",
+    "desync_one",
+    "ghost_one",
+    "lidar_dropout_all"
+  ],
+  "research": {
+    "seed": 7,
+    "max_features_per_capture": 1200,
+    "max_association_rows": 1800,
+    "association_gates": [
+      6.0,
+      9.0,
+      12.0
+    ],
+    "iterations": 2,
+    "max_nfev": 50,
+    "training_budget": 4,
+    "selection_strategy": "contrast",
+    "outer_fraction": 0.3,
+    "min_capture_blocks": 4,
+    "min_relative_gain": 0.01,
+    "minimum_singular": 0.02,
+    "rank_rtol": 1e-05,
+    "support_floor": 0.98,
+    "evaluation_cap_px": 30.0,
+    "min_coverage": 0.9,
+    "max_angle_rad": 1.0,
+    "bootstrap_reps": 500
+  },
+  "diagnostics": {
+    "decoy_radius_px": 8.0,
+    "decoy_count": 8,
+    "edge_gate_px": 1.5,
+    "edge_orientation_deg": 15.0,
+    "intensity_points": 20000,
+    "intensity_bins": 32,
+    "intensity_min_points": 1000,
+    "edge_informative_contrast": 0.02,
+    "intensity_informative_contrast": 0.003,
+    "consistency": 0.6666666666666666,
+    "edge_gain_margin": 0.01,
+    "intensity_gain_margin": 0.0005,
+    "single_cue_edge_margin": 0.01,
+    "min_informative_captures": 3,
+    "production_min_relative_gain": 0.01,
+    "monitor_reference_window": 4,
+    "monitor_drift_allowance": 0.5,
+    "monitor_threshold": 4.0,
+    "monitor_score_clip": 2.0,
+    "monitor_scale_floor": 0.25,
+    "monitor_alpha": 0.05
+  },
+  "anchor_start": {
+    "enclosure_off_ten": "Calibration maintenance/results/rig_20261104_174529/refined_calibration.json"
+  },
+  "environment": {
+    "python": "3.10.14 | packaged by Anaconda, Inc. | (main, Mar 21 2024, 16:20:14) [MSC v.1916 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26300-SP0",
+    "numpy": "1.26.4",
+    "scipy": "1.10.1",
+    "opencv": "4.8.1",
+    "threads": "Sequential; OMP/MKL/OpenBLAS/OpenCV limited to one thread",
+    "source_sha256": {
+      "Calibration maintenance\\code\\accept.py": "b246429a8ab50913e80dd39fa6e8606265d39a5bfd15cc93a0bcf79f7ab5e65d",
+      "Calibration maintenance\\code\\app.py": "cf3f1e643dfd81287db6f998ba5a6926a48aa6d4c78803ba5320fde5eef29c45",
+      "Calibration maintenance\\code\\appcore.py": "10004c95783459822863e974d2842a6b9c528e7f389599f0ef71cb3c9e56748e",
+      "Calibration maintenance\\code\\calibration_io.py": "c68b4c5436e9261f171075f051400143ae6e6f0d6b4eb31d51fa8c59303d9156",
+      "Calibration maintenance\\code\\capture_help.py": "663ed9cda0060d437c4cc99f29d815fbe83f419e1e9d8ce325ff308e6d3c6bd2",
+      "Calibration maintenance\\code\\config.yaml": "b1a69c8c37cdaf6abfeeccef5e32d51200717211b15cb9fed8cbfdfb420a9320",
+      "Calibration maintenance\\code\\device_capture.py": "d87bdb4b3c1ef7c2b31e588066c13c7e94f8c9e1aefc733da2ff8def6abf72fd",
+      "Calibration maintenance\\code\\device_model.py": "34b910aaf737845bce2eeaf2fd1277b465318742e5dd027e0d9894f45bbb85b8",
+      "Calibration maintenance\\code\\device_ssh.py": "cab6a6ad9285aea5ae1dabc56afde49c4c0a0cfe752e76f7d09258d6787a5145",
+      "Calibration maintenance\\code\\device_ui.py": "1b9dbdafdf6343e8b248f73c75b066b19656c05e01c462dbf2b608a8177a18c1",
+      "Calibration maintenance\\code\\device_yaml.py": "546db2e9225d05f15b05f50b5e0f1f81bc6e888293709cb140b1ae348c0b668f",
+      "Calibration maintenance\\code\\devices.py": "de064afc9e71c2d34cfda33e4a628ba73ce56d6b0b8586c5c82a34f832c7a1ef",
+      "Calibration maintenance\\code\\figures.py": "549198d525970e1b1bb191db00db33732edf7b1dd0f7661d4ec6dff143edf204",
+      "Calibration maintenance\\code\\full_calibration.py": "67b2c832b42edc85ef876a2138d197ab29cb3d0dd73f76c04ce945f980ec0b1c",
+      "Calibration maintenance\\code\\maintain.py": "b0c29a8c71a12653c26a49549be4bf131a50ef51ba5f52735e9e44f86a4670be",
+      "Calibration maintenance\\code\\maintenance_model.py": "da1c4353241724684fa5e283622db3c3c8ebf654cd9abfd9a9d436ea9980e540",
+      "Calibration maintenance\\code\\matrix_preview.py": "00a1c5178a52debe5a3939efed70e85be991861c3f84bf981781df6ee9bf4792",
+      "Calibration maintenance\\code\\option_help.py": "f7fe488cfb85887ac53288b3251ab6630a2e4c95d9f9b82f4c2baf40c48f4ea8",
+      "Calibration maintenance\\code\\paired_data.py": "8ee35f5120118f62818e164014642652d5297fa6f65fccd34b83d5660a71c7c2",
+      "Calibration maintenance\\code\\pose_view.py": "05b2b801070fb61e7f8a9d86c8bfcf9cba578131240fefb8202df74b36f88f75",
+      "Calibration maintenance\\code\\prepare_option_matrices.py": "eb34d5f34bc30ca34afe9d3392f2e965743ee2663269a55d2a3d53dd1cca0bad",
+      "Calibration maintenance\\code\\prepare_option_rmse.py": "2e1e8ce0420084914c570db6df0a6cd964ad915c1eb3b50f6643fc83dae53dc6",
+      "Calibration maintenance\\code\\refresh_visuals.py": "e050e196b87ed3fde5b7e8e68cdc335a0c27c7734d839d9ceb78f94127adf333",
+      "Calibration maintenance\\code\\research_dialog.py": "7e344985057e6d5011aa1632515fcba8beb967a6c4d42cf607f16fbf12326d67",
+      "Calibration maintenance\\code\\result_sections.py": "3d851733e989d2b9ca4b9d8434e7a3843875d24762877d9b5260c994c1216a99",
+      "Calibration maintenance\\code\\review_calibration_ui.py": "44bed71e2f2d63d4509b9cd0e526b0a695689f22da596d236a3c3c81061596ef",
+      "Calibration maintenance\\code\\ros_link.py": "c8083fcc2bbde5a51cacbe5ee4981a4d5f6888cd0d4e1912df7bc4ba59a8a1aa",
+      "Calibration maintenance\\code\\settings.py": "54953fc72e32d5537579d1eb56f262952afa68b0683755f1b980c335010c4ffb",
+      "Calibration maintenance\\code\\sim_device.py": "d2f62d9f20a6b8faa564f92d08b29387086aec7e622ed92827d771da99e7d963",
+      "Calibration maintenance\\code\\simulate_drift.py": "73a2786b81364a2026406e053d9c157291b9475bf1efaac2ea63add288c7c5c9",
+      "Calibration maintenance\\code\\ui_common.py": "965b3967d88c9b29033f1ea0f5ac6949017f457ae490c01fb921cbffd3695bf5",
+      "Calibration maintenance\\code\\ui_widgets.py": "9a5c7935c722ad531544956f30246cd7687a09815dd50d817a4d148425f064b8",
+      "Calibration maintenance\\code\\update_options.py": "3225f38aa5422875bb897974cb349db6a9d6aadbb31a5e1bf5c3ebc3adfd6ad8",
+      "research_calibration\\__init__.py": "f7b6be53b91b4454451ca4a795b5f270047e06e3c8e5599cf87836435f57c728",
+      "research_calibration\\__main__.py": "52e5e2a70efddceb879fc315e87afe4a84e5743669d91806120efe4644535d29",
+      "research_calibration\\benchmark.py": "d4a40641aa9442a1d463344b5b8fd9e6a3e8b05bd7a5a379bb7922a093203ab2",
+      "research_calibration\\calibration_pipeline.py": "d4e1cbd835fea5a930609d202cf3c037d2ca713e7b336add0933ce35ffc342b9",
+      "research_calibration\\config.py": "4c1bb4136a4dd2a9492b30aeb864d3b309ce452f0cf667b444d33c131d9fa49a",
+      "research_calibration\\decision_policy.py": "fd483a614341f024e9199ae17b8a901777a90636640c0137cb7d05fa810979f5",
+      "research_calibration\\evidence_selection.py": "22366504467d8685a82f84c40c37e93a845d65f0a748ec7da32f0b5a18ddc944",
+      "research_calibration\\geometry.py": "17ab503c7d968f648d091a687213a1b88b6e5c3c4f8cb7777953a047c65a199c",
+      "research_calibration\\legacy_adapter.py": "3e76ffa4282f88650a7becec050e90ba9001627220e59158a293d24386b22a62",
+      "research_calibration\\observability.py": "3ad7519f58fedd1edf2c74e420eda9a9cc72d8eea842f65982a583961fd69ee8",
+      "research_calibration\\parameter_hypotheses.py": "dba3d2e752771a111de2d25c2e1ee04d3e009622f80b07122b9af0163c24247e",
+      "research_calibration\\progress_events.py": "655db01ec92b72fbb6e7a516155445dd0fea4ef8ebd967e8837883d96056a3f4",
+      "research_calibration\\reporting.py": "c6462a1430933735eb9d4a6713606213c653bc1522c650534193ec81f69bba69",
+      "research_calibration\\residuals.py": "33627e8bb6ca72954b2cc4ef746c4a223c20ee2bb07658c0c30bebf222f59bfb",
+      "research_calibration\\resources.py": "76ca217e265ebe01f8c87414cb4aa4a5c591791d6d344f0dcb6725423ce6b27e",
+      "research_calibration\\selective_optimizer.py": "085cd4d5fa0edb1a2f36ef126181ade0d62d6f37318e55682aba4a91dad19156",
+      "research_calibration\\uncertainty.py": "37641c2626818dfc5be1fc749f0b0709fc36fd4cc0a05e3a18ebe117fbc09852",
+      "Targetless calibration\\code\\calib.py": "1a67418426330b57fe4c34dfbe1ad4662cb612825e788236eb16155cd306340a",
+      "Targetless calibration\\code\\common.py": "010d9e1e5adbb7812b4e5b27c74fd00b1b32087c050f18bc615a735d2b1c48be",
+      "Targetless calibration\\code\\config.yaml": "aadabbfa0c723ca8b284a896f568cd979ac8e3c40a8d3a9a609199944c0a80ad",
+      "Targetless calibration\\code\\decode_bags.py": "d2ec65b7e33da8e6896ec3dd7e24f874eddc939facd10dc8dacf0cecda32f6f7",
+      "Targetless calibration\\code\\evaluate.py": "fbc5fe41f9201a1b75769335463a306a1531b9909164f6480507e14cecfad3e5",
+      "Targetless calibration\\code\\image_edges.py": "d98eeb7cb86db840fb8f99f6be50a17b30bb19b74e2304e62a9818ce055759d9",
+      "Targetless calibration\\code\\lidar_edges.py": "c2a4397ed44b90427fd26d859b5d16dac098c7d5eb4232be8942bea564249360",
+      "Targetless calibration\\code\\step1_calibrate.py": "48f3452ccd2adbc08ece9f3704d3435bcc8d2b5c07e66c0cd784b642437eba94",
+      "Targetless calibration\\code\\step2_compare.py": "b5ddadca0ed241a033c4f0ba355f6841c1bb6d886fd8dc9acc483c803b619796",
+      "Targetless calibration\\code\\step4_images.py": "55eab8f0e36353e8362de334f18f67256459d3e941cec032bd4b33c0a74a96c7"
+    },
+    "memory": {
+      "available_mb": 24907.375,
+      "process_mb": 68.3828125
+    }
+  }
+}

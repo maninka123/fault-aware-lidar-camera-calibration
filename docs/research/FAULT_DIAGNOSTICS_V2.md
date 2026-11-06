@@ -203,3 +203,36 @@ score is z_i = (m − x_i)/s.
 
 See [PREREGISTRATION_V2.md](PREREGISTRATION_V2.md) for the frozen protocol. Results are in
 [VERIFICATION_RESULTS.md](VERIFICATION_RESULTS.md#fault-diagnostics-v2).
+
+## 5. Outcome in one paragraph (held out, preregistered)
+
+The evaluation used two held-out recordings, 104 trials scored from identical folds. Compared with the
+production policy, the experimental layer:
+
+- raised **no false alarm in 54 no-change trials**, against 12 for production;
+- **detected 29 of 48** injected changes, against 16;
+- made **3 wrong attributions**, against 24;
+- recommended no update in a no-change trial (production also recommended none).
+
+Its persistence monitor alarmed on 17/24 persistent changes and on 0/18 single-capture corruptions; the
+production-loss CUSUM alarmed on none.
+
+The ablations do not support every component:
+
+- The **intensity agreement rule** cost 13 detections without preventing a false alarm and should be
+  withdrawn or redesigned.
+- **Decoy subtraction** inside the decision rule was no better than the raw oriented matched share.
+- **Quality gating** is the component that consistently helped.
+
+**Correct single-group attribution remains rare** (1/48; production 4/48). What the method mostly reports is an
+honest ambiguity set.
+
+## 6. Recommended next steps (not done here)
+
+1. Remove the intensity agreement requirement, or weight it by the cue's own per-recording informativeness.
+   Then re-evaluate on *new* held-out recordings; the current ones are now spent.
+2. Attribution: test depth-stratified signatures (translation parallax ∝ 1/z) and collect scenes with depth
+   variety, so that T separates from R and I. Report R/I as one class unless the lens geometry separates them.
+3. Collect genuinely labelled sessions: a measured mount rotation, a shim translation, a refocused lens, and
+   nuisance-only sessions (wet or dirty window, low light). Collect sequences long enough (≥ 30 captures) for
+   the conformal monitor to have power.

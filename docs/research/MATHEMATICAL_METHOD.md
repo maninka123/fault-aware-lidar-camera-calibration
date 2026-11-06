@@ -109,3 +109,18 @@ Runs are sequential CPU work with process-local BLAS/OpenCV thread caps. Windows
 `strategy='legacy'` dispatches the untouched cloned maintenance workflow. `legacy_optimizer` uses its frozen refine routine inside the common new evaluation protocol and is explicitly distinguished from strict legacy behavior. Research projection/domain checks apply to that comparator.
 
 `calibrate_from_scratch` preserves the existing targetless coarse initializer and produces an initial candidate, without diagnosing a historical fault. All captures enter initialization; later refinement scores cannot independently validate it. Those maintenance diagnostics are saved separately, and their scalar support/uncertainty are not relabeled as initial-estimator properties. Initial uncertainty is `UNVALIDATED_INITIALIZATION`, with nullspace unreported rather than falsely zero. The complete three-capture execution and watchdog measurements are in VERIFICATION_RESULTS.md.
+
+## Experimental extension: fault diagnostics v2
+
+The held-out loss above is affected by edge density. Over a 4 px offset it changes by 5–15 % in a
+scene-dependent direction, and 75–105 % of that change is reproduced by displaced copies of the same image. The
+experimental layer in [FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md) therefore keeps every fit and fold of
+this method and re-scores them:
+
+- with decoy-referenced edge and intensity contrasts;
+- with an explicit chance-predicted counterfactual;
+- with gating on evidence quality and a replication rule;
+- with parsimony-based ambiguity sets;
+- with a clipped-CUSUM persistence monitor over capture time.
+
+It does not replace the production decision described here.

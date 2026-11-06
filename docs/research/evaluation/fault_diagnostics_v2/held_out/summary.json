@@ -1,0 +1,8393 @@
+{
+  "trials": 104,
+  "errors": [],
+  "methods": {
+    "production": {
+      "nominal": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 16,
+          "n": 48,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.2167660137089678,
+            0.47460153667527943
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 12,
+          "n": 48,
+          "rate": 0.25,
+          "wilson95": [
+            0.1492048880971003,
+            0.3878464374792707
+          ]
+        },
+        "correct_attribution": {
+          "k": 4,
+          "n": 48,
+          "rate": 0.08333333333333333,
+          "wilson95": [
+            0.03288322434995555,
+            0.19553565161066291
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 28,
+          "KEEP_CURRENT": 20
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 3,
+          "KEEP_CURRENT": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.06678568000728924,
+            0.3585347038786943
+          ]
+        },
+        "correct_attribution": {
+          "k": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.06678568000728924,
+            0.3585347038786943
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 12,
+          "KEEP_CURRENT": 12
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 3,
+          "KEEP_CURRENT": 3
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 3,
+          "KEEP_CURRENT": 3
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 6
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 4,
+          "KEEP_CURRENT": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 9,
+          "n": 48,
+          "rate": 0.1875,
+          "wilson95": [
+            0.10191276348200173,
+            0.31940139348846214
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 9,
+          "n": 48,
+          "rate": 0.1875,
+          "wilson95": [
+            0.10191276348200173,
+            0.31940139348846214
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 34,
+          "INSUFFICIENT_EVIDENCE": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 21,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 3,
+          "KEEP_CURRENT": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 4,
+          "INSUFFICIENT_EVIDENCE": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 3,
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 3,
+          "n": 3,
+          "rate": 1.0,
+          "wilson95": [
+            0.43849391955098227,
+            1.0
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 3,
+          "rate": 1.0,
+          "wilson95": [
+            0.43849391955098227,
+            1.0
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CURRENT": 8,
+          "INSUFFICIENT_EVIDENCE": 16
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 9,
+          "n": 24,
+          "rate": 0.375,
+          "wilson95": [
+            0.21159133433631458,
+            0.5729038096209293
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 9,
+          "n": 24,
+          "rate": 0.375,
+          "wilson95": [
+            0.21159133433631458,
+            0.5729038096209293
+          ]
+        },
+        "statuses": {
+          "INSUFFICIENT_EVIDENCE": 11,
+          "KEEP_CURRENT": 13
+        }
+      }
+    },
+    "proposed": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 29,
+          "n": 48,
+          "rate": 0.6041666666666666,
+          "wilson95": [
+            0.4631015459693511,
+            0.7297937350404942
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 48,
+          "rate": 0.0625,
+          "wilson95": [
+            0.021482843131227225,
+            0.1683569766274222
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 18,
+          "n": 48,
+          "rate": 0.375,
+          "wilson95": [
+            0.2521507240406812,
+            0.5163749387475043
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 25,
+          "NUISANCE_SUSPECTED": 14,
+          "DRIFT_SUPPORTED": 4,
+          "KEEP_CONFIRMED": 5
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 21,
+          "n": 24,
+          "rate": 0.875,
+          "wilson95": [
+            0.6899571185214243,
+            0.9565574496068442
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 15,
+          "n": 24,
+          "rate": 0.625,
+          "wilson95": [
+            0.42709619037907065,
+            0.7884086656636855
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 20,
+          "NUISANCE_SUSPECTED": 2,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "DRIFT_AMBIGUOUS": 1,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "DRIFT_SUPPORTED": 2,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 24,
+          "rate": 0.08333333333333333,
+          "wilson95": [
+            0.023158327842973503,
+            0.258492152014506
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 24,
+          "rate": 0.125,
+          "wilson95": [
+            0.04344255039315584,
+            0.3100428814785757
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 12,
+          "DRIFT_AMBIGUOUS": 5,
+          "DRIFT_SUPPORTED": 3
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_chance_correction": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 28,
+          "n": 48,
+          "rate": 0.5833333333333334,
+          "wilson95": [
+            0.44281082215364653,
+            0.7115054026542299
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 20,
+          "n": 48,
+          "rate": 0.4166666666666667,
+          "wilson95": [
+            0.28849459734577015,
+            0.5571891778463536
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 27,
+          "NUISANCE_SUSPECTED": 14,
+          "KEEP_CONFIRMED": 5,
+          "REFERENCE_NOT_CONFIRMED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 21,
+          "n": 24,
+          "rate": 0.875,
+          "wilson95": [
+            0.6899571185214243,
+            0.9565574496068442
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 16,
+          "n": 24,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.4670595949408046,
+            0.8202802131162036
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 21,
+          "NUISANCE_SUSPECTED": 2,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "REFERENCE_NOT_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "DRIFT_AMBIGUOUS": 1,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 7,
+          "n": 24,
+          "rate": 0.2916666666666667,
+          "wilson95": [
+            0.14914460334164278,
+            0.49168063658709704
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.06678568000728924,
+            0.3585347038786943
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 12,
+          "DRIFT_AMBIGUOUS": 6,
+          "REFERENCE_NOT_CONFIRMED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_intensity_cue": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 42,
+          "n": 48,
+          "rate": 0.875,
+          "wilson95": [
+            0.7529927291394518,
+            0.9414302824959915
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 48,
+          "rate": 0.0625,
+          "wilson95": [
+            0.021482843131227225,
+            0.1683569766274222
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 30,
+          "n": 48,
+          "rate": 0.625,
+          "wilson95": [
+            0.48362506125249566,
+            0.7478492759593187
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 39,
+          "NUISANCE_SUSPECTED": 5,
+          "DRIFT_SUPPORTED": 3,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 6
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 22,
+          "n": 24,
+          "rate": 0.9166666666666666,
+          "wilson95": [
+            0.741507847985494,
+            0.9768416721570266
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 16,
+          "n": 24,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.4670595949408046,
+            0.8202802131162036
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 21,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 6
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 2,
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 6
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 6
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "DRIFT_SUPPORTED": 2,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 20,
+          "n": 24,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.6414652961213058,
+            0.9332143199927109
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 24,
+          "rate": 0.08333333333333333,
+          "wilson95": [
+            0.023158327842973503,
+            0.258492152014506
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 14,
+          "n": 24,
+          "rate": 0.5833333333333334,
+          "wilson95": [
+            0.3883433764938864,
+            0.7553265275346177
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 18,
+          "DRIFT_SUPPORTED": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_quality_gating": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 26,
+          "n": 48,
+          "rate": 0.5416666666666666,
+          "wilson95": [
+            0.4029083309494732,
+            0.6742497814544648
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 19,
+          "n": 48,
+          "rate": 0.3958333333333333,
+          "wilson95": [
+            0.2702062649595057,
+            0.5368984540306487
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 25,
+          "NUISANCE_SUSPECTED": 15,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 6,
+          "REFERENCE_NOT_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 21,
+          "n": 24,
+          "rate": 0.875,
+          "wilson95": [
+            0.6899571185214243,
+            0.9565574496068442
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 15,
+          "n": 24,
+          "rate": 0.625,
+          "wilson95": [
+            0.42709619037907065,
+            0.7884086656636855
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 20,
+          "NUISANCE_SUSPECTED": 2,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "REFERENCE_NOT_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "DRIFT_AMBIGUOUS": 1,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 5,
+          "n": 24,
+          "rate": 0.20833333333333334,
+          "wilson95": [
+            0.0924468910478809,
+            0.40470844485235474
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.06678568000728924,
+            0.3585347038786943
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 5,
+          "NUISANCE_SUSPECTED": 13,
+          "DRIFT_AMBIGUOUS": 5,
+          "REFERENCE_NOT_CONFIRMED": 1
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_robust_aggregation": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 31,
+          "n": 48,
+          "rate": 0.6458333333333334,
+          "wilson95": [
+            0.5043879645406409,
+            0.7656654288731427
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 48,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.011501652078965613,
+            0.13975911147771472
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 19,
+          "n": 48,
+          "rate": 0.3958333333333333,
+          "wilson95": [
+            0.2702062649595057,
+            0.5368984540306487
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 28,
+          "DRIFT_SUPPORTED": 3,
+          "KEEP_CONFIRMED": 5,
+          "NUISANCE_SUSPECTED": 12
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 22,
+          "n": 24,
+          "rate": 0.9166666666666666,
+          "wilson95": [
+            0.741507847985494,
+            0.9768416721570266
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 15,
+          "n": 24,
+          "rate": 0.625,
+          "wilson95": [
+            0.42709619037907065,
+            0.7884086656636855
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 21,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "DRIFT_SUPPORTED": 1,
+          "DRIFT_AMBIGUOUS": 1,
+          "KEEP_CONFIRMED": 2,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 6,
+          "n": 6,
+          "rate": 1.0,
+          "wilson95": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "DRIFT_SUPPORTED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 9,
+          "n": 24,
+          "rate": 0.375,
+          "wilson95": [
+            0.21159133433631458,
+            0.5729038096209293
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 24,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.06678568000728924,
+            0.3585347038786943
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 11,
+          "DRIFT_AMBIGUOUS": 7,
+          "DRIFT_SUPPORTED": 2
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_reference_confirmation": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 29,
+          "n": 48,
+          "rate": 0.6041666666666666,
+          "wilson95": [
+            0.4631015459693511,
+            0.7297937350404942
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 48,
+          "rate": 0.0625,
+          "wilson95": [
+            0.021482843131227225,
+            0.1683569766274222
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 18,
+          "n": 48,
+          "rate": 0.375,
+          "wilson95": [
+            0.2521507240406812,
+            0.5163749387475043
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 25,
+          "NUISANCE_SUSPECTED": 14,
+          "DRIFT_SUPPORTED": 4,
+          "KEEP_CONFIRMED": 5
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 1,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 21,
+          "n": 24,
+          "rate": 0.875,
+          "wilson95": [
+            0.6899571185214243,
+            0.9565574496068442
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 15,
+          "n": 24,
+          "rate": 0.625,
+          "wilson95": [
+            0.42709619037907065,
+            0.7884086656636855
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 20,
+          "NUISANCE_SUSPECTED": 2,
+          "DRIFT_SUPPORTED": 1,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "DRIFT_AMBIGUOUS": 1,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "NUISANCE_SUSPECTED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "NUISANCE_SUSPECTED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "DRIFT_SUPPORTED": 2,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 34,
+          "NUISANCE_SUSPECTED": 14
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 21,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3,
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 2
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "NUISANCE_SUSPECTED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 24,
+          "rate": 0.08333333333333333,
+          "wilson95": [
+            0.023158327842973503,
+            0.258492152014506
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 24,
+          "rate": 0.125,
+          "wilson95": [
+            0.04344255039315584,
+            0.3100428814785757
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 4,
+          "NUISANCE_SUSPECTED": 12,
+          "DRIFT_AMBIGUOUS": 5,
+          "DRIFT_SUPPORTED": 3
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "NUISANCE_SUSPECTED": 11,
+          "KEEP_CONFIRMED": 13
+        }
+      }
+    },
+    "no_nuisance_counterfactual": {
+      "nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "dataset:enclosure_on_twelve:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "drift": {
+        "alarm": {
+          "k": 29,
+          "n": 48,
+          "rate": 0.6041666666666666,
+          "wilson95": [
+            0.4631015459693511,
+            0.7297937350404942
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "wrong_attribution": {
+          "k": 3,
+          "n": 48,
+          "rate": 0.0625,
+          "wilson95": [
+            0.021482843131227225,
+            0.1683569766274222
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 48,
+          "rate": 0.020833333333333332,
+          "wilson95": [
+            0.003687015979399688,
+            0.10899469137531158
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 18,
+          "n": 48,
+          "rate": 0.375,
+          "wilson95": [
+            0.2521507240406812,
+            0.5163749387475043
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 25,
+          "KEEP_CONFIRMED": 19,
+          "DRIFT_SUPPORTED": 4
+        }
+      },
+      "by_condition:drift:R:0.5": {
+        "alarm": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 3,
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "dataset:enclosure_on_twelve:drift": {
+        "alarm": {
+          "k": 21,
+          "n": 24,
+          "rate": 0.875,
+          "wilson95": [
+            0.6899571185214243,
+            0.9565574496068442
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 15,
+          "n": 24,
+          "rate": 0.625,
+          "wilson95": [
+            0.42709619037907065,
+            0.7884086656636855
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 20,
+          "KEEP_CONFIRMED": 3,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:R:1.0": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:T:0.03": {
+        "alarm": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 5,
+          "DRIFT_AMBIGUOUS": 1
+        }
+      },
+      "by_condition:drift:T:0.06": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 1,
+          "DRIFT_SUPPORTED": 1
+        }
+      },
+      "by_condition:drift:I_pp:3.0": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 4,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "by_condition:drift:I_focal:0.02": {
+        "alarm": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "KEEP_CONFIRMED": 4
+        }
+      },
+      "by_condition:drift:RT:(0.5, 0.03)": {
+        "alarm": {
+          "k": 4,
+          "n": 6,
+          "rate": 0.6666666666666666,
+          "wilson95": [
+            0.29998832134152864,
+            0.9032306674407831
+          ]
+        },
+        "update": {
+          "k": 1,
+          "n": 6,
+          "rate": 0.16666666666666666,
+          "wilson95": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 6,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.09676933255921683,
+            0.7000116786584712
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 2,
+          "DRIFT_SUPPORTED": 2,
+          "KEEP_CONFIRMED": 2
+        }
+      },
+      "nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 48,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.0741026511527422
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 48
+        }
+      },
+      "by_condition:nuisance:ghost_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "dataset:enclosure_on_twelve:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 24
+        }
+      },
+      "by_condition:nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:occlusion_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:blur_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:low_light_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:desync_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:ghost_one": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:nuisance:lidar_dropout_all": {
+        "alarm": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 6
+        }
+      },
+      "by_condition:drift_nuisance:spurious_lines_all": {
+        "alarm": {
+          "k": 5,
+          "n": 6,
+          "rate": 0.8333333333333334,
+          "wilson95": [
+            0.43649056343635395,
+            0.9699474141282697
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "correct_attribution": {
+          "k": 0,
+          "n": 6,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.3903430336530645
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 6,
+          "rate": 0.5,
+          "wilson95": [
+            0.18761280689940868,
+            0.8123871931005913
+          ]
+        },
+        "statuses": {
+          "DRIFT_AMBIGUOUS": 5,
+          "KEEP_CONFIRMED": 1
+        }
+      },
+      "dataset:october_device_four:nominal": {
+        "alarm": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 3,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 3
+        }
+      },
+      "dataset:october_device_four:drift": {
+        "alarm": {
+          "k": 8,
+          "n": 24,
+          "rate": 0.3333333333333333,
+          "wilson95": [
+            0.17971978688379642,
+            0.5329404050591954
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 2,
+          "n": 24,
+          "rate": 0.08333333333333333,
+          "wilson95": [
+            0.023158327842973503,
+            0.258492152014506
+          ]
+        },
+        "correct_attribution": {
+          "k": 1,
+          "n": 24,
+          "rate": 0.041666666666666664,
+          "wilson95": [
+            0.007393265354805126,
+            0.20242226248842232
+          ]
+        },
+        "ambiguous_contains_truth": {
+          "k": 3,
+          "n": 24,
+          "rate": 0.125,
+          "wilson95": [
+            0.04344255039315584,
+            0.3100428814785757
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 16,
+          "DRIFT_AMBIGUOUS": 5,
+          "DRIFT_SUPPORTED": 3
+        }
+      },
+      "dataset:october_device_four:nuisance": {
+        "alarm": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "update": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "wrong_attribution": {
+          "k": 0,
+          "n": 24,
+          "rate": 0.0,
+          "wilson95": [
+            0.0,
+            0.13798057582897535
+          ]
+        },
+        "statuses": {
+          "KEEP_CONFIRMED": 24
+        }
+      }
+    }
+  },
+  "cost": {
+    "production_median_s": 6.927904950003722,
+    "diagnostics_median_s": 1.0788063500003773,
+    "extra_fits": 7
+  },
+  "alignment": {
+    "drift_current_median_px": 2.1065264117793845,
+    "production_updates_px": []
+  }
+}
