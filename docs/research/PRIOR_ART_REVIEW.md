@@ -1,5 +1,9 @@
 # Prior-art review
 
+> **Update, 6 November 2026 (fault diagnostics v2).** A second, method-level review of monitoring, sequential
+> detection and scene-conditioned evidence is in [PRIOR_ART_REVIEW_V2.md](PRIOR_ART_REVIEW_V2.md). It motivates
+> the decoy-referenced evidence of [FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md).
+
 Review date: **5 November 2026**. The mandatory paper-by-paper mathematical comparison is [PAPER_TO_ALGORITHM.md](PAPER_TO_ALGORITHM.md). It preceded implementation and records assumptions, limitations, adopted concepts, rejected novelty claims and concrete components. This review is bounded by access; it is not an exhaustive originality certification.
 
 ## What the literature establishes

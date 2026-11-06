@@ -72,6 +72,57 @@ def _lut():
 LUT = _lut()
 
 
+MIN_LIFT = 1.3          # the maintenance app's own "lines up with the scene" bar (decision.min_lift in its config.yaml)
+OPTION_NAMES = (("extrinsic", "Maintenance: alignment only"), ("intrinsic", "Maintenance: camera only"),
+                ("full", "Maintenance: camera + alignment"))
+
+
+def _min_lift():
+    try:
+        import yaml
+        cfg = yaml.safe_load((Path(__file__).resolve().parents[1] / "Calibration maintenance" / "code" / "config.yaml")
+                             .read_text(encoding="utf-8"))
+        return float(cfg["decision"]["min_lift"])
+    except Exception:  # noqa: BLE001  the constant above is the declared default
+        return MIN_LIFT
+
+
+def _read(path):
+    import json
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def review_alignment(folder):
+    """How well the CURRENT calibration lines up with the captures, from the saved maintenance comparison.
+
+    Edge-alignment lift = share of LiDAR edge points on a parallel image edge divided by the same share when the image
+    is shifted (chance).  1.0 means no better than chance.  None when the comparison was not run."""
+    s = _read(Path(folder) / "review" / "run" / "summary.json")
+    old = (s or {}).get("existing_on_new_data") or {}
+    if old.get("lift") is None:
+        return None
+    new = (s or {}).get("refined_on_new_data") or {}
+    return dict(lift=float(old["lift"]), share=old.get("on_edge_share"), matches=old.get("matches"),
+                refined_lift=new.get("lift"), min_lift=_min_lift())
+
+
+def review_options(folder):
+    """{key: (label, calibration arrays)} of the maintenance update options saved with the check."""
+    d = _read(Path(folder) / "review" / "run" / "option_calibrations.json")
+    cals = (d or {}).get("calibrations") or {}
+    out = {}
+    for key, label in OPTION_NAMES:
+        try:
+            if key in cals:
+                out[key] = (label, cal_arrays(cals[key]))
+        except (KeyError, ValueError, TypeError):
+            continue
+    return out
+
+
 def capture_label(path):
     """capture_20261105_191917_810991_enclosure_on.npz -> '19:19:17'."""
     parts = Path(path).stem.split("_")
@@ -95,6 +146,13 @@ def _label(text="", name=None, rich=False):
     w.setWordWrap(True)
     if rich:
         w.setTextFormat(QtCore.Qt.RichText)
+    return w
+
+
+def _inline(text):
+    """A label that stays on one line (toolbars)."""
+    w = _label(text, "muted")
+    w.setWordWrap(False)
     return w
 
 
@@ -239,7 +297,9 @@ class OverlayCanvas(QtWidgets.QWidget):
         self.P = None
         self.s = 0.0
         self.arrows = False
-        self.opacity = .75
+        self.max_points = 12000      # sparse by default: a solid blob of points hides the photo it is meant to be checked against
+        self.keep = None
+        self.opacity = .9
         self.overlay = None
         self._buf = None
         self.circle = None
@@ -255,8 +315,7 @@ class OverlayCanvas(QtWidgets.QWidget):
         self.lo, self.hi = np.percentile(d, [5, 95])
         self.bins = np.clip((np.log(d) - np.log(self.lo)) / (np.log(self.hi) - np.log(self.lo)) * 255, 0, 255).astype(np.uint8)
         self.u0, self.v0, self.ok0 = project(P, ref, circle)
-        rng = np.random.default_rng(1)
-        self.sample = rng.choice(len(P), min(450, len(P)), replace=False)
+        self._choose_points()
         # true size of the proposed change
         u1, v1, ok1 = project(P, cand, circle)
         both = self.ok0 & ok1 & self._inside(self.u0, self.v0) & self._inside(u1, v1)
@@ -267,21 +326,36 @@ class OverlayCanvas(QtWidgets.QWidget):
     def _inside(self, u, v):
         return (u >= 0) & (u < self.w) & (v >= 0) & (v < self.h)
 
+    def _choose_points(self):
+        """The same random subset for every slider position, so points move instead of flickering in and out."""
+        n = len(self.P)
+        self.keep = np.zeros(n, bool)
+        self.keep[np.random.default_rng(2).choice(n, min(self.max_points, n), replace=False)] = True
+        kept = np.nonzero(self.keep)[0]
+        self.sample = kept[np.random.default_rng(1).choice(len(kept), min(450, len(kept)), replace=False)]   # arrows
+
+    def set_density(self, max_points):
+        self.max_points = int(max_points)
+        if self.P is not None:
+            self._choose_points()
+            self.render(self.s)
+
     def render(self, s):
         if self.P is None:
             return
         self.s = s
         c = blend(self.ref, self.cand, s)
         u, v, ok = project(self.P, c, self.circle)
-        valid = ok & self._inside(u, v)
+        valid = ok & self._inside(u, v) & self.keep
         idx = np.nonzero(valid)[0]
         idx = idx[np.argsort(-np.linalg.norm(self.P[idx], axis=1))]
         k = self.K
         arr = np.zeros((self.h * k, self.w * k, 4), np.uint8)
         x, y = (u[idx] * k).astype(int), (v[idx] * k).astype(int)
         col = LUT[self.bins[idx]]
-        for dy in (-1, 0, 1):
-            for dx in (-1, 0, 1):
+        dense = self.max_points >= 30000
+        for dy in ((-1, 0, 1) if dense else (0, 1)):
+            for dx in ((-1, 0, 1) if dense else (0, 1)):
                 arr[np.clip(y + dy, 0, self.h * k - 1), np.clip(x + dx, 0, self.w * k - 1), :3] = col
                 arr[np.clip(y + dy, 0, self.h * k - 1), np.clip(x + dx, 0, self.w * k - 1), 3] = 255
         self._buf = arr
@@ -370,16 +444,35 @@ class OverlayCanvas(QtWidgets.QWidget):
         self.hovered.emit(f"LiDAR point {dist:.1f} m away · moved {move[i]:.2f} px from the current calibration")
 
 
+def alignment_note(a):
+    """(rich text, is_warning) describing how well the current calibration lines up with the captures."""
+    if not a:
+        return None
+    lift, need = a["lift"], a["min_lift"]
+    share = f"{a['share'] * 100:.1f} % of LiDAR edge points sit on a matching image edge, " if a.get("share") is not None else ""
+    if lift >= need:
+        return (f"<b>Alignment of the current calibration:</b> {share}{lift:.2f}× what chance would give "
+                f"(the maintenance app asks for at least {need:g}×). It lines up with these captures.", False)
+    fit = (f" Fitted on these same captures, the maintenance options reach {a['refined_lift']:.2f}× (not a held-out result)."
+           if a.get("refined_lift") is not None else "")
+    return (f"<b>The current calibration does not clearly line up with these captures.</b> {share}{lift:.2f}× what chance would give "
+            f"(1.0× is no better than chance; the maintenance app asks for at least {need:g}×). Expect the points to look shifted "
+            f"against the photo. “Keep” means no tested change was clearly better, not that the calibration is aligned.{fit}", True)
+
+
 class OverlayCard(QtWidgets.QFrame):
-    def __init__(self, captures, ref_cal, cand_cal, circle, accepted):
+    def __init__(self, captures, ref_cal, cand_cal, circle, accepted, options=None, alignment=None):
         super().__init__()
         self.setObjectName("card")
         self.captures = captures
         self.ref = cal_arrays(ref_cal) if ref_cal else None
         self.cand = cal_arrays(cand_cal)
+        self.cand_main = self.cand
+        self.options = dict(options or {})
         self.circle = circle
         self.cache = {}
         self.has_ref = self.ref is not None
+        self.accepted = accepted
         if not self.has_ref:
             self.ref = self.cand
         lay = QtWidgets.QVBoxLayout(self)
@@ -387,20 +480,42 @@ class OverlayCard(QtWidgets.QFrame):
         lay.setSpacing(12)
         lay.addWidget(_label("See the change on the camera image", "headline"))
         lay.addWidget(_label(
-            "Each dot is a real LiDAR point drawn on the real photo, coloured by distance. Drag the slider to morph from the "
-            "current calibration to the proposed one and watch how far points actually move. Where the two calibrations "
-            "agree, the picture barely changes.", "muted"))
+            "Each dot is a real LiDAR point drawn on the real photo, coloured by distance (purple near, yellow far). Where the "
+            "calibration is right, the dots of an object sit on that object in the photo. Drag the slider to morph from the "
+            "current calibration to another one and watch how far points actually move.", "muted"))
+        note = alignment_note(alignment)
+        if note:
+            text, warn = note
+            box = _label(text, rich=True)
+            box.setStyleSheet(f"background:{SOFT['warn' if warn else 'good']}; color:{INK}; border-radius:10px; padding:10px 14px;")
+            lay.addWidget(box)
 
         top = QtWidgets.QHBoxLayout()
         top.setSpacing(12)
-        top.addWidget(_label("Capture", "muted"))
+        top.addWidget(_inline("Capture"))
         self.combo = QtWidgets.QComboBox()
         for c in captures:
             self.combo.addItem(capture_label(c), str(c))
         self.combo.currentIndexChanged.connect(self.load_capture)
         top.addWidget(self.combo)
         top.addSpacing(12)
-        top.addWidget(_label("Magnify the change", "muted"))
+        self.target = QtWidgets.QComboBox()
+        self.target.addItem("Fault-aware candidate", "fault")
+        for key, (label, _cal) in self.options.items():
+            self.target.addItem(label, key)
+        if self.options:
+            top.addWidget(_inline("Compare with"))
+            top.addWidget(self.target)
+            top.addSpacing(12)
+            self.target.currentIndexChanged.connect(self.change_target)
+        top.addWidget(_inline("Points"))
+        self.density = QtWidgets.QComboBox()
+        self.density.addItem("Sparse", 12000)
+        self.density.addItem("Dense", 60000)
+        self.density.currentIndexChanged.connect(lambda *_: self.canvas.set_density(self.density.currentData()))
+        top.addWidget(self.density)
+        top.addSpacing(12)
+        top.addWidget(_inline("Magnify the change"))
         self.amp = QtWidgets.QComboBox()
         for a in (1, 5, 10, 25, 50):
             self.amp.addItem("×%d" % a + ("  (true size)" if a == 1 else ""), a)
@@ -425,9 +540,9 @@ class OverlayCard(QtWidgets.QFrame):
         self.slider.setRange(0, 100)
         self.slider.valueChanged.connect(self.changed)
         srow.addWidget(self.slider, 1)
-        end = _label("Proposed" + ("" if accepted else " (not accepted)"), "h3")
-        end.setWordWrap(False)
-        srow.addWidget(end)
+        self.end = _label("", "h3")
+        self.end.setWordWrap(False)
+        srow.addWidget(self.end)
         lay.addLayout(srow)
         self.state = _label("", "muted", rich=True)
         lay.addWidget(self.state)
@@ -444,9 +559,28 @@ class OverlayCard(QtWidgets.QFrame):
         self.timer.setInterval(650)
         self.timer.timeout.connect(self.tick)
         if not self.has_ref:
-            for w in (self.slider, self.amp, self.arrows, self.flick):
+            for w in (self.slider, self.amp, self.arrows, self.flick, self.target):
                 w.setEnabled(False)
             self.state.setText("No reference calibration was saved with this check, so the proposed calibration is shown on its own.")
+        self._name_target()
+        self.load_capture()
+
+    def target_is_option(self):
+        return self.target.currentData() != "fault"
+
+    def _name_target(self):
+        """Words for the calibration at the right end of the slider."""
+        if self.target_is_option():
+            self.target_name = f"the maintenance option “{self.target.currentText().replace('Maintenance: ', '')}”"
+            self.end.setText("Option")
+        else:
+            self.target_name = "the proposed calibration"
+            self.end.setText("Proposed" + ("" if self.accepted else " (not accepted)"))
+
+    def change_target(self, *_):
+        key = self.target.currentData()
+        self.cand = self.cand_main if key == "fault" else self.options[key][1]
+        self._name_target()
         self.load_capture()
 
     def load_capture(self, *_):
@@ -458,6 +592,14 @@ class OverlayCard(QtWidgets.QFrame):
                 P = P[np.random.default_rng(0).choice(len(P), 60000, replace=False)]
             self.cache = {path: (np.array(z["image"]), P)}
         image, P = self.cache[path]
+        if len(P) < 2 or not np.isfinite(P).all():
+            # Nothing to draw (and the distance scale needs points): say so instead of failing inside the figure.
+            self.canvas.P = None
+            self.canvas.pix = None
+            self.canvas.update()
+            self.summary.setText("This capture has no usable LiDAR points, so there is nothing to draw on its photo.")
+            self.state.setText("")
+            return
         self.canvas.set_scene(image, P, self.ref, self.cand, self.circle)
         self.changed()
         real = self.canvas.real
@@ -465,9 +607,10 @@ class OverlayCard(QtWidgets.QFrame):
             med, p95, mx = real
             word = ("practically invisible" if p95 < 1 else "small" if p95 < 3 else "clearly visible" if p95 < 8 else "large")
             self.summary.setText(
-                f"<b>Real size of the proposed change:</b> a typical point moves <b>{med:.2f} px</b>, 95 % of points move less than "
+                f"<b>Size of this change:</b> a typical point moves <b>{med:.2f} px</b>, 95 % of points move less than "
                 f"<b>{p95:.2f} px</b> (largest {mx:.1f} px) on a {self.canvas.w}×{self.canvas.h} image. That is {word}. "
-                f"<span style='color:{MUTED}'>Points outside the dashed circle are not scored.</span>")
+                f"<span style='color:{MUTED}'>This is only how far the change moves points; it does not say whether the current "
+                f"calibration lines up. Points outside the dashed circle are not scored.</span>")
         else:
             self.summary.setText("")
 
@@ -478,17 +621,17 @@ class OverlayCard(QtWidgets.QFrame):
         a = float(self.amp.currentData())
         s = self.scale()
         self.canvas.render(s)
-        if not self.has_ref:
+        if not self.has_ref or self.canvas.P is None:
             return
         if self.slider.value() == 0:
             txt = "Showing the <b>current calibration</b>."
         else:
             frac = self.slider.value()
-            txt = f"Showing <b>{frac} %</b> of the way to the proposed calibration"
+            txt = f"Showing <b>{frac} %</b> of the way to {self.target_name}"
             if a > 1:
                 txt += f", <b style='color:{WARN}'>magnified ×{a:g}</b> so small shifts are visible. This is not the real size."
             elif frac == 100:
-                txt = "Showing the <b>proposed calibration</b> at its true size"
+                txt = f"Showing <b>{self.target_name}</b> at its true size."
             else:
                 txt += "."
         st = self.canvas.moved_stats()
@@ -877,7 +1020,7 @@ class ResultVisuals(QtWidgets.QWidget):
         circle = (diag.get("input") or {}).get("evaluation_domain", {}).get("circle")
         accepted = r.get("status") in ("UPDATE_SUPPORTED", "INITIAL_CALIBRATION_CANDIDATE")
         ref = reference if reference is not None else (r.get("updated_calibration") if not accepted else None)
-        return OverlayCard(caps, ref, cand, circle, accepted)
+        return OverlayCard(caps, ref, cand, circle, accepted, review_options(folder), review_alignment(folder))
 
     def _gain(self, folder, r, reference):
         rows, gate = gain_rows(r)

@@ -112,7 +112,9 @@ def fit_hypothesis(caps,model,baseline,hypothesis,cfg,strategy):
                                                   rank_rtol=cfg.rank_rtol,minimum_singular=cfg.minimum_singular))
 
 
-def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None,cloud_units='m',allow_unusual_units=False,progress=None,_bundle=None):
+def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None,cloud_units='m',allow_unusual_units=False,progress=None,_bundle=None,fold_observer=None):
+    """Production assessment. ``fold_observer`` (default None) only receives read-only copies of each
+    fold's fitted parameters for the experimental diagnostics; it cannot change any decision here."""
     cfg=config if isinstance(config,ResearchConfig) else ResearchConfig(**(config or {}))
     if strategy not in STRATEGIES:
         raise ValueError('Unknown strategy: '+strategy)
@@ -163,6 +165,12 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
             fitted=fit_hypothesis(selected,model,baseline,h,cfg,strategy)
             metric=evaluate_capture(test,model,fitted['parameters'],baseline,cfg.evaluation_cap_px) if fitted['success'] else dict(valid=False,loss=None)
             value=metric.get('loss')
+            if fold_observer is not None:
+                fold_observer(dict(stage='fold',fold=index,test_id=test.name,training_ids=[c.name for c in selected],
+                                   hypothesis=h.name,success=bool(fitted['success']),
+                                   parameters=np.array(fitted['parameters'],float,copy=True),
+                                   supported_update=bool(fitted.get('supported_update',False)),
+                                   attribution_support=dict(fitted.get('attribution_support',{})),loss=value))
             events.emit('fit',fold=index,test=test.name,hypothesis=h.name,loss=number(value),success=bool(fitted['success']),
                         rank=int(fitted['rank']))
             losses[h.name].append(value if value is not None else float('nan'))
@@ -184,6 +192,12 @@ def assess(calibration,captures,strategy='fault_aware',*,output=None,config=None
     events.emit('candidate',hypothesis=candidate_name)
     selected,final_selection=_training_selection(train,model,baseline,parameter_scales(baseline),cfg,strategy)
     candidate=fit_hypothesis(selected,model,baseline,candidate_h,cfg,strategy)
+    if fold_observer is not None:
+        fold_observer(dict(stage='final',hypothesis=candidate_name,success=bool(candidate['success']),
+                           training_ids=[c.name for c in selected],outer_ids=[c.name for c in outer],
+                           parameters=np.array(candidate['parameters'],float,copy=True),
+                           supported_update=bool(candidate.get('supported_update',False)),
+                           attribution_support=dict(candidate.get('attribution_support',{}))))
     outer_metrics=[]
     if candidate['success']:
         for cap in outer:

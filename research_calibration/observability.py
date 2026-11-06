@@ -142,8 +142,11 @@ def hypothesis_basis(jacobians, free_indices, nuisance_indices, scales, ensemble
                                            rank_rtol,minimum_singular,support_floor)
         N = np.zeros((len(scales),nuisance_support['rank'])); N[nuisance] = nuisance_support['basis']
         B = np.column_stack([B,N])
+    # An empty supported basis (e.g. KEEP when the beam nuisance is unobservable because a capture has no depth
+    # edges) leaves every direction unobservable; LAPACK rejects the 0-row null-space problem.
+    unobservable = null_space(B.T) if B.shape[1] else np.eye(len(scales))
     return dict(basis=B, rank=B.shape[1], calibration_rank=support['rank'],
-                unobservable_directions=null_space(B.T), diagnostics=support)
+                unobservable_directions=unobservable, diagnostics=support)
 
 
 def ensemble_attribution(jacobians, scales, groups, nuisance=(12,), **kwargs):

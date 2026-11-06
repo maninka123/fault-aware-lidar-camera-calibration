@@ -1,0 +1,13 @@
+{
+  "pixel_sigma": 1.0,
+  "separation_rms": 0.35,
+  "detection_rms": 0.25,
+  "rank_rtol": 1e-7,
+  "min_rows": 30,
+  "min_captures": 4,
+  "association_gate_px": 6.0,
+  "max_rows_per_capture": 400,
+  "geometric_signatures": true,
+  "scene_quality": true,
+  "chance_correction": true
+}

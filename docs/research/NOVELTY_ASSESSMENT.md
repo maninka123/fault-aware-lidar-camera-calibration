@@ -35,3 +35,79 @@ Three captures are below the declared comparison threshold. The ten-capture run'
 - Quantify false attribution, acceptance errors, missed useful updates and abstention jointly. If the extra mechanism only adds rejection, simplify it or abandon the claim.
 
 A stronger direction would derive a sensor-geometry-specific diagnosability result or a finite-sample, independently calibrated acceptance-risk result under explicit association contamination. That is future research, not a theorem provided by this code.
+
+## Fault diagnostics v2 (6 November 2026)
+
+Method: [FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md). Review: [PRIOR_ART_REVIEW_V2.md](PRIOR_ART_REVIEW_V2.md).
+
+### What is *not* new
+
+| Component | Closest prior art |
+|---|---|
+| Matched-to-chance edge share | Our own maintenance `lift`; the chance-normalisation idea is old |
+| NID between reflectivity and intensity | Pandey et al.; Koide et al. |
+| Scene-conditioned evidence | Scott et al. (cost-profile ranking); EdO-LCEC (density-driven view count) |
+| Local-optimality certificate of a reference | OCaMo/LTO |
+| Sequential change detection | MiCaDe (Lepage CPM); Page's CUSUM; robust (clipped) CUSUM; conformal test martingales (Vovk et al.) |
+| Nuisance-residualised isolability and ambiguity classes | Robust fault-detection and isolation; matched-subspace detection |
+| Parsimony among tied explanations | Standard model-selection practice |
+
+### Candidate contribution
+
+The candidate is narrow: *a negative-control (decoy) reference inside each held-out capture, used as the common
+currency for drift detection, attribution, acceptance and persistence monitoring.*
+
+1. Every candidate's held-out gain is split into a chance-predicted part, which the decoys produce, and a
+   chance-referenced part. Only the second counts as evidence for a calibration change. The first is reported
+   as the explicit nuisance counterfactual: NUISANCE_SUSPECTED.
+2. The same decoy contrast decides two things: whether a capture can carry evidence at all (scene-conditioned
+   quality, without a learned density model), and whether the *current* calibration is confirmed. This splits
+   the old KEEP into KEEP_CONFIRMED, REFERENCE_NOT_CONFIRMED and INSUFFICIENT_EVIDENCE.
+3. Two physically different cues, each referenced to its own decoys, must agree before a change is declared.
+4. Sequential monitoring of the decoy contrast needs no nominal density model fitted from labelled data.
+   MiCaDe needs a GMM fitted on calibrated sequences; LTO needs Beta densities fitted on calibrated and
+   decalibrated sequences.
+
+We found no reviewed calibration-monitoring paper that references its alignment statistic to displaced copies of
+the same capture. Absence from the reviewed set does not prove novelty. Permutation and shift controls are
+common in image registration and in statistics generally, so the novelty is at most an application and
+integration claim. One reviewer could reasonably call it an engineering control.
+
+### What the evidence shows and does not show
+
+See [VERIFICATION_RESULTS.md](VERIFICATION_RESULTS.md#fault-diagnostics-v2) for the numbers.
+
+- **Shown on recorded data, without labels.** The production held-out loss has a scene-dependent gradient of
+  5–15 % over 4 px. This is 5–15× the acceptance threshold, and 75–105 % of it is predicted by the decoys. The
+  decoy contrasts do not show it. This is a measured property of the current backend, and the main empirical
+  finding of this round.
+- **Shown semi-synthetically, held out and preregistered, relative to an anchor.** On two held-out recordings,
+  the experimental layer, compared with production:
+
+  | Measure | Proposed | Production |
+  |---|---:|---:|
+  | False alarms on no-change trials | 0/54 | 12/54 |
+  | Detected injected changes | 29/48 | 16/48 |
+  | Wrong attributions | 3 | 24 |
+
+  The persistence monitor separated persistent changes (17/24 alarmed) from single-capture corruption
+  (0/18). All five preregistered expectations were met.
+- **Withdrawn or not demonstrated by the held-out ablations.**
+  - *Candidate contribution 3* (two-cue agreement) is withdrawn. Requiring intensity agreement cost 13 of
+    48 detections and prevented no false alarm.
+  - *Decoy subtraction inside the decision rule* is not demonstrated. The raw oriented matched share
+    performed equivalently on held-out data. So candidate contribution 1 holds as a *measurement and
+    diagnosis* of the production loss's bias, and as the basis of reference confirmation and quality gating
+    (contribution 2). It does not yet hold as a decision statistic that beats the raw oriented share.
+  - The held-out gain over production is explained mostly by three changes: oriented edge agreement in place
+    of nearest-edge distance, replication on informative captures, and quality gating.
+- **Not shown.**
+  - Correct *attribution*: proposed 1/48, production 4/48. R, I and often T remain one ambiguity class.
+  - Physical-fault accuracy and operational false-alarm rates.
+  - Generalisation beyond two held-out recordings of one hardware family.
+
+**Verdict.** A defensible methodological improvement with a measured failure mode behind it. The strongest
+results are the bias measurement (chance explains 75–105 % of the production loss gradient) and a held-out
+reduction of false alarms and wrong attributions. Novelty is modest. The decoy-referenced decision statistic has
+not shown an advantage over a simpler oriented-share statistic. The intensity agreement rule should be removed
+or redesigned, for example by weighting it by its own informativeness. Attribution is the main open problem.

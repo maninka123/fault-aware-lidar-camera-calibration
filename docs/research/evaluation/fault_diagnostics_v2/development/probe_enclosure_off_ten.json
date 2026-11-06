@@ -1,0 +1,328 @@
+{
+ "dataset": "enclosure_off_ten",
+ "captures": 10,
+ "reference": "C:\\Users\\Pasindu\\OneDrive - UNSW\\AMT Project\\Software Algorithms\\Calibration_with_enclosure\\#Automated calibration\\Calibration maintenance\\examples\\feb2025_enclosure.json",
+ "reference_measures": {
+  "production_loss": [
+   0.2598062807382966,
+   0.23954822055311803,
+   0.23201770854440606,
+   0.2528195649625442,
+   0.28751446808892617,
+   0.23070718018778918,
+   0.2986316589882906,
+   0.27513065751217364,
+   0.3029686971722778,
+   0.3257533721877065
+  ],
+  "decoy_loss": [
+   0.2599876789130692,
+   0.23950702894621867,
+   0.23244713615536194,
+   0.25359658496980797,
+   0.2845502876528876,
+   0.2332159617445801,
+   0.30343522312963134,
+   0.2713699637430593,
+   0.30271852099045415,
+   0.3262525769477467
+  ],
+  "edge_contrast": [
+   0.008958333333333346,
+   0.008437499999999987,
+   -0.010104166666666657,
+   0.012604166666666666,
+   -0.007395833333333331,
+   0.002395833333333333,
+   0.0026041666666666644,
+   0.0039583333333333415,
+   -0.012291666666666659,
+   -0.004166666666666666
+  ],
+  "intensity_contrast": [
+   0.0002808416089620236,
+   0.0003199802931540541,
+   0.0006561210582152199,
+   -1.76149083671584e-05,
+   0.0005790580284446012,
+   0.0009985554212315062,
+   -0.0007363160989924955,
+   6.759982898985051e-05,
+   -0.00024374833765494763,
+   0.00019757772420236908
+  ]
+ },
+ "offsets": [
+  {
+   "offset": "rx_deg",
+   "amount": -1,
+   "production_change": -0.045659129813265364,
+   "production_better_share": 1.0,
+   "chance_change": -0.04371576532575551,
+   "edge_contrast_change": 0.0046041666666666635,
+   "intensity_contrast_change": -0.0006952679930990136
+  },
+  {
+   "offset": "rx_deg",
+   "amount": -0.5,
+   "production_change": -0.022544844003798012,
+   "production_better_share": 1.0,
+   "chance_change": -0.02167285309643907,
+   "edge_contrast_change": 0.014322916666666663,
+   "intensity_contrast_change": -0.00018774916340512647
+  },
+  {
+   "offset": "rx_deg",
+   "amount": 0.5,
+   "production_change": 0.021473022602590746,
+   "production_better_share": 0.0,
+   "chance_change": 0.021990303417697376,
+   "edge_contrast_change": 0.007468749999999999,
+   "intensity_contrast_change": -5.495337558606428e-05
+  },
+  {
+   "offset": "rx_deg",
+   "amount": 1,
+   "production_change": 0.041286371967727845,
+   "production_better_share": 0.0,
+   "chance_change": 0.0442581620223028,
+   "edge_contrast_change": 0.007770833333333333,
+   "intensity_contrast_change": 0.0005143629320883636
+  },
+  {
+   "offset": "ry_deg",
+   "amount": -1,
+   "production_change": -0.00697348303540566,
+   "production_better_share": 0.6,
+   "chance_change": -0.005530501960384158,
+   "edge_contrast_change": 0.016395833333333328,
+   "intensity_contrast_change": -0.0028849223100006816
+  },
+  {
+   "offset": "ry_deg",
+   "amount": -0.5,
+   "production_change": -0.004214899801243928,
+   "production_better_share": 0.8,
+   "chance_change": -0.0031901283844618577,
+   "edge_contrast_change": 0.0035624999999999954,
+   "intensity_contrast_change": -0.0014608464545171618
+  },
+  {
+   "offset": "ry_deg",
+   "amount": 0.5,
+   "production_change": 0.0052759059733402365,
+   "production_better_share": 0.2,
+   "chance_change": 0.003671900740061372,
+   "edge_contrast_change": -0.023052083333333338,
+   "intensity_contrast_change": 0.0008341486682700849
+  },
+  {
+   "offset": "ry_deg",
+   "amount": 1,
+   "production_change": 0.011083746636489734,
+   "production_better_share": 0.1,
+   "chance_change": 0.006722937654629077,
+   "edge_contrast_change": -0.027156250000000003,
+   "intensity_contrast_change": 0.0009169457188433428
+  },
+  {
+   "offset": "rz_deg",
+   "amount": -1,
+   "production_change": -0.0019331114125551187,
+   "production_better_share": 0.8,
+   "chance_change": -0.0019245565882701366,
+   "edge_contrast_change": 0.001249999999999997,
+   "intensity_contrast_change": 0.000491684669676895
+  },
+  {
+   "offset": "rz_deg",
+   "amount": 1,
+   "production_change": 0.0021009904494803918,
+   "production_better_share": 0.1,
+   "chance_change": 0.0014879115325575156,
+   "edge_contrast_change": -0.000510416666666668,
+   "intensity_contrast_change": -0.000270653800328291
+  },
+  {
+   "offset": "tx_m",
+   "amount": -0.05,
+   "production_change": -0.006049044123650629,
+   "production_better_share": 0.6,
+   "chance_change": -0.004285789964859999,
+   "edge_contrast_change": 0.007510416666666665,
+   "intensity_contrast_change": -0.0017993203080469255
+  },
+  {
+   "offset": "tx_m",
+   "amount": -0.02,
+   "production_change": -0.002573531150999015,
+   "production_better_share": 0.6,
+   "chance_change": -0.001667040917833168,
+   "edge_contrast_change": -0.0015104166666666697,
+   "intensity_contrast_change": -0.0007324850921829329
+  },
+  {
+   "offset": "tx_m",
+   "amount": 0.02,
+   "production_change": 0.00272306122221878,
+   "production_better_share": 0.3,
+   "chance_change": 0.0013308609848641003,
+   "edge_contrast_change": -0.004968750000000002,
+   "intensity_contrast_change": 0.0005352233593330924
+  },
+  {
+   "offset": "tx_m",
+   "amount": 0.05,
+   "production_change": 0.005165275520660475,
+   "production_better_share": 0.5,
+   "chance_change": 0.002123161111569065,
+   "edge_contrast_change": -0.022093750000000002,
+   "intensity_contrast_change": 0.0009849894238757929
+  },
+  {
+   "offset": "ty_m",
+   "amount": -0.05,
+   "production_change": 0.03244728093150023,
+   "production_better_share": 0.0,
+   "chance_change": 0.03466729814721482,
+   "edge_contrast_change": 0.008447916666666664,
+   "intensity_contrast_change": 0.00026278710935725427
+  },
+  {
+   "offset": "ty_m",
+   "amount": -0.02,
+   "production_change": 0.013523248014994252,
+   "production_better_share": 0.0,
+   "chance_change": 0.01379295905282075,
+   "edge_contrast_change": -0.0021250000000000006,
+   "intensity_contrast_change": 8.111026698273127e-05
+  },
+  {
+   "offset": "ty_m",
+   "amount": 0.02,
+   "production_change": -0.014737752661921039,
+   "production_better_share": 1.0,
+   "chance_change": -0.013935244684137376,
+   "edge_contrast_change": 0.01042708333333333,
+   "intensity_contrast_change": -6.594344314658773e-06
+  },
+  {
+   "offset": "ty_m",
+   "amount": 0.05,
+   "production_change": -0.03765614640444849,
+   "production_better_share": 1.0,
+   "chance_change": -0.03572359350172685,
+   "edge_contrast_change": 0.012531249999999994,
+   "intensity_contrast_change": -3.0385969999502383e-05
+  },
+  {
+   "offset": "tz_m",
+   "amount": -0.05,
+   "production_change": 0.013394908795316157,
+   "production_better_share": 0.0,
+   "chance_change": 0.012767126586250538,
+   "edge_contrast_change": 0.01736458333333333,
+   "intensity_contrast_change": 6.221424595489466e-05
+  },
+  {
+   "offset": "tz_m",
+   "amount": 0.05,
+   "production_change": -0.014342050789830873,
+   "production_better_share": 1.0,
+   "chance_change": -0.01308025806096622,
+   "edge_contrast_change": -0.009333333333333336,
+   "intensity_contrast_change": -0.0001284824331272083
+  },
+  {
+   "offset": "cx_px",
+   "amount": -4,
+   "production_change": -0.008216451691050985,
+   "production_better_share": 0.6,
+   "chance_change": -0.006835728563314561,
+   "edge_contrast_change": 0.015031250000000001,
+   "intensity_contrast_change": -0.0028184160701860026
+  },
+  {
+   "offset": "cx_px",
+   "amount": -2,
+   "production_change": -0.005098458746232097,
+   "production_better_share": 0.7,
+   "chance_change": -0.0039856915032770975,
+   "edge_contrast_change": 0.0033124999999999973,
+   "intensity_contrast_change": -0.0018594270617630637
+  },
+  {
+   "offset": "cx_px",
+   "amount": 2,
+   "production_change": 0.006512909860968824,
+   "production_better_share": 0.2,
+   "chance_change": 0.004417977019151416,
+   "edge_contrast_change": -0.024312500000000004,
+   "intensity_contrast_change": 0.0009435251718430182
+  },
+  {
+   "offset": "cx_px",
+   "amount": 4,
+   "production_change": 0.013146905869217771,
+   "production_better_share": 0.1,
+   "chance_change": 0.007841245443149368,
+   "edge_contrast_change": -0.020958333333333336,
+   "intensity_contrast_change": 0.0009001080437160969
+  },
+  {
+   "offset": "cy_px",
+   "amount": -4,
+   "production_change": 0.04807434543033313,
+   "production_better_share": 0.0,
+   "chance_change": 0.05181870511222638,
+   "edge_contrast_change": 0.008229166666666666,
+   "intensity_contrast_change": 0.0007044915776508786
+  },
+  {
+   "offset": "cy_px",
+   "amount": -2,
+   "production_change": 0.025020155612065026,
+   "production_better_share": 0.0,
+   "chance_change": 0.025654307392849563,
+   "edge_contrast_change": 0.009229166666666667,
+   "intensity_contrast_change": -0.00016424992069209444
+  },
+  {
+   "offset": "cy_px",
+   "amount": 2,
+   "production_change": -0.026396860068562917,
+   "production_better_share": 1.0,
+   "chance_change": -0.02529623418002681,
+   "edge_contrast_change": 0.015427083333333336,
+   "intensity_contrast_change": -0.00013888470671129526
+  },
+  {
+   "offset": "cy_px",
+   "amount": 4,
+   "production_change": -0.05350240197831019,
+   "production_better_share": 1.0,
+   "chance_change": -0.05116806468459415,
+   "edge_contrast_change": 0.0004479166666666652,
+   "intensity_contrast_change": -0.000741560612815817
+  },
+  {
+   "offset": "f_rel",
+   "amount": -0.02,
+   "production_change": -0.019540980062927375,
+   "production_better_share": 1.0,
+   "chance_change": -0.017189668194034353,
+   "edge_contrast_change": -0.017687500000000002,
+   "intensity_contrast_change": -0.0001915179940386258
+  },
+  {
+   "offset": "f_rel",
+   "amount": 0.02,
+   "production_change": 0.018712853780620833,
+   "production_better_share": 0.0,
+   "chance_change": 0.017111609952213808,
+   "edge_contrast_change": 0.02230208333333333,
+   "intensity_contrast_change": -3.860174062506605e-05
+  }
+ ],
+ "note": "Known offsets of the recorded reference; no fitting, no fault labels."
+}

@@ -52,7 +52,10 @@ def read_calibration(value):
     return calibration
 
 
-def load_capture_bundle(captures, output, max_features=1600, seed=0, cloud_units='m', allow_unusual_units=False):
+def load_capture_bundle(captures, output, max_features=1600, seed=0, cloud_units='m', allow_unusual_units=False,
+                        intensity_points=0, intensity_bins=32):
+    """``intensity_points`` > 0 also keeps a reflectivity sample per capture for the experimental intensity cue
+    (fault_diagnostics); the default 0 leaves the production bundle exactly as before."""
     legacy = legacy_modules()
     cfg = legacy.settings.load_config()
     from .resources import check_resources
@@ -77,6 +80,10 @@ def load_capture_bundle(captures, output, max_features=1600, seed=0, cloud_units
         if len(cap.xyz)>max_features:
             ids = np.sort(np.random.default_rng(seed+index).choice(len(cap.xyz),max_features,replace=False))
             cap = legacy.cb.Capture(cap.name,cap.xyz[ids],cap.dir[ids],cap.typ[ids],cap.sgn[ids],cap.img)
+        if intensity_points>0 and getattr(frame,'intensity',None) is not None and len(frame.intensity)==len(frame.xyz):
+            # Separate generator: the production edge subsample above is unaffected.
+            legacy.cb.prepare_nid(cap, frame, int(intensity_points), int(intensity_bins), np.random.default_rng(seed+10007+index))
+            cap.capture_time = float(np.median(frame.time)) if getattr(frame,'time',None) is not None and len(frame.time) else None
         caps.append(cap)
         metadata.append(dict(id=cap.name,points=int(len(frame.xyz)),used_edges=int(len(cap.xyz))))
         probe.append(frame.xyz[::30])

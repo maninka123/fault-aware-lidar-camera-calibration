@@ -128,3 +128,127 @@ The initializer also ran at below-normal priority under a separate watchdog, wit
 - Full text for A4 and complete B1 journal equations remain unavailable in the review.
 
 See [NOVELTY_ASSESSMENT.md](NOVELTY_ASSESSMENT.md) for the resulting negative/provisional publication assessment and the experiments needed next.
+
+## Fault diagnostics v2
+
+Executed **6 November 2026** on branch `research/fault-diagnostics-v2`. Method:
+[FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md). The protocol was frozen in
+[PREREGISTRATION_V2.md](PREREGISTRATION_V2.md) at commit `5125560`, before any held-out run. Summaries are in
+`evaluation/fault_diagnostics_v2/`. Full trial records stay local in `research_artifacts/fault_diagnostics_v2/`
+because they are not committed.
+
+### Tests
+
+- `research_tests/test_fault_diagnostics.py` has 22 tests, all passing:
+  - misleading dense edges;
+  - ghost edges;
+  - poor visibility;
+  - indistinguishable R/I;
+  - nested ties;
+  - failed attribution support;
+  - one corrupted capture;
+  - insufficient observations;
+  - reference confirmation and rejection;
+  - single-cue basis;
+  - persistent versus transient streams;
+  - the betting-function integral;
+  - the empirical Ville bound;
+  - fold-observer parity;
+  - an end-to-end synthetic run (nominal: no alarm; 1.2° rotation: alarm).
+- `tools/verify_research.py` passes: 211 research tests and 56 maintenance tests.
+
+### Failure-mode probe (recorded data, no labels)
+
+`tools/probe_loss_bias.py` was run on the development recordings. The table is in FAULT_DIAGNOSTICS_V2.md §1.1.
+
+- The production loss falls 5–15 % along a scene-dependent 4 px direction.
+- The decoys predict 75–105 % of that fall.
+- On `creep_three` and `october_device_one`, both decoy contrasts peak at the reference.
+
+### Semi-synthetic evaluation
+
+**Design.** Truth is relative to each recording's anchor, its reference refined on all of its captures. Each
+trial runs the production engine once, and every method is scored from the same fitted folds, so partitions and
+fitting budgets are identical. Three replicates per recording drop two captures at random. Conditions:
+
+- nominal;
+- seven injected drifts: R 0.5° and 1°, T 3 cm and 6 cm, principal point 3 px, focal length 2 %, and RT;
+- eight nuisances: global ghost, spurious lines, occlusion, blur, low light, LiDAR dropout, and a single
+  desynchronised or ghosted capture;
+- one drift combined with a nuisance (R 1° plus spurious lines).
+
+The counts below are dependent: the Wilson intervals in the summaries understate their uncertainty.
+
+**Held-out** (`enclosure_on_twelve`, `october_device_four`; 104 trials, no errors; preregistered, not
+recomputed):
+
+| Method | False alarm, no change (54) | Detection, drift (48) | Correct attribution | Ambiguous incl. truth | Wrong attribution (102) | Updates, no change |
+|---|---|---|---|---|---|---|
+| Production | **12** (3/6 nominal, 9/48 nuisance) | 16 | **4** | – | 24 | 0 |
+| Proposed | **0** | **29** | 1 | 18 | **3** | 0 |
+| − chance correction (raw matched share) | 0 | 28 | 1 | 20 | 0 | 0 |
+| − intensity cue | 0 | **42** | 0 | 30 | 3 | 0 |
+| − quality gating | 0 | 26 | 0 | 19 | 1 | 0 |
+| − robust aggregation | 0 | 31 | 1 | 19 | 2 | 0 |
+| − reference confirmation / − nuisance counterfactual | 0 | 29 | 1 | 18 | 3 | 0 |
+
+**Development** (`october_device_one`, `enclosure_off_ten`; 104 trials; policy recomputed with the final
+development constants):
+
+| Method | False alarm, no change | Detection | Correct attribution | Wrong attribution |
+|---|---:|---:|---:|---:|
+| Production | 0/54 | 13/48 | 3/48 | 10/102 |
+| Proposed | 1/54 | 34/48 | 1/48 | 5/102 |
+| − chance correction | 3/54 | 36/48 | 3/48 | 4/102 |
+| − robust aggregation | 3/54 | 33/48 | 1/48 | 1/102 |
+| − quality gating | 0/54 | 23/48 | 0/48 | 3/102 |
+| − intensity cue | 1/54 | 34/48 | 2/48 | 4/102 |
+
+**Preregistered expectations on held-out data.**
+
+| Expectation | Result |
+|---|---|
+| E1: false alarms no higher than production | **Met.** 0/54 against 12/54. Every production false alarm was on `october_device_four`, where the production comparison found a "supported" candidate under nominal and nuisance conditions. Its final verdict was INSUFFICIENT_EVIDENCE because uncertainty and outer checks failed. |
+| E2: higher detection | **Met.** 29/48 against 16/48. |
+| E3: no more wrong attributions | **Met.** 3 against 24. |
+| E4: no update recommended under no change | **Met.** 0. Production also made 0. |
+| E5: monitor never alarms on single-capture corruption, and alarms more than the production-loss CUSUM | **Met.** 0/18 transient alarms; 17/24 persistent alarms (16 labelled persistent, median delay 2 captures) against 0/24 for the production-loss CUSUM. Nominal: 0/6. The conformal martingale alarmed once in 48 change streams, so it has almost no power at these lengths. |
+
+**Component claims after the held-out run.** The preregistration rule was that a component's claimed benefit
+is withdrawn if its ablation is no worse on every metric.
+
+| Component | Outcome |
+|---|---|
+| Intensity agreement | **Withdrawn, and harmful here.** Without it, detection is 42/48 against 29/48, with the same zero false alarms and the same wrong attributions. In all 13 lost detections, the intensity cue never *contradicted* the injected change. Its per-capture NID gains were too small or too inconsistent to replicate: at most 4 of 4–9 informative captures, mostly on `october_device_four`. Development had shown no benefit either. |
+| Decoy subtraction in the decision rule | **Benefit not demonstrated.** The raw oriented matched share was equivalent on held-out data (detection 28 against 29, wrong attribution 0 against 3), although it had 3 against 1 nuisance false alarms in development. The decoys remain the basis of the *measurement* of the production loss's bias (§1.1), of reference confirmation and of quality gating. |
+| Robust aggregation | **Benefit not demonstrated on held-out data** (31 against 29 detections, 0 false alarms each). It helped in development (3 against 1 false alarms) and in the single-corruption unit test. |
+| Quality gating | **Retained.** Without it, detection falls in both rounds (26 against 29; 23 against 34). |
+| Reference confirmation and nuisance counterfactual | These change verdict labels only, not alarms. Under production false alarms (nominal on `october_device_four`), the experimental layer reports NUISANCE_SUSPECTED instead of a candidate. |
+
+**Where the improvement comes from.** These ablations show that most of the gain over production comes from
+three changes: scoring held-out captures by oriented edge agreement instead of nearest-edge distance, requiring
+replication on informative captures, and gating on quality. The specific decoy and intensity mechanisms
+contribute less than expected.
+
+**Attribution remains unsolved.** Correct single-group attribution: proposed 1/48, production 4/48. The
+proposed method mostly returns honest ambiguity sets, which contain the truth in 18/48 cases. Larger models (TI,
+RTI) and the R/I alias consistently fit held-out data as well as the injected group.
+
+**Board references, unlabelled, one trial each.** Production returned CANDIDATE_SUPPORTED on both board
+references: R on `enclosure_on_twelve` and TI on `october_device_four`. The experimental layer returned
+NUISANCE_SUSPECTED on both. The anchors differ from the board references by 1.47 px and 1.31 px (median), so
+whether "keep" is right there cannot be verified.
+
+**Cost.** The production assessment takes a median of 6.9 s per trial; the diagnostics add 1.1 s. There were 7
+extra training-only fits in 104 trials, used when the experimental winner differed from the production
+candidate.
+
+### What these results cannot establish
+
+- **Physical faults:** no labelled physical faults exist. Every rate is relative to anchors refined on the same
+  recordings, with an unknown error of their own.
+- **Coverage:** two held-out recordings of one hardware family, static scenes, 12–15 captures each. Rates are
+  over dependent trials and are not operational false-alarm or detection rates.
+- **Nuisance realism:** nuisances are image-level imitations, such as a window reflection, dirt, blur,
+  desynchronisation and dropout. They are not recorded nuisance events.
+- **Calibrated quantities:** no fault probability, ARL or coverage is calibrated.

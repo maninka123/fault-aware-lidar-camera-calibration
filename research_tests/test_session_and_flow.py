@@ -96,7 +96,10 @@ class MatrixViewTests(unittest.TestCase):
         pair = matrix_view.MatrixPair(json.loads(EXAMPLE.read_text(encoding="utf-8")))
         self.assertTrue(pair.valid)
         self.assertEqual(len(pair.groups), 2)
-        pair.resize(1100, 300)
+        # The responsive breakpoint depends on the actual platform font/DPI.
+        # Exercise an actually wide layout instead of assuming 1100px suffices.
+        wide = max(1100, sum(group.minimumSizeHint().width() for group in pair.groups) + 64)
+        pair.resize(wide, 300)
         pair.show()
         APP.processEvents()
         self.assertEqual(pair.box.direction(), QtWidgets.QBoxLayout.LeftToRight)

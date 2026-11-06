@@ -1,0 +1,199 @@
+{
+  "constants_sha256": "4ce0cef0db2913d6d7f2aecf77f755dc6d95955b9bd8c4fb2de55adb1298b1d3",
+  "constants": {
+    "correspondence": {
+      "gate_px": 8.0,
+      "orientation_deg": 30.0,
+      "sigma_px": 1.5,
+      "sigma_angle_deg": 10.0,
+      "outlier_cost": 4.5,
+      "candidates": 4,
+      "visibility": true,
+      "confidence": true,
+      "balance": true,
+      "ambiguity_radius_px": 0.0,
+      "rival_separation_px": 3.0,
+      "occluder_radius_px": 2,
+      "occluder_margin_m": 0.2,
+      "occluder_margin_rel": 0.03,
+      "grid": [
+        4,
+        3
+      ],
+      "range_bins": 3,
+      "cell_cap_factor": 1.5,
+      "min_confidence": 0.05
+    },
+    "signature": {
+      "pixel_sigma": 1.0,
+      "separation_rms": 0.35,
+      "detection_rms": 0.25,
+      "rank_rtol": 1e-07,
+      "min_rows": 30,
+      "min_captures": 4,
+      "association_gate_px": 6.0,
+      "max_rows_per_capture": 400,
+      "geometric_signatures": true,
+      "scene_quality": true,
+      "chance_correction": true
+    },
+    "em": {
+      "sigmas_px": [
+        4.0,
+        2.5,
+        1.5
+      ],
+      "gates_px": [
+        14.0,
+        10.0,
+        7.0
+      ],
+      "iterations_per_stage": 3,
+      "max_std": 1.0,
+      "max_step": 6.0,
+      "min_rows": 60,
+      "final_min_confidence": 0.4
+    },
+    "research": {
+      "seed": 7,
+      "max_features_per_capture": 1200,
+      "max_association_rows": 1800,
+      "association_gates": [
+        6.0,
+        9.0,
+        12.0
+      ],
+      "iterations": 2,
+      "max_nfev": 50,
+      "training_budget": 4,
+      "selection_strategy": "contrast",
+      "outer_fraction": 0.3,
+      "min_capture_blocks": 4,
+      "min_relative_gain": 0.01,
+      "minimum_singular": 0.02,
+      "rank_rtol": 1e-05,
+      "support_floor": 0.98,
+      "evaluation_cap_px": 30.0,
+      "min_coverage": 0.9,
+      "max_angle_rad": 1.0,
+      "bootstrap_reps": 500
+    },
+    "diagnostics": {
+      "decoy_radius_px": 8.0,
+      "decoy_count": 8,
+      "edge_gate_px": 1.5,
+      "edge_orientation_deg": 15.0,
+      "intensity_points": 20000,
+      "intensity_bins": 32,
+      "intensity_min_points": 1000,
+      "edge_informative_contrast": 0.02,
+      "intensity_informative_contrast": 0.003,
+      "consistency": 0.6666666666666666,
+      "edge_gain_margin": 0.01,
+      "intensity_gain_margin": 0.0005,
+      "single_cue_edge_margin": 0.01,
+      "min_informative_captures": 3,
+      "production_min_relative_gain": 0.01,
+      "monitor_reference_window": 4,
+      "monitor_drift_allowance": 0.5,
+      "monitor_threshold": 4.0,
+      "monitor_score_clip": 2.0,
+      "monitor_scale_floor": 0.25,
+      "monitor_alpha": 0.05
+    },
+    "recovery_max_std": 1.0,
+    "acceptance_edge_margin": 0.01,
+    "quick_drifts": [
+      [
+        "R",
+        1.0
+      ],
+      [
+        "T",
+        0.06
+      ],
+      [
+        "I_pp",
+        3.0
+      ],
+      [
+        "I_focal",
+        0.02
+      ],
+      [
+        "RT",
+        [
+          0.5,
+          0.03
+        ]
+      ]
+    ],
+    "methods": [
+      "reference_pairs",
+      "nearest",
+      "oriented",
+      "geometric",
+      "geometric_no_visibility",
+      "geometric_no_confidence",
+      "geometric_no_balance"
+    ],
+    "variants": [
+      "oriented",
+      "geometric",
+      "geometric_no_visibility",
+      "geometric_no_balance",
+      "geometric_no_confidence"
+    ],
+    "study": {
+      "development": [
+        "enclosure_off_ten",
+        "october_device_one"
+      ],
+      "evaluation": [
+        "enclosure_on_twelve",
+        "october_device_four"
+      ],
+      "not_used_in_design": [
+        "generalization_pair2",
+        "generalization_pair3",
+        "generalization_nov5_off",
+        "generalization_nov5_on"
+      ]
+    },
+    "replicates": 1,
+    "scene_min_inliers": 20,
+    "selection_cost": "(no_change_alarms + wrong_unique, -detections, -exact) summed over training groups",
+    "comparators": [
+      "production",
+      "v2",
+      "v2_no_intensity",
+      "v3",
+      "original_optimizer(legacy_optimizer strategy, policy \"production\")"
+    ]
+  },
+  "source_sha256": {
+    "research_calibration/fault_diagnostics_v3/correspondence.py": "044618774268b78a9be358f1e647d9f237cef3f654f933573787898b3ee9322a",
+    "research_calibration/fault_diagnostics_v3/joint_estimation.py": "7c90c205eae9b5c7cdcdeb989fd4a81e81d24bf64b194abb6067c65bc7faf0c2",
+    "research_calibration/fault_diagnostics_v3/config.py": "09e01778c9ae084db37d18db201319f1846822dd720cb522615a954de53e47be",
+    "research_calibration/fault_diagnostics_v3/diagnostic_inference.py": "2bbe404e85485c42c2506b2691c7b9dce25ffdd785447f001996e59d60868f3f",
+    "research_calibration/fault_diagnostics_v3/hypothesis_separation.py": "ac23a2d4bffd2be455100f95278fbb54c23c590fdd6c5402ee9d540c484c2a0f",
+    "research_calibration/fault_diagnostics_v3/geometry_signatures.py": "83695b5f47735f5b3421a794ced47979edbe32df0de84992ee6c8fec54abfc61",
+    "research_calibration/fault_diagnostics_v3/generalization.py": "a9cad93720cc8ba5272e5354832433a0f90e8ef0899be4eab2b1f708dc3d527e",
+    "research_calibration/fault_diagnostics/policy.py": "746d52525f5fdcc3d1bf9c9416d07451f3ccbfecd6954e32fb4f2f5f5896e96a",
+    "research_calibration/fault_diagnostics/cues.py": "985b4bfd315d14d5cd4bcb4f83c6a8bd9fe4af7ed6b574960e82e9f5bd44caab",
+    "research_calibration/fault_diagnostics/config.py": "4044a9623154cfcb45feaa30dc250bf9ff6f1664a68b1febcb0601f28d0ec536",
+    "research_calibration/calibration_pipeline.py": "d4e1cbd835fea5a930609d202cf3c037d2ca713e7b336add0933ce35ffc342b9",
+    "tools/evaluate_pairing_v3.py": "b1d32c7c14b2fbfc16b8bb8591a1bdf947df49526d9f37d12bc0d1a27c9807cd",
+    "tools/evaluate_fault_diagnostics_v3.py": "262dbcba75de02701ec36a361d6f7cd799be0030d6a2b928084ed1c041c72e2d",
+    "tools/evaluate_fault_diagnostics.py": "9cd8f482ca23408614af1226cff8703a19e11936603b90ddb92db5447c2a49bf",
+    "tools/analyze_attribution_root_cause_v3.py": "9de373c5399c3c714fbc4d13d0eee9cca0461bddecbcf6210583582236caaee9",
+    "tools/summarize_generalization_v3.py": "3423207b556b830b40e3f93911abbebfb9979745bc0ce935b63f9db88567f920",
+    "docs/research/v3/PROTOCOL_GENERALIZATION.md": "8bd63a958877709d4d05a6144f7a0d2bc0e22541783486355bb8d3f70f6527e7"
+  },
+  "amendments": [
+    {
+      "note": "Refrozen after the run. Reporting/guard code changed, no computed result: summarizer key for the original-optimizer decision, headline-method naming join (false zero in the nuisance table, empty recovery and selection tables), guard clauses for empty inputs, missing held-out group, missing registry fields, selection without training groups. Original freeze and the run source commit: cdb4b22.",
+      "run_source_commit": "cdb4b2254ba624ff4a6a3fad45ca555ab93afcf1"
+    }
+  ]
+}
