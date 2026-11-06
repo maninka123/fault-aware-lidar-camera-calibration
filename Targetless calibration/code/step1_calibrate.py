@@ -72,6 +72,10 @@ def depth_overlay(frame, model, p, title, step=3):
     xyz = frame.xyz[::step]
     Pc = model.to_camera(xyz, np.zeros(len(xyz)), p)
     u, v, ok = model.project(Pc, p)
+    # The valid circle can extend past the frame (e.g. the whole-frame fallback when no fisheye circle is
+    # visible), so keep only points that land on a pixel: out-of-range indices would raise or wrap around.
+    h, w = img.shape[:2]
+    ok = ok & np.isfinite(u) & np.isfinite(v) & (np.rint(u) >= 0) & (np.rint(u) < w) & (np.rint(v) >= 0) & (np.rint(v) < h)
     d = np.linalg.norm(Pc, axis=1)[ok]
     col = cv2.applyColorMap(np.clip((np.log(d) - np.log(0.8)) / (np.log(10) - np.log(0.8)) * 255, 0, 255)
                             .astype(np.uint8).reshape(-1, 1), cv2.COLORMAP_TURBO).reshape(-1, 3)

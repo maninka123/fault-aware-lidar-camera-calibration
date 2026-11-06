@@ -180,6 +180,8 @@ class ComparisonColumns(QtWidgets.QWidget):
     def __init__(self, table_column, pose_panel):
         super().__init__()
         self.pose_panel = pose_panel
+        # the table's own columns decide how much room it needs beside the pose view
+        self.tables = [t for t in table_column.findChildren(QtWidgets.QTableWidget) if hasattr(t, 'content_widths')]
         self.box = QtWidgets.QBoxLayout(QtWidgets.QBoxLayout.LeftToRight, self)
         self.box.setContentsMargins(0, 0, 0, 0)
         self.box.setSpacing(20)
@@ -188,7 +190,8 @@ class ComparisonColumns(QtWidgets.QWidget):
         self.arrange()
 
     def arrange(self):
-        side_by_side = self.width() >= 1120
+        needed = max([1120] + [sum(t.content_widths) + 320 + 20 + 16 for t in self.tables])
+        side_by_side = self.width() >= needed
         direction = QtWidgets.QBoxLayout.LeftToRight if side_by_side else QtWidgets.QBoxLayout.TopToBottom
         self.box.setDirection(direction)
         self.pose_panel.setMinimumWidth(320 if side_by_side else 0)

@@ -27,6 +27,7 @@ import appcore as core  # noqa: E402  (sets BLAS thread limits before numpy load
 from ui_common import ManualDialog, np_to_pixmap  # noqa: E402
 import app_icon  # noqa: E402
 import result_visuals  # noqa: E402
+import calibration_review  # noqa: E402
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
 CAL_FILTER = "Calibration files (*.json *.txt);;JSON (*.json);;Text (*.txt);;All files (*)"
@@ -755,10 +756,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack = QtWidgets.QStackedWidget()
         self.stack.addWidget(self.build_log())
         self.stack.addWidget(self.build_result())
+        self.review = calibration_review.CalibrationReview()
+        self.stack.addWidget(self.review)
         self.stack.addWidget(self.build_report())
         outer.addWidget(self.banner)
         bar = QtWidgets.QHBoxLayout()
-        self.pager = Pager(["Processing", "Result", "Report"])
+        self.pager = Pager(["Processing", "Result", "Calibration review", "Report"])
         bar.addWidget(self.pager)
         bar.addStretch()
         self.cal_btn = QtWidgets.QPushButton("View calibration after this check…")
@@ -898,6 +901,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cards_frame.hide()
         self.table_frame.hide()
         self.visuals.hide()
+        self.review.clear()
         self.cal_btn.hide()
 
     @staticmethod
@@ -1175,7 +1179,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.output.parent.mkdir(parents=True, exist_ok=True)
         self.meta_file(self.output).write_text(json.dumps(dict(
             calibration="" if scratch else self.cal.path, captures=self.cap.path, mode=self.mode,
-            strategy=None if scratch else self.strategy.currentData())), encoding="utf-8")
+            strategy=None if scratch else self.strategy.currentData(),
+            cloud_units=self.pair_units.currentData() if self.data and self.data["kind"] == "paired" else None,
+            confirm_cloud_units=bool(self.data and self.data["kind"] == "paired" and self.units_confirm.isChecked()))),
+            encoding="utf-8")
         self.set_sources(self.output)
         self.log.clear()
         self.run_btn.setEnabled(False)
@@ -1189,6 +1196,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cards_frame.hide()
         self.table_frame.hide()
         self.visuals.hide()
+        self.review.clear()
         self.cal_btn.hide()
         self.tiles_clear()
         self.pager.select(0)
@@ -1258,6 +1266,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cards_frame.hide()
         self.table_frame.hide()
         self.visuals.hide()
+        self.review.clear()
         self.cal_btn.hide()
         self.tiles_clear()
 
@@ -1366,6 +1375,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.table.setItem(i, j, it)
         self.table_frame.setVisible(bool(names))
         self.visuals.set_result(folder, r, self.reference_calibration(meta))
+        self.review.set_check(folder, r, meta, (title, color, SOFT[soft], meaning + (f" {reason}" if reason else "")))
 
         md = self.result_file(folder).with_name("report.md")
         self.report.setMarkdown(md.read_text(encoding="utf-8") if md.exists() else "_No report.md in this folder._")
@@ -1432,6 +1442,7 @@ def main():
     app.setWindowIcon(app_icon.app_icon())
     win = MainWindow()
     app.aboutToQuit.connect(lambda: win.devices and win.devices.shutdown())
+    app.aboutToQuit.connect(win.review.shutdown)
     if "--prefill" in sys.argv:  # python research_gui.py --prefill <calibration> <captures folder>
         k = sys.argv.index("--prefill")
         win.load_cal(sys.argv[k + 1])

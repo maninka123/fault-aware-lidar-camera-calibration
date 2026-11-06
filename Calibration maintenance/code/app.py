@@ -30,6 +30,7 @@ from PyQt5.QtCore import Qt  # noqa: E402
 from pose_view import CalibrationPosePanel, ComparisonColumns  # noqa: E402
 from ui_widgets import MODE_NAMES, OptionsResults, SourceStrip, UpdateChoice, PageTabs, action_flow, EvidenceColumns  # noqa: E402
 from matrix_preview import MatrixPreview, ResultHeader
+import result_sections
 from capture_help import CaptureFormatDialog  # noqa: E402
 
 from ui_common import (BAD, BAD_SOFT, BG, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, MONO, ORANGE, PARAMS, QSS,  # noqa: E402
@@ -593,15 +594,7 @@ class RunPage(QtWidgets.QWidget):
         self.export_dataset_folder = core.resolve(dataset) if dataset else None
         self.export_txt_btn = None
         self.export_mode_label = None
-        self.export_calibrations = dict((s.get('strategy_comparison') or {}).get('calibrations', {}))
-        if 'existing' not in self.export_calibrations:
-            try:
-                self.export_calibrations['existing'] = core.load_calibration_data(core.resolve(s['existing']))
-            except (OSError, ValueError):
-                pass
-        refined = core.read_json(info['out'] / 'refined_calibration.json')
-        if refined:
-            self.export_calibrations.setdefault(s['mode'], refined)
+        self.export_calibrations = result_sections.export_calibrations(info)
         self.selected_result_mode = s['mode']
         fg, bg, icon, todo = VERDICT.get(s["verdict"], VERDICT["INCONCLUSIVE"])
         reason = core.verdict_message(s)
@@ -629,156 +622,15 @@ class RunPage(QtWidgets.QWidget):
             cl.addWidget(self.options_results)
             v.addWidget(c)
 
-        # metrics
-        from update_options import rmse_changes
-        rmse = rmse_changes(s.get('strategy_comparison') or {}).get(s['mode'])
-        o, n = s["existing_on_new_data"], s["refined_on_new_data"]
-        z = s.get("z")
-        zword = "" if not core.fin(z) else "within noise" if z < 2 else "borderline" if z < 3 else "statistically significant"
-        row = QtWidgets.QHBoxLayout()
-        row.setSpacing(12)
-        for title_, value, note in (
-                ("Edge RMSE", core.fmt(rmse['after_px'], 2, " px") if rmse else "Not measured",
-                 (f"Before {rmse['before_px']:.2f} px" +
-                  (f" · {rmse['reduction_percent']:.1f}% lower" if rmse['reduction_percent'] is not None and rmse['reduction_percent'] >= 0
-                   else f" · {abs(rmse['reduction_percent']):.1f}% higher" if rmse['reduction_percent'] is not None else ''))
-                 if rmse else "Run Compare update options to measure RMSE"),
-                ("Uncertainty", "± " + core.fmt(s["shift_uncertainty_px"], 2, " px"),
-                 f'Shift is {core.fmt(z, 1)}× uncertainty' if core.fin(z) else 'More captures needed'),
-                ("Regions improved", f"{s['heldout_improved']} / {s['heldout_total']}", "Tested outside the fit"),
-                ("Edge alignment", f"{n['on_edge_share'] * 100:.1f} %", f"Previously {o['on_edge_share'] * 100:.1f} %")):
-            c, cl = card()
-            cl.setSpacing(2)
-            cl.addWidget(label(title_, "small"))
-            big = label(value)
-            big.setStyleSheet("font-size: 18pt; font-weight: 500;")
-            cl.addWidget(big)
-            cl.addWidget(label(note, "small", wrap=True))
-            if title_ == 'Edge RMSE':
-                cl.addWidget(label(f"Median projection shift: {s['shift_median_px']:.2f} px", wrap=True))
-                cl.addWidget(label(MODE_NAMES.get(s['mode'], s['mode']), 'small'))
-                c.setToolTip('Held-out nearest-image-edge RMSE over all tested visible edge points, including unmatched '
-                             'points. RMSE describes alignment distance; projection shift describes the change from '
-                             'the previous calibration. Neither is a known-correspondence ground-truth error.')
-            row.addWidget(c, 1)
-        v.addLayout(row)
-
-        # gauge
-        c, cl = card("How much did the calibration change?")
-        bands = "   ·   ".join(f"{core.fmt(x)} px at {k}" for k, x in (s.get("shift_by_range_px") or {}).items())
-        cl.addWidget(label(f"By distance: {bands}", "muted"))
-        cl.addWidget(Gauge(s["shift_median_px"], s["shift_uncertainty_px"]))
-        v.addWidget(c)
-
-        # previous vs new
+        # sections shared with the fault-aware app's Calibration review tab (result_sections.py)
+        v.addLayout(result_sections.metric_row(s))
+        v.addWidget(result_sections.shift_card(s))
         if cmp_:
-            candidate_note = {'extrinsic': 'Candidate: alignment only · camera settings kept',
-                              'intrinsic': 'Candidate: camera settings only · alignment kept',
-                              'full': 'Candidate: camera settings and alignment'}
-            c, cl = card("Previous vs new calibration", candidate_note.get(s['mode'], 'Review the candidate values'))
-            rows, groups, group = [], [], None
-            for x in cmp_["rows"]:
-                if x["group"] != group:
-                    group = x["group"]
-                    groups.append(len(rows))
-                    rows.append(["Intrinsics (camera)" if group == "intrinsics" else "Extrinsics (LiDAR → camera)"])
-                name, unit, nd = PARAMS[x["key"]]
-                u = f" {unit}" if unit else ""
-                if not x["refined"]:
-                    rows.append([(name, MUTED), (core.fmt(x["previous"], nd, u), MUTED), (core.fmt(x["new"], nd, u), MUTED), ("—", MUTED),
-                                 ("—", MUTED), ("kept (not refined)", MUTED), ("—", MUTED)])
-                    continue
-                stat = x["statistical"] or "–"
-                sc = {"within noise": (INK2, INFO_SOFT), "borderline": (WARN, WARN_SOFT), "significant": (BLUE, BLUE_SOFT)}.get(stat, (INK2, None))
-                pr = x["practical"] or ""
-                pc = {"negligible": (GOOD, GOOD_SOFT), "small": (WARN, WARN_SOFT), "large": (BAD, BAD_SOFT)}.get(pr, (INK2, None))
-                rows.append([name, core.fmt(x["previous"], nd, u), (core.fmt(x["new"], nd, u), INK, None, True), core.sgn(x["change"], nd, u),
-                             "± " + core.fmt(x["uncertainty"], nd, u) if core.fin(x["uncertainty"]) else "–",
-                             (stat + (f"  ({core.fmt(x['z'], 1)}×)" if core.fin(x["z"]) else ""), sc[0], sc[1], True),
-                             (f"{core.fmt(x['pixel_effect'], 1)} px  {pr}" if core.fin(x["pixel_effect"]) else "–", pc[0], pc[1], True)])
-            comparison_table = table(["Parameter", "Previous", "New", "Change", "Uncertainty", "Evidence", "Pixel effect"],
-                                     rows, numeric=[1, 2, 3, 4], group_rows=groups, stretch=(0, 5, 6))
-            comparison_table.setToolTip('Evidence: change divided by uncertainty. Below 2×: within noise; '
-                                        '2–3×: borderline; above 3×: significant. Pixel effect: that parameter alone, '
-                                        'with translation evaluated at 3 m.')
-            table_column = QtWidgets.QWidget()
-            table_layout = QtWidgets.QVBoxLayout(table_column)
-            table_layout.setContentsMargins(0, 0, 0, 0)
-            table_layout.addWidget(comparison_table)
-            table_layout.addWidget(label('Pixel effect: each change on its own. The overall shift above guides the decision.',
-                                         'small', wrap=True))
-            table_layout.addStretch(1)
-            cl.addWidget(ComparisonColumns(table_column, CalibrationPosePanel(cmp_)))
-            v.addWidget(c)
-
-        # images
-        c, cl = card("Images: previous vs refined")
-        views = [(core.capture_display_name(x['name'], index), x['image'],
-                  x['flicker'] if x['flicker'].exists() else None) for index, x in enumerate(info['captures'], 1)]
-        views += [(img_label(p), p, None) for p in info["extra"]]
-        sel = QtWidgets.QComboBox()
-        sel.setObjectName('resultCaptureSelector')
-        for name, *_ in views:
-            sel.addItem(name)
-        for index, capture in enumerate(info['captures']):
-            sel.setItemData(index, capture['name'], Qt.ToolTipRole)
-        b_side, b_flick = button("Side by side"), button("Alternate views")
-        b_flick.setObjectName('alternateViews')
-        b_flick.setToolTip('Alternate between the previous and refined calibration overlays.')
-        for b in (b_side, b_flick):
-            b.setCheckable(True)
-        grp = QtWidgets.QButtonGroup(c)
-        grp.addButton(b_side)
-        grp.addButton(b_flick)
-        b_side.setChecked(True)
-        cl.addWidget(hbox(sel, b_side, b_flick, stretch_at=3))
-        view = ImageView(views[0][1] if views else None, caption=views[0][0] if views else "")
-        cl.addWidget(view)
-        legend = label(f"<span style='color:#2fb84f'>●</span> LiDAR edge on an image edge &nbsp; <span style='color:#e8c21e'>●</span> 1-3 px off "
-                       f"&nbsp; <span style='color:#d94040'>●</span> further off &nbsp; <span style='color:{BLUE}'>●</span> previous &nbsp; "
-                       f"<span style='color:{ORANGE}'>●</span> refined<br>Top: LiDAR edges on image edges with the previous and the refined "
-                       "calibration. Bottom: how far the refinement moves each LiDAR point, and zooms. Click the image to enlarge.",
-                       "muted", wrap=True, rich=True)
-        cl.addWidget(legend)
-
-        def show_view(k=None):
-            k = sel.currentIndex() if k is None else k
-            if k < 0:
-                return
-            name, img, gif = views[k]
-            b_flick.setEnabled(gif is not None)
-            if gif is None:
-                b_side.setChecked(True)
-            view.caption = name
-            view.set_source(gif if b_flick.isChecked() and gif else img)
-            legend.setVisible(k < len(info["captures"]))
-        sel.currentIndexChanged.connect(show_view)
-        grp.buttonClicked.connect(lambda *_: show_view())
-        if views:
-            show_view(0)
-        v.addWidget(c)
-
-        # evidence
-        ev = [("capture " + x["left_out"], x) for x in s.get("leave_one_out") or []] + [(x["left_out"], x) for x in s.get("leave_one_region_out") or []]
-        if ev:
-            c, cl = card("Evidence: leave one out", "Fit without each capture or region, then test on the omitted data.")
-            evidence_groups = []
-            for title, records in [('Captures', s.get('leave_one_out') or []),
-                                    ('Image regions', s.get('leave_one_region_out') or [])]:
-                if not records:
-                    continue
-                entries = [[core.capture_display_name(x['left_out'], index) if title == 'Captures' else x['left_out'],
-                            core.fmt(x['shift_px'], 2, ' px'), f"{x['heldout_existing_share'] * 100:.1f}%",
-                            f"{x['heldout_refined_share'] * 100:.1f}%",
-                            ('Yes', GOOD) if x['improved'] else ('No', MUTED)] for index, x in enumerate(records, 1)]
-                view = table(['Left out', 'Shift', 'Before', 'After', 'Better?'], entries, numeric=(1, 2, 3), stretch=(0, 1, 2, 3, 4))
-                view.setStyleSheet('QTableWidget::item { padding: 3px 7px; } QHeaderView::section { padding: 5px 7px; }')
-                for index in range(len(entries)):
-                    view.setRowHeight(index, 28)
-                view.setFixedHeight(view.horizontalHeader().height() + 28 * len(entries) + 20)
-                evidence_groups.append((title, view))
-            cl.addWidget(EvidenceColumns(evidence_groups))
-            v.addWidget(c)
+            v.addWidget(result_sections.parameter_card(s, cmp_))
+        v.addWidget(result_sections.CaptureComparison(info))
+        evidence = result_sections.evidence_card(s)
+        if evidence is not None:
+            v.addWidget(evidence)
 
         # actions
         c, cl = card("Use the result")

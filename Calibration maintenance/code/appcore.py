@@ -310,7 +310,17 @@ def comparison(s, out):
 
 def run_info(name):
     """Everything the app shows about a run: progress, inputs, and (when finished) the results."""
-    out = RESULTS / name
+    return run_info_at(RESULTS / name, name)
+
+
+_FROM_HISTORY = object()
+
+
+def run_info_at(out, name=None, accepted=_FROM_HISTORY):
+    """run_info for a results folder anywhere (results/<name>, or a fault-aware check's maintenance comparison).
+    accepted: what to show as accepted (None = nothing); by default it is looked up in history.csv."""
+    out = Path(out)
+    name = name or out.name
     prog = read_json(out / "progress.json") or dict(stages=[], finished=False)
     stages = [dict(st, images=[str(out / i) for i in st.get("images", [])]) for st in prog.get("stages", [])]
     s = read_json(out / "summary.json") if prog.get("finished") else None
@@ -342,7 +352,7 @@ def run_info(name):
             error_data = read_json(out / 'option_errors.json') or {}
             s['strategy_comparison'] = dict(s['strategy_comparison'], calibrations=calibrations, movements=movements,
                                            rmse_checks=error_data.get('checks', s['strategy_comparison'].get('checks', [])))
-        info.update(comparison=comparison(s, out), accepted=accepted_of(name),
+        info.update(comparison=comparison(s, out), accepted=accepted_of(name) if accepted is _FROM_HISTORY else accepted,
                     captures=[dict(name=p.stem, image=p, flicker=imgs / f"{p.stem}_flicker.gif")
                               for p in sorted(imgs.glob("*.png")) if p.stem != "shift_by_range"],
                     extra=[p for p in (imgs / "shift_by_range.png", out / "stages" / "regions.png") if p.exists()])

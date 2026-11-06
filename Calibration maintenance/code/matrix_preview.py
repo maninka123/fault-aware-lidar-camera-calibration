@@ -37,6 +37,7 @@ class MatrixPreview(QtWidgets.QFrame):
         self.setStyleSheet(f'QFrame#matrixPreview {{ background: white; border: 1px solid {LINE}; border-radius: 12px; }}')
         self.calibrations, self.cells, self.frames, self.states, self.groups = {}, {}, {}, {}, []
         self.mode = 'existing'
+        self.view = 'candidate'        # what the cells show: 'candidate', 'current' or 'difference'
         self.expanded = True
         outer = QtWidgets.QVBoxLayout(self)
         outer.setContentsMargins(14, 10, 14, 10)
@@ -123,6 +124,13 @@ class MatrixPreview(QtWidgets.QFrame):
     def update_heading(self):
         self.heading.setText(OPTIONS[self.mode][0] if self.expanded else 'Calibration matrices')
 
+    def set_view(self, view):
+        """candidate: the previewed option's values with the changes marked; current: the values in use now;
+        difference: only how much each value changes."""
+        if view in ('candidate', 'current', 'difference') and view != self.view:
+            self.view = view
+            self.set_mode(self.mode)
+
     def set_mode(self, mode):
         self.mode = mode
         self.update_heading()
@@ -166,12 +174,13 @@ class MatrixPreview(QtWidgets.QFrame):
                 large, text, digits = abs(delta) >= .05, f'Δ {delta:+.5f}', 6
             colour = BAD if changed and large else BLUE if changed else MUTED
             border = '#e5a8af' if changed and large else '#b7cbe2'
+            shown = {'candidate': new, 'current': old, 'difference': delta}[self.view]
             self.frames[index].setStyleSheet('QFrame { background: transparent; border: none; }')
-            value.setText(f'{new:.{digits}f}')
+            value.setText(f'{shown:+.{digits}f}' if self.view == 'difference' else f'{shown:.{digits}f}')
             value.setStyleSheet(f'font-family: Consolas; font-size: 10pt; font-weight: 400; '
                                f'color: {INK}; background: transparent;')
             delta_label.setText(text if changed else '')
-            delta_label.setVisible(bool(changed))
+            delta_label.setVisible(bool(changed) and self.view == 'candidate')
             delta_label.setStyleSheet(f'QLabel#matrixDelta {{ font-size: 8pt; color: {colour}; '
                                      f'background: transparent; border: 1px solid {border}; '
                                      'border-radius: 4px; padding: 2px 4px; }')

@@ -48,7 +48,10 @@ def load_config():
 
 
 def results_dir() -> Path:
-    return ROOT / "results"
+    """results/ of this app; MAINTENANCE_RESULTS_DIR redirects it (the fault-aware app keeps each maintenance
+    comparison inside the check it belongs to, with its own history.csv)."""
+    override = os.environ.get("MAINTENANCE_RESULTS_DIR")
+    return Path(override) if override else ROOT / "results"
 
 
 @dataclass
