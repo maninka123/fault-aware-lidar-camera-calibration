@@ -392,7 +392,8 @@
         }
       ],
       "evaluation_role": "development_v2",
-      "pairing_role": "development"
+      "pairing_role": "development",
+      "registry_group": "rig_sep29_off"
     },
     {
       "id": "enclosure_on_twelve",
@@ -473,7 +474,8 @@
           "sha256": "bee5ec72c61e7a8a79e97ad840660b3db8966c8e0ae02f9fefb0e1166d63913e"
         }
       ],
-      "pairing_role": "evaluation"
+      "pairing_role": "evaluation",
+      "registry_group": "rig_sep29_on"
     },
     {
       "id": "october_device_four",
@@ -569,7 +571,8 @@
           "sha256": "a02adb6be2065078a64acee1d28a87e9a78be28388fd1edae04dcb0c48b02728"
         }
       ],
-      "pairing_role": "evaluation"
+      "pairing_role": "evaluation",
+      "registry_group": "pair4_oct28"
     },
     {
       "id": "october_device_one",
@@ -645,7 +648,311 @@
           "sha256": "0baa89c28153c3dc88485eeade63e7f551dfc54246f8bac905abd1c4fbd95138"
         }
       ],
-      "pairing_role": "development"
+      "pairing_role": "development",
+      "registry_group": "pair1_oct28"
+    },
+    {
+      "id": "generalization_pair2",
+      "data_directory": "Oct 29 test/stacked_data/pair_2",
+      "capture_count": 10,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_2/calibration.json",
+        "bytes": 16385,
+        "sha256": "b2242e526c0e8c8ff794db5555d8d4c492c7f41ea5f55454ad5566c4ebfbac29"
+      },
+      "reference_note": "Declared deployment reference of this device (board-based Oct 28 calibration).",
+      "evaluation_role": "generalization",
+      "pairing_role": "not_used_in_design",
+      "registry_group": "pair2_oct28",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_221940_592072_enclosure_on.npz",
+          "bytes": 2504019,
+          "sha256": "534beb022a53b518ad78b4716948c659ff784dee3c0a6c1501a5bf2e16689a87"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222009_949034_enclosure_on.npz",
+          "bytes": 2577923,
+          "sha256": "1ef24de1c64f426cece98cbd68a9975d24337a047f9f473d1325751c98b6c526"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222050_310038_enclosure_on.npz",
+          "bytes": 2259967,
+          "sha256": "47c50a10446c32c1c10e6fc0cbd7940b857db9fcbfc79f091aee412c532c2aac"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222113_034400_enclosure_on.npz",
+          "bytes": 2150318,
+          "sha256": "52fd83b651c186d007d87fdeb4be6502a93acb3365d77392cae1eae7b71bdbf0"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222149_417903_enclosure_on.npz",
+          "bytes": 2566082,
+          "sha256": "5f56117953f41c0d22f533dcf01c4462247b39c9e68698c204b6f4dfbfe617f9"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222235_255690_enclosure_on.npz",
+          "bytes": 2545261,
+          "sha256": "ee75f744c2c2c8d1b0a031a441397afeeb39d5eecb87ac2b13f4aa325de157b2"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222341_943188_enclosure_on.npz",
+          "bytes": 2524794,
+          "sha256": "3c35ee90ed34ab6db4f8f663ed9e8fc92aab3deff86d7e40606fa0072fbce87a"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222415_407366_enclosure_on.npz",
+          "bytes": 1917646,
+          "sha256": "103932f8be6d41b34b34a04d1906cf2ae6111f0acc393d6ff37b87408d69190c"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222444_340366_enclosure_on.npz",
+          "bytes": 1895741,
+          "sha256": "f21b0475789041ab52fdfaec9373d41affde28e7add7d5737c02607edc6078a1"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_2/capture_20261028_222506_398599_enclosure_on.npz",
+          "bytes": 2420324,
+          "sha256": "a709fbc5e7ad4d101324590038a57981b9051d8c4ea3646baad2734ee29045d3"
+        }
+      ]
+    },
+    {
+      "id": "generalization_pair3",
+      "data_directory": "Oct 29 test/stacked_data/pair_3",
+      "capture_count": 14,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_3/calibration.json",
+        "bytes": 14786,
+        "sha256": "ad25d17dc4decb99abc615cb6a0ced0f64a224ecf35967e7c56b7ab335060b6b"
+      },
+      "reference_note": "Declared deployment reference of this device (board-based Oct 28 calibration).",
+      "evaluation_role": "generalization",
+      "pairing_role": "not_used_in_design",
+      "registry_group": "pair3_oct28",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224442_900743_enclosure_on.npz",
+          "bytes": 2820165,
+          "sha256": "5fa107c41eb1bc4ce72f6df670ca4e422179480a96bd00556130ae4a548a78a0"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224527_910822_enclosure_on.npz",
+          "bytes": 2565798,
+          "sha256": "d2b85e9a83a24ce3ed223af505b5eee936fb6db6d40688ffce48f120bf2c6073"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224553_008482_enclosure_on.npz",
+          "bytes": 2650963,
+          "sha256": "3e6970f6376f7dc80a4404a771992ac9fa16b060960a5004c4f107ae16e71dea"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224620_137288_enclosure_on.npz",
+          "bytes": 2688140,
+          "sha256": "1ec6d9c2dafc5e213726f4972cd243d4113979ba9eb647c8a1ef93b0a0ff10ae"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224655_557572_enclosure_on.npz",
+          "bytes": 2793435,
+          "sha256": "cc783fe23357d25fc65e79f07cd47bb4341ca1e384b921053a680ca320bb9fce"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224740_316036_enclosure_on.npz",
+          "bytes": 2880593,
+          "sha256": "649b24e23b4221b9b0fbb3a36f35874a00219c999b231a40d2e11d47a1e44212"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224806_426106_enclosure_on.npz",
+          "bytes": 2592880,
+          "sha256": "bb007f3351eba89e0bbd9ca6ddb12697b1f1c8f86882a9123e3aea403a7268b4"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224824_835477_enclosure_on.npz",
+          "bytes": 4842559,
+          "sha256": "46bc2c8805fb966c2dea588d33345ae1e4ef25992bec494265fe68eea2930814"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224846_642944_enclosure_on.npz",
+          "bytes": 2518322,
+          "sha256": "3983d36a977e64c8fdf9513b3ea15bf89516888cf742ecb7a5b1df594a398849"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_224941_014213_enclosure_on.npz",
+          "bytes": 2489359,
+          "sha256": "3ec7cf4a2c35f31132bc3cabcbdfac6e5a319bc9edbe4427bd0423d43fb7bafa"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_225013_349946_enclosure_on.npz",
+          "bytes": 2702651,
+          "sha256": "3ac9ffc81489ae051dad93393432036fae7ccc961d97cf7f2450374f68ec5ccb"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_225113_112070_enclosure_on.npz",
+          "bytes": 2502403,
+          "sha256": "e3b7e8e7971580d59c69d0692b8e2afd4c3b4fa41b85f907a8edc21b4d6f628c"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_225138_814363_enclosure_on.npz",
+          "bytes": 2356097,
+          "sha256": "232fb2d91c3e155a2916d6692b0a238c8deaa61c90eb34fc5a454b9200504925"
+        },
+        {
+          "path": "Oct 29 test/stacked_data/pair_3/capture_20261028_225249_524750_enclosure_on.npz",
+          "bytes": 2014218,
+          "sha256": "676f4812990011208b3b96cbb8b0c64ffe51d08600fb5f48030d4d9088d94350"
+        }
+      ]
+    },
+    {
+      "id": "generalization_nov5_off",
+      "data_directory": "Calibration maintenance/results/rig_20261106_151100/stacked/data",
+      "capture_count": 12,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_1/calibration.json",
+        "bytes": 15867,
+        "sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+      },
+      "reference_note": "Declared deployment reference of this device (board-based Oct 28 calibration).",
+      "evaluation_role": "generalization",
+      "pairing_role": "not_used_in_design",
+      "registry_group": "d1_nov5_off",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_185316_547419_enclosure_off.npz",
+          "bytes": 7308474,
+          "sha256": "6dd51214dda201ec20f2b14f08f8cfee4f93ab83ea91fc5c309226114fa905b8"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_185531_055071_enclosure_off.npz",
+          "bytes": 6624518,
+          "sha256": "7a01a19d2211398ea9b747fa4404d7efd5230d7f4818f9efb2842b8c6b94a648"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_185630_873068_enclosure_off.npz",
+          "bytes": 3833002,
+          "sha256": "8c0282b591c9fc0ce0abee38341865042b21db42f885e19ba945dfecf28b429d"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_185757_904454_enclosure_off.npz",
+          "bytes": 6624668,
+          "sha256": "a4d77eb1d42d649468069481d0511aa04b169d3592345b7b9e13d3b7d8014a45"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_185845_855635_enclosure_off.npz",
+          "bytes": 6680463,
+          "sha256": "77d7e7b6f920fb384042859607bac9db80aa332e4825d69f1c2ef14ce02aaddd"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190003_517207_enclosure_off.npz",
+          "bytes": 4713286,
+          "sha256": "abe30c603340203c47461883118d48a1d3b3cd79dd25d533bc497eae06f8db20"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190048_857321_enclosure_off.npz",
+          "bytes": 5080554,
+          "sha256": "61dea9b78beed7e77137842708deb61cfaa514d12065d9a867b6863a639e027a"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190116_259171_enclosure_off.npz",
+          "bytes": 6598531,
+          "sha256": "1186d742e748f048695dfef8bc88a95aa0bfb62128088027c27b2b3304e297b2"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190209_348255_enclosure_off.npz",
+          "bytes": 5411647,
+          "sha256": "6587d265a0ad8a04eaa8a5f648d33ec884f124da609b9e0c5ff44fe08e6d032e"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190413_655804_enclosure_off.npz",
+          "bytes": 6053502,
+          "sha256": "3d548364e2a1d085d3f6e31dca00828f78e4c9a9ebdffd3dc77305f2f30e5beb"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190516_259272_enclosure_off.npz",
+          "bytes": 5392213,
+          "sha256": "d3d28e003e71d06b138efc9533587282a95311f4630f76c825a194686bf13b23"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261106_151100/stacked/data/capture_20261105_190846_564065_enclosure_off.npz",
+          "bytes": 6341066,
+          "sha256": "2457f4ab5eb15d8d7a8aeb5bfcba392927d8b3de32a4d6dac8b7afc9fe8021cd"
+        }
+      ]
+    },
+    {
+      "id": "generalization_nov5_on",
+      "data_directory": "Calibration maintenance/results/rig_20261105_230653/stacked/data",
+      "capture_count": 7,
+      "coordinate_units_stored": "millimetres",
+      "coordinate_units_solver": "metres",
+      "camera_model": "OpenCV equidistant/fisheye polynomial",
+      "image_encoding": "BGR uint8",
+      "reference_calibration": {
+        "path": "Oct 29 test/results/pair_1/calibration.json",
+        "bytes": 15867,
+        "sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+      },
+      "reference_note": "Declared deployment reference of this device (board-based Oct 28 calibration).",
+      "evaluation_role": "generalization",
+      "pairing_role": "not_used_in_design",
+      "registry_group": "d1_nov5_on",
+      "fault_ground_truth": null,
+      "known_point_correspondence_ground_truth": null,
+      "files": [
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192036_600000_enclosure_on.npz",
+          "bytes": 6701084,
+          "sha256": "4f0f1c410aa8f70b76aaa2e50b99149c150e0f9293f78dac643e92be4ed7e358"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192101_562471_enclosure_on.npz",
+          "bytes": 6644190,
+          "sha256": "08657d225f9da0db91f7cbe23172494684a713b1f51a154ba7d79ad58581f598"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192128_357758_enclosure_on.npz",
+          "bytes": 6210337,
+          "sha256": "36a422fbbc07c37efea90dc693cbf743811ce80786c3013f8c1099736d261be0"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192224_608097_enclosure_on.npz",
+          "bytes": 5897550,
+          "sha256": "b0b88754cbed842fa3b938fac3eee4cb78b471afb50c1c004a17b5381506f0b6"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192251_898988_enclosure_on.npz",
+          "bytes": 4064726,
+          "sha256": "5f4446393350e824c44673e0215d43a48572004464b2583bb909aeef297a080e"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192317_156759_enclosure_on.npz",
+          "bytes": 5868211,
+          "sha256": "f34318cb403b49fe03e50dca9aee595c95538a2872d748f7563c7674861cc4f9"
+        },
+        {
+          "path": "Calibration maintenance/results/rig_20261105_230653/stacked/data/capture_20261105_192400_415383_enclosure_on.npz",
+          "bytes": 2433091,
+          "sha256": "f811c77fb5db409ae60fb461aa4880880a1cb6d71e9bc05e43dc2ae6239773cb"
+        }
+      ]
     }
   ],
   "additional_available_caches": [],

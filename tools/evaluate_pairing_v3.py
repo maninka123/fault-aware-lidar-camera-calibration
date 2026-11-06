@@ -43,6 +43,7 @@ from research_calibration.reporting import serializable
 from analyze_attribution_root_cause_v3 import FRONT_ENDS, STRICT, GROUPS, ALARM, stack, diagnose, score, recovery
 from evaluate_fault_diagnostics import anchor_calibration, params_in, pixel_error, subset_bundle, DRIFTS
 
+QUICK_DRIFTS = (('R', 1.), ('T', .06), ('I_pp', 3.), ('I_focal', .02), ('RT', (.5, .03)))
 METHODS = ('reference_pairs', 'nearest', 'oriented', 'geometric', 'geometric_no_visibility', 'geometric_no_confidence', 'geometric_no_balance')
 MAX_STD = 1.0                 # normalized units: a direction is corrected only if its implied standard deviation is at most this
 EDGE_MARGIN = DiagnosticsConfig().edge_gain_margin
@@ -75,8 +76,9 @@ def run(args):
     roles = {d['id']: d.get('pairing_role', 'unassigned') for d in manifest['datasets']}
     if any(roles.get(d) != args.role for d in args.datasets):
         raise SystemExit('Every dataset must carry pairing_role=' + args.role + ' in the manifest')
-    if args.role == 'evaluation' and not (REPOSITORY / 'docs/research/v3/PROTOCOL_CORRESPONDENCE.md').exists():
-        raise SystemExit('The frozen protocol document is required before the evaluation recordings are used')
+    needed = {'evaluation': 'PROTOCOL_CORRESPONDENCE.md', 'not_used_in_design': 'PROTOCOL_GENERALIZATION.md'}.get(args.role)
+    if needed and not (REPOSITORY / 'docs/research/v3' / needed).exists():
+        raise SystemExit('The frozen protocol document ' + needed + ' is required before these recordings are used')
     out = Path(args.output)
     if out.exists() and any(out.iterdir()):
         raise FileExistsError('Use a new output directory')
@@ -104,6 +106,8 @@ def run(args):
                 train_names, held_names = reserved_split([c.name for c in base.caps], cfg)
                 conditions = [('nominal', None, None)] + [('drift', k, m) for k, m in DRIFTS] + \
                              [('nuisance', 'spurious_lines_all', None), ('nuisance', 'ghost_all', None)]
+                if args.quick:
+                    conditions = [c for c in conditions if c[0] != 'drift' or (c[1], c[2]) in QUICK_DRIFTS]
                 for ctype, kind, magnitude in conditions:
                     crng = np.random.default_rng([rep, zlib.crc32(f'{ctype}|{kind}|{magnitude}'.encode())])
                     cal, truth, delta_true = anchor, None, np.zeros(13)
@@ -189,8 +193,9 @@ def summarize(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--datasets', nargs='+', required=True)
-    parser.add_argument('--role', choices=('development', 'evaluation'), required=True)
+    parser.add_argument('--role', choices=('development', 'evaluation', 'not_used_in_design'), required=True)
     parser.add_argument('--replicates', type=int, default=2)
+    parser.add_argument('--quick', action='store_true', help='five drift conditions instead of seven (faster, same seeds)')
     parser.add_argument('--output', required=True)
     args = parser.parse_args()
     run(args)

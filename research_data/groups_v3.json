@@ -1,0 +1,894 @@
+{
+  "schema_version": 1,
+  "workspace_root_relative_to_repository": "../..",
+  "groups": [
+    {
+      "id": "rig_sep29_off",
+      "device": "rig-A",
+      "session": "2026-09-29",
+      "state": "enclosure off",
+      "manifest_id": "enclosure_off_ten",
+      "used_in": [
+        "V2 development",
+        "V2 evaluation of anchors",
+        "V3 development",
+        "pairing development"
+      ],
+      "data_directory": "Calibration maintenance/results/rig_20261104_174529/stacked/data",
+      "reference_calibration": "Calibration maintenance/examples/feb2025_enclosure.json",
+      "capture_count": 10,
+      "captures": [
+        {
+          "name": "capture_20260929_164327_828105_enclosure_off.npz",
+          "file_sha256": "ab9896c12b5ec3172c2e6981f9752e64ddf97ca700c71428624851ab485d0dc4",
+          "content_fingerprint": "5e319382e33656bb7ad3cfb2987eeb6fd9386806d6f3ec02b89da65f82b1fade"
+        },
+        {
+          "name": "capture_20260929_164411_450626_enclosure_off.npz",
+          "file_sha256": "2b5fefdd90e1d2f81c2e322f6bd62af72f70cf21fe150b87c3be3fc00107b66c",
+          "content_fingerprint": "65dc18e2b583341a3c00130ace27a8a17eea6c26def8ebeccb99959d09212f16"
+        },
+        {
+          "name": "capture_20260929_164446_617061_enclosure_off.npz",
+          "file_sha256": "d19f530bc12f09a18a5bdbb9751028e3add3dca050e44d684403effb54e0517d",
+          "content_fingerprint": "662bf4425ba39b84e60ed0c40deddc987aa37f1e2ca1c6ab666328aa1558824b"
+        },
+        {
+          "name": "capture_20260929_164528_587972_enclosure_off.npz",
+          "file_sha256": "d8f1000eb3eddd027969fefa5c8fb0513d9364d028a4f28830b1d89c84622087",
+          "content_fingerprint": "879717ee684d8cd7f0cdaec3e2f37d251ec94eda6d5d87ed3fe4febcc8eedcb1"
+        },
+        {
+          "name": "capture_20260929_164617_573884_enclosure_off.npz",
+          "file_sha256": "8801c14b82a3d8ae4f7d98a27bfd1db111d44b8fdf481b7ac1e99b2b5bf66825",
+          "content_fingerprint": "733e4fc49af4627aee84ba6918b6d3ff052d46f5bb4f8454eaf5266a208499f3"
+        },
+        {
+          "name": "capture_20260929_164652_717058_enclosure_off.npz",
+          "file_sha256": "250705e1e0f2ec92202314f55f7b24ecb9d28170bac012fedf2ab9e6999e1a49",
+          "content_fingerprint": "766b0d68eb73119a51fd6967310848cd9496b7050248269321adaeade4b4ce55"
+        },
+        {
+          "name": "capture_20260929_164727_286206_enclosure_off.npz",
+          "file_sha256": "0b7c602fe2a2ddb577552d5ba34495780ec01b40c7f0fd43e4c53f34f0f46201",
+          "content_fingerprint": "8a41922408f02037d599d58bb85140f8494b9cdb9bb72d595152ff01cb7265e1"
+        },
+        {
+          "name": "capture_20260929_164819_212871_enclosure_off.npz",
+          "file_sha256": "9c352460f6f5d53216f963cfd1ac2463740699c0fff05ec3625d35570be4cc61",
+          "content_fingerprint": "053e7ccdeed2558be1920fd7fcb96ff04451247e51f4e02d3da70061b2d06532"
+        },
+        {
+          "name": "capture_20260929_164921_130392_enclosure_off.npz",
+          "file_sha256": "9a862731d68c0799c51714ee931be44856c696a049a1cdba774b2f7623ec6759",
+          "content_fingerprint": "c83c962465f6f831160bd4939d704563a9d9ec4b450292629c21422b813aa161"
+        },
+        {
+          "name": "capture_20260929_165012_890546_enclosure_off.npz",
+          "file_sha256": "54e996fad9feb7f2910ea316cad6c4bb5459800130320a1f663545422be9aac8",
+          "content_fingerprint": "3d6681a959e3b78a6ba20291d900f29c9cf97073dcdeec4727885407129e2303"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.3665543973087586,
+        "saturated_share": 0.05061588312333468,
+        "edge_density": 0.04727848530009483,
+        "range_p5_p50_p95_m": [
+          1.5790989893742775,
+          4.707331746947467,
+          6.323614105178177
+        ],
+        "depth_ratio_p95_over_p5": 4.004571054588495,
+        "azimuth_std_deg": 16.054648608754963,
+        "elevation_std_deg": 16.744144506678204,
+        "points_per_capture": 1129257
+      },
+      "role": "development",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "6bdc790a83758c83ee0b8c581760ddc29f2a5a285b60dfaee82a551ddcd76007"
+    },
+    {
+      "id": "rig_sep29_on",
+      "device": "rig-A",
+      "session": "2026-09-29",
+      "state": "enclosure on",
+      "manifest_id": "enclosure_on_twelve",
+      "used_in": [
+        "V2 held-out evaluation",
+        "V3 development",
+        "pairing evaluation"
+      ],
+      "data_directory": "Calibration maintenance/results/rig_20261104_202917/stacked/data",
+      "reference_calibration": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+      "capture_count": 12,
+      "captures": [
+        {
+          "name": "capture_20260929_165955_605473_enclosure_on.npz",
+          "file_sha256": "5b851248ef873e5f33ca83fc24691607fbef6c871feef44a36d84164dbe922b7",
+          "content_fingerprint": "75bc38a75944568640a7392da4f7a8fb632324bed1f80b2b18e2d9a0d88161ab"
+        },
+        {
+          "name": "capture_20260929_170052_309772_enclosure_on.npz",
+          "file_sha256": "eb95defaaab9b033bd2dd55cc929d0d48fdfb04ffbbced241e026d67ea1a3294",
+          "content_fingerprint": "3a97913ae5ce048a4746e8d62546a89b3eadd1646768dda31b7b20b34d631311"
+        },
+        {
+          "name": "capture_20260929_170145_052888_enclosure_on.npz",
+          "file_sha256": "ae90f3c9fe2b589a3aa09c64a2cb3632d7ad088e12069e2590be1a2646fd4081",
+          "content_fingerprint": "b1c095054c4aaafb03f0a40aee015bafb537e0da32a706853a856af174681f32"
+        },
+        {
+          "name": "capture_20260929_170224_805786_enclosure_on.npz",
+          "file_sha256": "e947744f99420691d83a55d9348b082bb222f038e7706db6b7a133db5cb86280",
+          "content_fingerprint": "b252d217add7632475b077789081590c04da4b2b7eff52fced5adeb5d93c3dec"
+        },
+        {
+          "name": "capture_20260929_170317_673169_enclosure_on.npz",
+          "file_sha256": "cd7580a5037b4ba1ce4a3196d72c53f2bdc61b02f41c097df66de11f75c84d7b",
+          "content_fingerprint": "888961d7ff82e411dc7aadfec8b3757d6337fa1dfc418c0e273960cebecb138e"
+        },
+        {
+          "name": "capture_20260929_170402_786850_enclosure_on.npz",
+          "file_sha256": "52d35ace4fa23e91904e804326120a8b047baf4248d503e285c40a7815d8a95e",
+          "content_fingerprint": "29a0a911953a8461b554fac98d90fdee692c00a3cc38fda9f656ca02ae6ce088"
+        },
+        {
+          "name": "capture_20260929_170443_138288_enclosure_on.npz",
+          "file_sha256": "be78fe1f9460a87df07d23497b700d2dc836f8e90ad1e0f0fa30b8fedaaf18c6",
+          "content_fingerprint": "c11220df4addedc7a919b5526d44093ff6b3cbb27675495671b37bd4ba9c6d96"
+        },
+        {
+          "name": "capture_20260929_170517_810874_enclosure_on.npz",
+          "file_sha256": "3d2baa128468147680c206087de76966fe2078175d273a9507d96879a08e9c3c",
+          "content_fingerprint": "f58792459cf61e7b8e67db4f4dc5f2e5162bd017ab0a77df3885890482bff66c"
+        },
+        {
+          "name": "capture_20260929_170634_684567_enclosure_on.npz",
+          "file_sha256": "229f2606ff5cb94413b38f721b59bdf804a51567e35f51c812af8257bf1a5c44",
+          "content_fingerprint": "67506219d0f495730c9e59d5a2429593f64a8334d1f62cf002f54b9b4f81118a"
+        },
+        {
+          "name": "capture_20260929_170733_752938_enclosure_on.npz",
+          "file_sha256": "88a100623907b65d9d2c33c3beb4421bf955cec05513c9a6c6aa0edcc303674c",
+          "content_fingerprint": "605673bfb669d6029a618ca4df6b5be178d4aca14050ec74b6b2fbe8c6723fe2"
+        },
+        {
+          "name": "capture_20260929_170811_052552_enclosure_on.npz",
+          "file_sha256": "d28071c460f15a63c2a0c4a5c9ae75b7c88892116c96c91ef0ff7f0a80994839",
+          "content_fingerprint": "82e8e3ec6a841dd23fa469695ecd6333a6d0b2873766b5931ba540a0b7aed512"
+        },
+        {
+          "name": "capture_20260929_170845_292661_enclosure_on.npz",
+          "file_sha256": "bee5ec72c61e7a8a79e97ad840660b3db8966c8e0ae02f9fefb0e1166d63913e",
+          "content_fingerprint": "60c43c9922c1cd974875a11932fb854b1d85fb9e344bbfd24ef1c7c36609d2ad"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.400092742391331,
+        "saturated_share": 0.013648500654834486,
+        "edge_density": 0.0319848070872661,
+        "range_p5_p50_p95_m": [
+          2.284915688387558,
+          4.9759644085800305,
+          6.329907723347273
+        ],
+        "depth_ratio_p95_over_p5": 2.770302534801284,
+        "azimuth_std_deg": 14.400841372676316,
+        "elevation_std_deg": 16.79687571458344,
+        "points_per_capture": 1006797
+      },
+      "role": "development",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "f64be8f4471523be700a5f03db767050af3c5afcf046bab4764af2255859c8e5"
+    },
+    {
+      "id": "pair1_oct28",
+      "device": "pair_1",
+      "session": "2026-10-28",
+      "state": "enclosure on",
+      "manifest_id": "october_device_one",
+      "used_in": [
+        "V3 development",
+        "pairing development",
+        "overlay/app inspection"
+      ],
+      "data_directory": "Oct 29 test/stacked_data/pair_1",
+      "reference_calibration": "Oct 29 test/results/pair_1/calibration.json",
+      "capture_count": 11,
+      "captures": [
+        {
+          "name": "capture_20261028_215552_249295_enclosure_on.npz",
+          "file_sha256": "dd15639670430a418275295c81f6d32f17de2d46597e1f73a476aa610af7f092",
+          "content_fingerprint": "e007f5394acb3c20dc1b35c834393a6e20aaee0829c315890054b399411a38e3"
+        },
+        {
+          "name": "capture_20261028_215624_570536_enclosure_on.npz",
+          "file_sha256": "89da002cc362c370a625922b2cb1b26d0dc8d0603f0e6ce5a8f8912555056a65",
+          "content_fingerprint": "84f6c2e6345dc0da648b3b64a06e0e5f85211c4f1e486ad53232e6eb324d7b56"
+        },
+        {
+          "name": "capture_20261028_215705_407905_enclosure_on.npz",
+          "file_sha256": "ef8f025d013c5c44a8b6c47509df1e7b332b639de715ac03e428536e940a2daa",
+          "content_fingerprint": "bd7d44b8229bc01900a0b5c1438a2948bf176a29b87131b00731e929faaf404d"
+        },
+        {
+          "name": "capture_20261028_215731_915876_enclosure_on.npz",
+          "file_sha256": "99c374dad0638951950b943c4959e0eda56fdcf7d0018a4c4e891a12b7af92aa",
+          "content_fingerprint": "1e8c7c39d90336f4db00fdf15e8bc6e85fd6434c1e0bd338daf1ab0b356255f7"
+        },
+        {
+          "name": "capture_20261028_215815_295216_enclosure_on.npz",
+          "file_sha256": "a489e2d403f433ff4a425fac4d2dbe9f4d4afb936eae96316fed615780d0f9ad",
+          "content_fingerprint": "1999e1d1749096e735a9e34620de2547a25fa4b8446410383a7af3d003d96a00"
+        },
+        {
+          "name": "capture_20261028_215843_069172_enclosure_on.npz",
+          "file_sha256": "25c5d27bc50636d66d20aa409130ecdb865520233da8137ae134f74f267fe98a",
+          "content_fingerprint": "023d0ab6ed57764ebb0858d8f41cc63fa32234b59c7d674b1bde34b0961694bd"
+        },
+        {
+          "name": "capture_20261028_215906_427054_enclosure_on.npz",
+          "file_sha256": "01a873d9957de108c0c9fdd0b758d25b8365d84eace0a424d1276362ad3798c2",
+          "content_fingerprint": "4deec82a0ef86ae52ed339391d1bb6dd08891ea836f9eb205be224b4acb1871e"
+        },
+        {
+          "name": "capture_20261028_215954_389129_enclosure_on.npz",
+          "file_sha256": "241464ffb1833b4f4c0058c0b4b3bbe9f4666a8d883aea802226efbe537774f7",
+          "content_fingerprint": "46abc766987c37180a3c20001c5ad4e3974965c7ce6332820ba02b5d2bf07878"
+        },
+        {
+          "name": "capture_20261028_220017_248964_enclosure_on.npz",
+          "file_sha256": "b1f7a3f08e3b020c90b069a7665e5d3f953562559f060673fc772fedcf9ba269",
+          "content_fingerprint": "f1475d22733b08e5b70edc2fd98eb34f706a71b160110bfd26e3d3f9d961dd74"
+        },
+        {
+          "name": "capture_20261028_220040_247482_enclosure_on.npz",
+          "file_sha256": "4e17bdd50c87b451501a413063a5071cafdd61ded4c73491437058100186b278",
+          "content_fingerprint": "8be69d324aed72e068cc47f5edfd30d72c77de29603361a3fe8bbb6d90875ba8"
+        },
+        {
+          "name": "capture_20261028_220049_645848_enclosure_on.npz",
+          "file_sha256": "d9319615c01fa76ca065fc9da34c9ac179ae498ed917b2d51dc4a0c9ffba6397",
+          "content_fingerprint": "73d452fedd79edd9cfe73f7c26b5280e2f7011ed05fb527d7fd18601620524e3"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.40095627207787204,
+        "saturated_share": 0.02764520287552397,
+        "edge_density": 0.04297428286386422,
+        "range_p5_p50_p95_m": [
+          1.521277966310094,
+          4.433706474424081,
+          5.558684963989983
+        ],
+        "depth_ratio_p95_over_p5": 3.6539574535959023,
+        "azimuth_std_deg": 16.426686662533168,
+        "elevation_std_deg": 17.673263883777,
+        "points_per_capture": 375679
+      },
+      "role": "development",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+    },
+    {
+      "id": "pair2_oct28",
+      "device": "pair_2",
+      "session": "2026-10-28",
+      "state": "enclosure on",
+      "manifest_id": null,
+      "used_in": [],
+      "data_directory": "Oct 29 test/stacked_data/pair_2",
+      "reference_calibration": "Oct 29 test/results/pair_2/calibration.json",
+      "capture_count": 10,
+      "captures": [
+        {
+          "name": "capture_20261028_221940_592072_enclosure_on.npz",
+          "file_sha256": "534beb022a53b518ad78b4716948c659ff784dee3c0a6c1501a5bf2e16689a87",
+          "content_fingerprint": "b6c7aa8afc9458b9a0a2e46ce752bcbed18c710eb3e80c40ea0a9851dfd7cbfc"
+        },
+        {
+          "name": "capture_20261028_222009_949034_enclosure_on.npz",
+          "file_sha256": "1ef24de1c64f426cece98cbd68a9975d24337a047f9f473d1325751c98b6c526",
+          "content_fingerprint": "f38b05291de4f4a53408ee51cbc1d80b683305a3a5ea501e6be8c57f10ba76a0"
+        },
+        {
+          "name": "capture_20261028_222050_310038_enclosure_on.npz",
+          "file_sha256": "47c50a10446c32c1c10e6fc0cbd7940b857db9fcbfc79f091aee412c532c2aac",
+          "content_fingerprint": "c7b5a5cf4cd63b5e42109982d13641d489285e0a515e208bcc894039c17bd108"
+        },
+        {
+          "name": "capture_20261028_222113_034400_enclosure_on.npz",
+          "file_sha256": "52fd83b651c186d007d87fdeb4be6502a93acb3365d77392cae1eae7b71bdbf0",
+          "content_fingerprint": "253cae80cd2be6b98617df099deef5ef87546fd92e5fe77db72da51691482a16"
+        },
+        {
+          "name": "capture_20261028_222149_417903_enclosure_on.npz",
+          "file_sha256": "5f56117953f41c0d22f533dcf01c4462247b39c9e68698c204b6f4dfbfe617f9",
+          "content_fingerprint": "26612df2ef7afc872ce23a9c52b615b324f52ceebda4a1773834ad8d167ff294"
+        },
+        {
+          "name": "capture_20261028_222235_255690_enclosure_on.npz",
+          "file_sha256": "ee75f744c2c2c8d1b0a031a441397afeeb39d5eecb87ac2b13f4aa325de157b2",
+          "content_fingerprint": "6cf8bc9ccb727d7c317e00be89ceb6af5b2472e814eb6c963775647cbe74e972"
+        },
+        {
+          "name": "capture_20261028_222341_943188_enclosure_on.npz",
+          "file_sha256": "3c35ee90ed34ab6db4f8f663ed9e8fc92aab3deff86d7e40606fa0072fbce87a",
+          "content_fingerprint": "dc1fcf61ac19d91330854d102e0d8bfac9d8a24e866342c2ef8fa23d9ef74f08"
+        },
+        {
+          "name": "capture_20261028_222415_407366_enclosure_on.npz",
+          "file_sha256": "103932f8be6d41b34b34a04d1906cf2ae6111f0acc393d6ff37b87408d69190c",
+          "content_fingerprint": "c6b1b91809c019f4c87dd8e53e2ea5d8074ba489b236e74d078d42bbbbae88c2"
+        },
+        {
+          "name": "capture_20261028_222444_340366_enclosure_on.npz",
+          "file_sha256": "f21b0475789041ab52fdfaec9373d41affde28e7add7d5737c02607edc6078a1",
+          "content_fingerprint": "a1f6a45a2e351f3461de9c54deb665bedb949b9cc74df35ac0014ceb1c2db976"
+        },
+        {
+          "name": "capture_20261028_222506_398599_enclosure_on.npz",
+          "file_sha256": "a709fbc5e7ad4d101324590038a57981b9051d8c4ea3646baad2734ee29045d3",
+          "content_fingerprint": "006cad6a6226f4a057b13c1471986d8cc6dae5186c984140beda19bed2d49a36"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.4117138178488665,
+        "saturated_share": 0.008926071444700357,
+        "edge_density": 0.036442668111818635,
+        "range_p5_p50_p95_m": [
+          1.4943553632396998,
+          4.588292349133819,
+          5.578485270079028
+        ],
+        "depth_ratio_p95_over_p5": 3.7330379421833815,
+        "azimuth_std_deg": 15.986042241376072,
+        "elevation_std_deg": 17.822348727969917,
+        "points_per_capture": 367350
+      },
+      "role": "not_used_in_design",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "b2242e526c0e8c8ff794db5555d8d4c492c7f41ea5f55454ad5566c4ebfbac29"
+    },
+    {
+      "id": "pair3_oct28",
+      "device": "pair_3",
+      "session": "2026-10-28",
+      "state": "enclosure on",
+      "manifest_id": null,
+      "used_in": [],
+      "data_directory": "Oct 29 test/stacked_data/pair_3",
+      "reference_calibration": "Oct 29 test/results/pair_3/calibration.json",
+      "capture_count": 14,
+      "captures": [
+        {
+          "name": "capture_20261028_224442_900743_enclosure_on.npz",
+          "file_sha256": "5fa107c41eb1bc4ce72f6df670ca4e422179480a96bd00556130ae4a548a78a0",
+          "content_fingerprint": "4b5787723eaa9dd9a1949f21a0c7990d12d0b1a2fb941c3da6830d241887a529"
+        },
+        {
+          "name": "capture_20261028_224527_910822_enclosure_on.npz",
+          "file_sha256": "d2b85e9a83a24ce3ed223af505b5eee936fb6db6d40688ffce48f120bf2c6073",
+          "content_fingerprint": "bb4e1ad0a6518995e57d3356f321162dc39b010b6101d6970e4b88c3d04741b8"
+        },
+        {
+          "name": "capture_20261028_224553_008482_enclosure_on.npz",
+          "file_sha256": "3e6970f6376f7dc80a4404a771992ac9fa16b060960a5004c4f107ae16e71dea",
+          "content_fingerprint": "78011c4e5b9b94f9910f53d0d986df204b5a2e201813e7e35f12219272bb0ff5"
+        },
+        {
+          "name": "capture_20261028_224620_137288_enclosure_on.npz",
+          "file_sha256": "1ec6d9c2dafc5e213726f4972cd243d4113979ba9eb647c8a1ef93b0a0ff10ae",
+          "content_fingerprint": "c545990a1eaf9210b8e00863da13247684242900e10f337fe157a85618725cd0"
+        },
+        {
+          "name": "capture_20261028_224655_557572_enclosure_on.npz",
+          "file_sha256": "cc783fe23357d25fc65e79f07cd47bb4341ca1e384b921053a680ca320bb9fce",
+          "content_fingerprint": "e51386eb808411c359100d2eec2c1c95587eaa8d157d3ad1621d5f1561a6ffdc"
+        },
+        {
+          "name": "capture_20261028_224740_316036_enclosure_on.npz",
+          "file_sha256": "649b24e23b4221b9b0fbb3a36f35874a00219c999b231a40d2e11d47a1e44212",
+          "content_fingerprint": "886cf96653e4b98ab0bcb8e051b7720a9df3e7337f0fe2d6064704a3345ead2b"
+        },
+        {
+          "name": "capture_20261028_224806_426106_enclosure_on.npz",
+          "file_sha256": "bb007f3351eba89e0bbd9ca6ddb12697b1f1c8f86882a9123e3aea403a7268b4",
+          "content_fingerprint": "cddeba672d872b2978ecaf3a5a5437794375ed906ce2d705e4bb92dddb2648fa"
+        },
+        {
+          "name": "capture_20261028_224824_835477_enclosure_on.npz",
+          "file_sha256": "46bc2c8805fb966c2dea588d33345ae1e4ef25992bec494265fe68eea2930814",
+          "content_fingerprint": "6c3e0dc5d2ca8c4dcf64740e9fba9cd9bbd1b605575ee2a135fc409e903438ec"
+        },
+        {
+          "name": "capture_20261028_224846_642944_enclosure_on.npz",
+          "file_sha256": "3983d36a977e64c8fdf9513b3ea15bf89516888cf742ecb7a5b1df594a398849",
+          "content_fingerprint": "7201f06987fd790bb6972279b70ea14a68282b48fca046712645c91e4dbab110"
+        },
+        {
+          "name": "capture_20261028_224941_014213_enclosure_on.npz",
+          "file_sha256": "3ec7cf4a2c35f31132bc3cabcbdfac6e5a319bc9edbe4427bd0423d43fb7bafa",
+          "content_fingerprint": "e8b742765361f866d6dd870cedcbfea6bb8944cad04e76b70b4dfa6aa5339c33"
+        },
+        {
+          "name": "capture_20261028_225013_349946_enclosure_on.npz",
+          "file_sha256": "3ac9ffc81489ae051dad93393432036fae7ccc961d97cf7f2450374f68ec5ccb",
+          "content_fingerprint": "89fc411a4ea084b81363703fb6c26d1ae27325097a4dd32b3d4e9552eb70e30b"
+        },
+        {
+          "name": "capture_20261028_225113_112070_enclosure_on.npz",
+          "file_sha256": "e3b7e8e7971580d59c69d0692b8e2afd4c3b4fa41b85f907a8edc21b4d6f628c",
+          "content_fingerprint": "97d188959cbe4bf24b1c9de6b3dc08aecfea8f3fd368689f7af09ddb431c4df2"
+        },
+        {
+          "name": "capture_20261028_225138_814363_enclosure_on.npz",
+          "file_sha256": "232fb2d91c3e155a2916d6692b0a238c8deaa61c90eb34fc5a454b9200504925",
+          "content_fingerprint": "46215b1c5c19b376ecfa02d72e63a959f5210f3590aa9e0cc489bc3a76d386ec"
+        },
+        {
+          "name": "capture_20261028_225249_524750_enclosure_on.npz",
+          "file_sha256": "676f4812990011208b3b96cbb8b0c64ffe51d08600fb5f48030d4d9088d94350",
+          "content_fingerprint": "e502856e3334698ae0a3b796edd5a0fdedca4acd2936c91ffea3b5886267930f"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.39006958177752427,
+        "saturated_share": 0.031073993071012447,
+        "edge_density": 0.04316423765007967,
+        "range_p5_p50_p95_m": [
+          1.720322827994345,
+          4.72236022576947,
+          5.623212069134197
+        ],
+        "depth_ratio_p95_over_p5": 3.2686958387281724,
+        "azimuth_std_deg": 17.11241746024839,
+        "elevation_std_deg": 17.629572777092285,
+        "points_per_capture": 437968
+      },
+      "role": "not_used_in_design",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "ad25d17dc4decb99abc615cb6a0ced0f64a224ecf35967e7c56b7ab335060b6b"
+    },
+    {
+      "id": "pair4_oct28",
+      "device": "pair_4",
+      "session": "2026-10-28",
+      "state": "enclosure on",
+      "manifest_id": "october_device_four",
+      "used_in": [
+        "V2 held-out evaluation",
+        "V3 development",
+        "pairing evaluation"
+      ],
+      "data_directory": "Oct 29 test/stacked_data/pair_4",
+      "reference_calibration": "Oct 29 test/results/pair_4/calibration.json",
+      "capture_count": 15,
+      "captures": [
+        {
+          "name": "capture_20261028_231616_064042_enclosure_on.npz",
+          "file_sha256": "4b5d085d7bcf736473a7ac52c3971c2de60029241f1e15fe2785f74401f7f083",
+          "content_fingerprint": "e4cf4da3e6bcccae47556cdd394bf4625732b73f1804fa4ebbc6f2875c73eb86"
+        },
+        {
+          "name": "capture_20261028_231643_861921_enclosure_on.npz",
+          "file_sha256": "5900d8c4604846fdc613bd09ba2d9c222a654a35110318ca2a85887149273d64",
+          "content_fingerprint": "7c1fac18972b2b8582df0537577442262874838bb9ff692a6d827bbade9a5574"
+        },
+        {
+          "name": "capture_20261028_231716_127043_enclosure_on.npz",
+          "file_sha256": "1c21017641dcddd3432751ca31d6cd82dea7a7fbaa20b3d9678439d4d78e3926",
+          "content_fingerprint": "677d05be91534a3c92681aa2226fc028de3ae036a4cb96b3bc37e72d5c2667c9"
+        },
+        {
+          "name": "capture_20261028_231725_753480_enclosure_on.npz",
+          "file_sha256": "484df2598552b9410b15bc674ec12d6b9458062bcb77ae114fd136256e1ec948",
+          "content_fingerprint": "40f5787c6c8a0ee78960f05d712df4897ce3321f6a62c155135081996410b79d"
+        },
+        {
+          "name": "capture_20261028_231754_522424_enclosure_on.npz",
+          "file_sha256": "84827a61dbd83f74b984bcdd4dba206b1896e4a25f3aa11f9239e508daa5d7c8",
+          "content_fingerprint": "8a8a029feeabeffa30fac75ef33ed1d7463871302d7cb248aae60cadf8293b41"
+        },
+        {
+          "name": "capture_20261028_231911_899569_enclosure_on.npz",
+          "file_sha256": "2ad746355a46a3f51def6e8e3cb5da0f23d3dc520263fdcd023dc1bb198b40c7",
+          "content_fingerprint": "69dbf048382f5db1e833d8c001adea186bc4fe54a8828f76604161155a6ecaca"
+        },
+        {
+          "name": "capture_20261028_231938_494140_enclosure_on.npz",
+          "file_sha256": "f9c8e7e56f4c4dfac959a98713c9b5cfed36b30f0cd1f964848fe2b85609eaf2",
+          "content_fingerprint": "e52b64cafdbafc80d0ab1c0b0c590d1a405bc812e290063ec845b7b61faf4918"
+        },
+        {
+          "name": "capture_20261028_232029_494878_enclosure_on.npz",
+          "file_sha256": "e251d45060540e93ec4dbe4b7d691d3ab57666ff3068596ac16a46ffb9d1e59c",
+          "content_fingerprint": "8f0b381cef7dbd8fc3c2ac8e1d3e14b73736833e620ebc204503df9efa151c4b"
+        },
+        {
+          "name": "capture_20261028_232052_588083_enclosure_on.npz",
+          "file_sha256": "ef84d0fbb7699d1356cc29ced4209c483f2be5d13c936487c7c596c2718e805c",
+          "content_fingerprint": "f41e2e8a0d037463c55fb68e27342d335b7d534958454392298b74c47a545ccc"
+        },
+        {
+          "name": "capture_20261028_232205_849581_enclosure_on.npz",
+          "file_sha256": "86023db2cc7d9c8e55542ebf747010bd2e63e61d256254b69132061c32b32197",
+          "content_fingerprint": "40385060394bb14a2b7ae880a68682f9c69ea7154ff9094c64c26514dd0f40f1"
+        },
+        {
+          "name": "capture_20261028_232230_404781_enclosure_on.npz",
+          "file_sha256": "13075441923250b7156f5ef1750cd9a80acfdc10a0ed4cf4fd3a9a5b8dd2b648",
+          "content_fingerprint": "76cd78f61640facb2935464ee2ff19d31861a80b27207eda052f69f3e191e4fa"
+        },
+        {
+          "name": "capture_20261028_232314_020820_enclosure_on.npz",
+          "file_sha256": "7033cbfbf1fb8bced56e04a17a5d34ca47e6fe45dc127f47ee6361106cbbc3a3",
+          "content_fingerprint": "da5c74ead1a979c85e4ab32a1d682ae789f83772ff58d4891f7635b72c6b6745"
+        },
+        {
+          "name": "capture_20261028_232345_122160_enclosure_on.npz",
+          "file_sha256": "73ebb8c2e258b77cb46f9170ceb0e241b814eaa902825e5257cdbb26d0560a50",
+          "content_fingerprint": "f859653b0ed194156e2755026ad7465dc67f008b1b6945523101e564afe21eb8"
+        },
+        {
+          "name": "capture_20261028_232410_666583_enclosure_on.npz",
+          "file_sha256": "37c5f041564a5493d31dca61a43b7f2898c7479130725c472704ee5a5da09022",
+          "content_fingerprint": "3fb9e707bc826331e6d0605ad223179f66e64ce9ee300915041d275923603b8d"
+        },
+        {
+          "name": "capture_20261028_232428_596838_enclosure_on.npz",
+          "file_sha256": "3a22ac206ad018bf242b7479d978da11e2edd12cdbe07945cc4ed6b03a844bd8",
+          "content_fingerprint": "0e94d833bdd003d4f1b8da5916a6d64db9d667dfbb3622dc2513b7a985bd7d6f"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.39952950208670385,
+        "saturated_share": 0.028672341898869465,
+        "edge_density": 0.043872405124268016,
+        "range_p5_p50_p95_m": [
+          1.6791476595651875,
+          4.715380462748504,
+          5.769392323861991
+        ],
+        "depth_ratio_p95_over_p5": 3.435905288612894,
+        "azimuth_std_deg": 17.274482721358172,
+        "elevation_std_deg": 17.54113492704954,
+        "points_per_capture": 430312
+      },
+      "role": "development",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "e24e92bd3d7ba65bc29f381419baa71085e06aaab151d34f4ee7b3b3016b00d9"
+    },
+    {
+      "id": "d1_nov5_off",
+      "device": "pair_1",
+      "session": "2026-11-05",
+      "state": "enclosure off",
+      "manifest_id": null,
+      "device_note": "Nov 5 checks were chained from device 1 (pair_1) calibration files; same physical unit is likely but not proven",
+      "used_in": [
+        "desktop-app checks only (no V2/V3 experiment, no design decision)"
+      ],
+      "data_directory": "Calibration maintenance/results/rig_20261106_151100/stacked/data",
+      "reference_calibration": "Oct 29 test/results/pair_1/calibration.json",
+      "capture_count": 12,
+      "captures": [
+        {
+          "name": "capture_20261105_185316_547419_enclosure_off.npz",
+          "file_sha256": "6dd51214dda201ec20f2b14f08f8cfee4f93ab83ea91fc5c309226114fa905b8",
+          "content_fingerprint": "216b61363f0301edc4e46f2e15fa287f9a3da099af7ab4fa9b87d201b0fad4ed"
+        },
+        {
+          "name": "capture_20261105_185531_055071_enclosure_off.npz",
+          "file_sha256": "7a01a19d2211398ea9b747fa4404d7efd5230d7f4818f9efb2842b8c6b94a648",
+          "content_fingerprint": "01634af3f4bce585f323db230dec3fb02c5c4c13bdd81ccfc99e05a65f3840a8"
+        },
+        {
+          "name": "capture_20261105_185630_873068_enclosure_off.npz",
+          "file_sha256": "8c0282b591c9fc0ce0abee38341865042b21db42f885e19ba945dfecf28b429d",
+          "content_fingerprint": "2438d05c796dc0e3dc240b9ca66cf042043d7056078f0b75859802f479622963"
+        },
+        {
+          "name": "capture_20261105_185757_904454_enclosure_off.npz",
+          "file_sha256": "a4d77eb1d42d649468069481d0511aa04b169d3592345b7b9e13d3b7d8014a45",
+          "content_fingerprint": "ced500c8b70c9686b814ee4cf19e0bcfc20ac8a45eb98d77ea4b991511cdf286"
+        },
+        {
+          "name": "capture_20261105_185845_855635_enclosure_off.npz",
+          "file_sha256": "77d7e7b6f920fb384042859607bac9db80aa332e4825d69f1c2ef14ce02aaddd",
+          "content_fingerprint": "855b3691d565c4e0532a08d09c541009ac69844e69a4b06078465cf09f2e0bd3"
+        },
+        {
+          "name": "capture_20261105_190003_517207_enclosure_off.npz",
+          "file_sha256": "abe30c603340203c47461883118d48a1d3b3cd79dd25d533bc497eae06f8db20",
+          "content_fingerprint": "1745dcd75a0d6d76a654f94bb37c7fd668fabee1060f69ec8be26fcd93229baf"
+        },
+        {
+          "name": "capture_20261105_190048_857321_enclosure_off.npz",
+          "file_sha256": "61dea9b78beed7e77137842708deb61cfaa514d12065d9a867b6863a639e027a",
+          "content_fingerprint": "c4e54d2997c96854f50d23af7f64fc703752c6fb7534c98d305fcee5ccc10a2c"
+        },
+        {
+          "name": "capture_20261105_190116_259171_enclosure_off.npz",
+          "file_sha256": "1186d742e748f048695dfef8bc88a95aa0bfb62128088027c27b2b3304e297b2",
+          "content_fingerprint": "b93b3243e412e1f0fd27157c05e55b2d985e366c4fb88953dad98423b5fda810"
+        },
+        {
+          "name": "capture_20261105_190209_348255_enclosure_off.npz",
+          "file_sha256": "6587d265a0ad8a04eaa8a5f648d33ec884f124da609b9e0c5ff44fe08e6d032e",
+          "content_fingerprint": "1a1e4dadf4ebf5bf5bde0e872a2e3286252854ba584ebe89584ddfe1dba29bd7"
+        },
+        {
+          "name": "capture_20261105_190413_655804_enclosure_off.npz",
+          "file_sha256": "3d548364e2a1d085d3f6e31dca00828f78e4c9a9ebdffd3dc77305f2f30e5beb",
+          "content_fingerprint": "400ffa930aa603d859412986c755cbabcfdd1c782553302112d8f3e9ef0a4f5d"
+        },
+        {
+          "name": "capture_20261105_190516_259272_enclosure_off.npz",
+          "file_sha256": "d3d28e003e71d06b138efc9533587282a95311f4630f76c825a194686bf13b23",
+          "content_fingerprint": "339c3bef662311fc2d43b8bea4fe935febd5a9910fef6859226a66ade4b63af3"
+        },
+        {
+          "name": "capture_20261105_190846_564065_enclosure_off.npz",
+          "file_sha256": "2457f4ab5eb15d8d7a8aeb5bfcba392927d8b3de32a4d6dac8b7afc9fe8021cd",
+          "content_fingerprint": "ae9bb357d655faf93621c56f8b21ab42340ae06ee00318064b56e51ac3416b9c"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.40855497458734497,
+        "saturated_share": 0.0328376913697331,
+        "edge_density": 0.046968379773893926,
+        "range_p5_p50_p95_m": [
+          2.594365643552909,
+          5.240843568719112,
+          9.730152594342494
+        ],
+        "depth_ratio_p95_over_p5": 3.7504939284569505,
+        "azimuth_std_deg": 14.411935029599647,
+        "elevation_std_deg": 16.818031405715306,
+        "points_per_capture": 963220
+      },
+      "role": "not_used_in_design",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+    },
+    {
+      "id": "d1_nov5_on",
+      "device": "pair_1",
+      "session": "2026-11-05",
+      "state": "enclosure on",
+      "manifest_id": null,
+      "device_note": "as above; its checks used the Oct 28 device-1 calibration as their existing calibration",
+      "used_in": [
+        "desktop-app checks only (no V2/V3 experiment, no design decision)"
+      ],
+      "data_directory": "Calibration maintenance/results/rig_20261105_230653/stacked/data",
+      "reference_calibration": "Oct 29 test/results/pair_1/calibration.json",
+      "capture_count": 7,
+      "captures": [
+        {
+          "name": "capture_20261105_192036_600000_enclosure_on.npz",
+          "file_sha256": "4f0f1c410aa8f70b76aaa2e50b99149c150e0f9293f78dac643e92be4ed7e358",
+          "content_fingerprint": "cb1a2828f56e38e2db362b46e36d5a42ce29dae4a54e4234e4b86b1945be822d"
+        },
+        {
+          "name": "capture_20261105_192101_562471_enclosure_on.npz",
+          "file_sha256": "08657d225f9da0db91f7cbe23172494684a713b1f51a154ba7d79ad58581f598",
+          "content_fingerprint": "12712f55d6a911cb41317ecf6e7795ebe34e294c5ecc709a7850135379c931f7"
+        },
+        {
+          "name": "capture_20261105_192128_357758_enclosure_on.npz",
+          "file_sha256": "36a422fbbc07c37efea90dc693cbf743811ce80786c3013f8c1099736d261be0",
+          "content_fingerprint": "580447bf6fe60733521f604f2ad6abbd7631bbcabb0d60a47de050d2fb7cf559"
+        },
+        {
+          "name": "capture_20261105_192224_608097_enclosure_on.npz",
+          "file_sha256": "b0b88754cbed842fa3b938fac3eee4cb78b471afb50c1c004a17b5381506f0b6",
+          "content_fingerprint": "1aabff1be46b2a535b6977f6505cb3b34974346a7a296c0b4ad6c1937996965e"
+        },
+        {
+          "name": "capture_20261105_192251_898988_enclosure_on.npz",
+          "file_sha256": "5f4446393350e824c44673e0215d43a48572004464b2583bb909aeef297a080e",
+          "content_fingerprint": "2c0453db2368e757f55d46725fcc8ff239b2f50f71b09cd1968053792746c37c"
+        },
+        {
+          "name": "capture_20261105_192317_156759_enclosure_on.npz",
+          "file_sha256": "f34318cb403b49fe03e50dca9aee595c95538a2872d748f7563c7674861cc4f9",
+          "content_fingerprint": "7a4e7ef83428ad1cd1d5568eccffcbc293518fd72092ebce4c1566b008d8776e"
+        },
+        {
+          "name": "capture_20261105_192400_415383_enclosure_on.npz",
+          "file_sha256": "f811c77fb5db409ae60fb461aa4880880a1cb6d71e9bc05e43dc2ae6239773cb",
+          "content_fingerprint": "51af3faefc99a4c65a91147502b547a8cffd0e8aeb28b6ea29b75ac51d57a939"
+        }
+      ],
+      "descriptors": {
+        "brightness": 0.4319802775465965,
+        "saturated_share": 0.0210724446939052,
+        "edge_density": 0.03594654228037238,
+        "range_p5_p50_p95_m": [
+          3.153601534947164,
+          6.075761364862819,
+          9.59559833012554
+        ],
+        "depth_ratio_p95_over_p5": 3.0427427890906027,
+        "azimuth_std_deg": 15.335709978218164,
+        "elevation_std_deg": 16.65866159789504,
+        "points_per_capture": 879423
+      },
+      "role": "not_used_in_design",
+      "image_size_wh": [
+        [
+          484,
+          366
+        ]
+      ],
+      "reference_sha256": "650aae3911a93468d79221bd67ad1a3a21230351c802011b71404b88dc366f30"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "creep_three",
+      "reason": "3 captures: below the 4-capture cross-validation floor; same session and scene as rig_sep29_on"
+    },
+    {
+      "id": "nov5_on_board / nov5_off_board",
+      "reason": "4 captures each: after the engine drops two for held-out comparison fewer than 4 remain"
+    },
+    {
+      "id": "copies",
+      "reason": "rig_20261104_204728, creep_raw_bags_vs_sep29, gui_* decoded copies and Calibration maintenance results duplicate captures above; duplicates are detected by content hash"
+    }
+  ],
+  "cross_group_duplicate_captures": {},
+  "scene_similarity_orb": {
+    "rig_sep29_off|rig_sep29_on": {
+      "ratio_matches": 100,
+      "homography_inliers": 80
+    },
+    "rig_sep29_off|pair1_oct28": {
+      "ratio_matches": 15,
+      "homography_inliers": 6
+    },
+    "rig_sep29_off|pair2_oct28": {
+      "ratio_matches": 17,
+      "homography_inliers": 7
+    },
+    "rig_sep29_off|pair3_oct28": {
+      "ratio_matches": 23,
+      "homography_inliers": 7
+    },
+    "rig_sep29_off|pair4_oct28": {
+      "ratio_matches": 11,
+      "homography_inliers": 5
+    },
+    "rig_sep29_off|d1_nov5_off": {
+      "ratio_matches": 8,
+      "homography_inliers": 4
+    },
+    "rig_sep29_off|d1_nov5_on": {
+      "ratio_matches": 12,
+      "homography_inliers": 5
+    },
+    "rig_sep29_on|pair1_oct28": {
+      "ratio_matches": 7,
+      "homography_inliers": 0
+    },
+    "rig_sep29_on|pair2_oct28": {
+      "ratio_matches": 5,
+      "homography_inliers": 0
+    },
+    "rig_sep29_on|pair3_oct28": {
+      "ratio_matches": 7,
+      "homography_inliers": 0
+    },
+    "rig_sep29_on|pair4_oct28": {
+      "ratio_matches": 8,
+      "homography_inliers": 5
+    },
+    "rig_sep29_on|d1_nov5_off": {
+      "ratio_matches": 6,
+      "homography_inliers": 0
+    },
+    "rig_sep29_on|d1_nov5_on": {
+      "ratio_matches": 5,
+      "homography_inliers": 0
+    },
+    "pair1_oct28|pair2_oct28": {
+      "ratio_matches": 60,
+      "homography_inliers": 30
+    },
+    "pair1_oct28|pair3_oct28": {
+      "ratio_matches": 55,
+      "homography_inliers": 28
+    },
+    "pair1_oct28|pair4_oct28": {
+      "ratio_matches": 62,
+      "homography_inliers": 34
+    },
+    "pair1_oct28|d1_nov5_off": {
+      "ratio_matches": 7,
+      "homography_inliers": 0
+    },
+    "pair1_oct28|d1_nov5_on": {
+      "ratio_matches": 12,
+      "homography_inliers": 6
+    },
+    "pair2_oct28|pair3_oct28": {
+      "ratio_matches": 25,
+      "homography_inliers": 16
+    },
+    "pair2_oct28|pair4_oct28": {
+      "ratio_matches": 16,
+      "homography_inliers": 11
+    },
+    "pair2_oct28|d1_nov5_off": {
+      "ratio_matches": 3,
+      "homography_inliers": 0
+    },
+    "pair2_oct28|d1_nov5_on": {
+      "ratio_matches": 5,
+      "homography_inliers": 0
+    },
+    "pair3_oct28|pair4_oct28": {
+      "ratio_matches": 37,
+      "homography_inliers": 23
+    },
+    "pair3_oct28|d1_nov5_off": {
+      "ratio_matches": 13,
+      "homography_inliers": 6
+    },
+    "pair3_oct28|d1_nov5_on": {
+      "ratio_matches": 15,
+      "homography_inliers": 10
+    },
+    "pair4_oct28|d1_nov5_off": {
+      "ratio_matches": 5,
+      "homography_inliers": 0
+    },
+    "pair4_oct28|d1_nov5_on": {
+      "ratio_matches": 3,
+      "homography_inliers": 0
+    },
+    "d1_nov5_off|d1_nov5_on": {
+      "ratio_matches": 5,
+      "homography_inliers": 0
+    }
+  },
+  "independence_note": "Groups are NOT claimed statistically independent. Captures within a group are one static scene; devices may share a laboratory, the same room layout and the same LiDAR model; Nov 5 groups are likely the same unit as pair_1."
+}

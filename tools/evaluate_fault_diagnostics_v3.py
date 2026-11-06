@@ -20,6 +20,7 @@ import time
 import zlib
 import zipfile
 
+QUICK_DRIFTS = (('R', 1.), ('T', .06), ('I_pp', 3.), ('I_focal', .02), ('RT', (.5, .03)))
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'tools'))
@@ -168,6 +169,8 @@ def run(args):
                     conditions = ([('nominal', None, None)] + [('drift', k, m) for k, m in DRIFTS]
                                   + [('nuisance', k, None) for k in NUISANCES]
                                   + [('drift_nuisance', 'spurious_lines_all', None)])
+                    if getattr(args, 'quick', False):
+                        conditions = [c for c in conditions if c[0] != 'drift' or (c[1], c[2]) in QUICK_DRIFTS]
                     for ctype, kind, magnitude in conditions:
                         if args.only and ctype not in args.only:
                             continue
@@ -266,5 +269,6 @@ if __name__ == '__main__':
     parser.add_argument('--signature-config', help='JSON overrides for declared V3 signature tolerances and switches')
     parser.add_argument('--strategy', choices=('fault_aware', 'legacy_optimizer'), default='fault_aware',
                         help='Shared fitting engine; legacy_optimizer uses frozen maintenance refinement at the common budget')
+    parser.add_argument('--quick', action='store_true', help='five drift conditions instead of seven (faster, same seeds)')
     parser.add_argument('--output', required=True)
     run(parser.parse_args())
