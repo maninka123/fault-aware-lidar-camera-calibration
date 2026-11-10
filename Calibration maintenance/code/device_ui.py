@@ -22,10 +22,12 @@ from scipy.spatial.transform import Rotation
 
 import appcore as core
 import device_model as dm
+import device_file
 import devices as devreg
 from ui_common import (BAD, BAD_SOFT, BLUE, BLUE_SOFT, GOOD, INK2, MONO, MUTED, VERDICT, WARN, WARN_SOFT,
                        ImageView, button, card, clear, dot_icon, hbox, label, np_to_pixmap, scroll, table)
 from ui_widgets import UpdateChoice
+from capture_cards import CaptureModeToggle, PreviewImage, capture_row, sensor_panel
 
 
 # ================================================================== background work
@@ -46,20 +48,31 @@ class Task(QtCore.QThread):
             self.failed.emit(str(e) or type(e).__name__)
 
 
-def busy(parent, text, fn, *args):
+def busy(parent, text, fn, *args, with_progress=False, on_progress=None, stop=None):
     """Run fn(*args) in a thread behind a small modal 'working' window; return its result or raise."""
     dlg = QtWidgets.QDialog(parent)
     dlg.setWindowTitle("Working")
     dlg.setWindowFlags(dlg.windowFlags() & ~Qt.WindowCloseButtonHint)
     lay = QtWidgets.QVBoxLayout(dlg)
     lay.setContentsMargins(24, 20, 24, 20)
-    lay.addWidget(label(text, wrap=True))
+    status = label(text, wrap=True)
+    lay.addWidget(status)
     bar = QtWidgets.QProgressBar()
     bar.setRange(0, 0)
     lay.addWidget(bar)
     dlg.setMinimumWidth(420)
     box = {}
-    t = Task(lambda _p, _s: fn(*args), parent=dlg)
+    if stop is not None:
+        lay.addWidget(button("Stop", slot=stop.set))
+    t = Task(lambda _p, _s: fn(_p, *args) if with_progress else fn(*args), parent=dlg)
+    if with_progress:
+        def report(value):
+            target = value.get('target_frames')
+            extent = f"{value['clouds']} / {target} LiDAR frames" if target else f"{value['elapsed']:.1f} / {value['target_seconds']:g} s · {value['clouds']} LiDAR frames"
+            status.setText(text + "\n" + extent)
+            if on_progress:
+                on_progress(value)
+        t.progress.connect(report)
     t.done.connect(lambda r: (box.update(result=r), dlg.accept()))
     t.failed.connect(lambda m: (box.update(error=m), dlg.accept()))
     t.start()
@@ -159,11 +172,26 @@ def ssh_session(parent, device):
     return s
 
 
-def read_device_yaml(parent, s, device):
+def read_device_yaml(parent, s, device, choose_path=False):
     """(path, text) of the device's pipeline.yaml."""
-    path = busy(parent, "Looking for pipeline.yaml …", s.find_yaml, device.get("yaml_path"))
+    try:
+        path = busy(parent, "Looking for pipeline.yaml …", s.find_yaml, device.get("yaml_path"))
+    except RuntimeError:
+        if not choose_path:
+            raise
+        path = device.get("yaml_path") or ""
+    if choose_path:
+        path, ok = QtWidgets.QInputDialog.getText(parent, "Device calibration file",
+            f"Calibration file on {s.host} (absolute path):", text=path)
+        if not ok or not path.strip():
+            raise InterruptedError("Calibration file selection cancelled.")
+        path = path.strip()
+        if not path.startswith("/"):
+            raise ValueError("Enter an absolute path on the selected device, starting with /.")
+    text = busy(parent, f"Reading {path} …", s.read, path)
     devreg.save_settings(device["key"], yaml_path=path)
-    return path, busy(parent, f"Reading {path} …", s.read, path)
+    device["yaml_path"] = path
+    return path, text
 
 
 # ================================================================== showing device calibrations
@@ -183,10 +211,47 @@ def device_calibration_view(params, source):
     w.setObjectName("subtle")
     lay = QtWidgets.QVBoxLayout(w)
     lay.setContentsMargins(14, 10, 14, 12)
-    lay.addWidget(label(f"Source: {source} · OpenCV pinhole model (k1 k2 p1 p2 k3), as the device's colorizer uses it", "small", wrap=True))
+    matrices = QtWidgets.QGridLayout()
+    matrices.setHorizontalSpacing(16)
+    for column, (title, matrix) in enumerate((("Camera matrix K (pixels)", K),
+                          ("LiDAR → camera transform T (translation in metres)", p["extrinsic_matrix"]))):
+        matrices.addWidget(label(title, "caps", wrap=True), 0, column)
+        matrix_panel = QtWidgets.QFrame()
+        matrix_panel.setObjectName('matrixPanel')
+        matrix_panel.setStyleSheet('QFrame#matrixPanel {background: white; border: 1px solid #e5e7eb; border-radius: 14px;}')
+        matrix_panel.setFixedHeight(194)
+        panel_layout = QtWidgets.QVBoxLayout(matrix_panel)
+        panel_layout.setContentsMargins(10, 8, 10, 10)
+        panel_layout.setSpacing(4)
+        values = [[f"{v: .9g}" for v in row] for row in matrix]
+        widths = [max(len(row[j]) for row in values) for j in range(len(values[0]))]
+        block = QtWidgets.QPlainTextEdit("\n".join("[  " + "    ".join(value.rjust(widths[j]) for j, value in enumerate(row)) + "  ]" for row in values))
+        block.setReadOnly(True)
+        block.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        block.setMinimumWidth(0)
+        option = block.document().defaultTextOption()
+        option.setAlignment(Qt.AlignHCenter)
+        block.document().setDefaultTextOption(option)
+        block.setStyleSheet(f"font-family: {MONO}; font-size: 18px; padding: 8px; border: none; background: transparent;")
+        block.ensurePolished()
+        block.setFixedHeight(int(block.fontMetrics().lineSpacing() * len(matrix)
+                                 + 2 * block.document().documentMargin() + 40))
+        block.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        panel_layout.addWidget(block)
+        if column == 0:
+            panel_layout.addWidget(label("Distortion [k1, k2, p1, p2, k3]", "small", wrap=True))
+            distortion = label("[ " + "   ".join(f"{v:.9g}" for v in D) + " ]", wrap=True)
+            distortion.setStyleSheet(f'font-family: {MONO}; font-size: 14px; color: #1d1d1f;')
+            panel_layout.addWidget(distortion)
+        panel_layout.addStretch(1)
+        matrices.addWidget(matrix_panel, 1, column)
+        matrices.setColumnStretch(column, 1)
+    lay.addLayout(matrices)
+    lay.addWidget(label(f"Source: {source} · OpenCV pinhole model · values read from the calibration file", "small", wrap=True))
     cols = QtWidgets.QHBoxLayout()
-    cols.setSpacing(30)
+    cols.setSpacing(16)
     left = QtWidgets.QVBoxLayout()
+    left.setSpacing(6)
     left.addWidget(label("INTRINSICS", "caps"))
     left.addWidget(value_grid([("fx (px)", core.fmt(K[0][0])), ("fy (px)", core.fmt(K[1][1])), ("image", f"{p['image_width']} × {p['image_height']}"),
                                ("cx (px)", core.fmt(K[0][2])), ("cy (px)", core.fmt(K[1][2])), ("", ""),
@@ -194,15 +259,15 @@ def device_calibration_view(params, source):
                                ("p1", core.fmt(D[2], 4)), ("p2", core.fmt(D[3], 4))]))
     left.addStretch(1)
     right = QtWidgets.QVBoxLayout()
+    right.setSpacing(6)
     right.addWidget(label("EXTRINSICS  (LIDAR → CAMERA)", "caps"))
-    right.addWidget(label("Mounting: " + e["mounting_label"], "muted", wrap=True))
     right.addWidget(value_grid([("t x (mm)", core.fmt(e["tx"], 1)), ("t y (mm)", core.fmt(e["ty"], 1)), ("t z (mm)", core.fmt(e["tz"], 1)),
                                 ("tilt (°)", core.fmt(e["tilt"], 3)), ("pan (°)", core.fmt(e["pan"], 3)), ("roll (°)", core.fmt(e["roll"], 3))]))
     right.addStretch(1)
     cols.addLayout(left, 1)
     cols.addLayout(right, 1)
     lay.addLayout(cols)
-    for n in p.get("notes", []):
+    for n in params.get("notes", []):
         lay.addWidget(note_label(n, WARN, WARN_SOFT))
     return w
 
@@ -227,6 +292,11 @@ class DevicePage(QtWidgets.QWidget):
         self.params_raw, self.params_source, self.topics, self.snap = None, "", {}, None
         self.tasks = []
         self.closing = False
+        self.capture_running = False
+        self.pending_capture = None
+        self.capture_goal = None
+        self.delete_after_stop = set()
+        self.calibration_file_text = None
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(24, 20, 24, 16)
         lay.setSpacing(16)
@@ -252,7 +322,17 @@ class DevicePage(QtWidgets.QWidget):
         self.rl.setContentsMargins(0, 0, 0, 0)
         self.rl.setSpacing(14)
         self.scroller = scroll(self.right)
-        lay.addWidget(self.scroller, 1)
+        right_column = QtWidgets.QVBoxLayout()
+        right_column.setSpacing(8)
+        right_column.addWidget(self.scroller, 1)
+        self.finish_bar = QtWidgets.QFrame()
+        self.finish_bar.setFixedHeight(68)
+        self.finish_bar.setStyleSheet('QFrame {background: white; border-radius: 12px;}')
+        self.finish_layout = QtWidgets.QHBoxLayout(self.finish_bar)
+        self.finish_layout.setContentsMargins(12, 12, 12, 12)
+        self.finish_bar.hide()
+        right_column.addWidget(self.finish_bar)
+        lay.addLayout(right_column, 1)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.probe_all)
@@ -424,6 +504,9 @@ class DevicePage(QtWidgets.QWidget):
 
     # ---- connecting
     def connect(self, d):
+        if self.capture_running or self.pending_capture is not None:
+            warn(self, "Captures pending", "Finish and process, or discard the capture set before changing devices.")
+            return
         if self.link is not None:
             if not ask(self, "One device at a time", f"Disconnect from {self.current['name']} and connect to {d['name']}?", yes="Switch"):
                 return
@@ -434,24 +517,29 @@ class DevicePage(QtWidgets.QWidget):
         def work(progress, stop):
             link = rl.open_link(d)
             topics = link.topics()
-            raw = link.colorizer_params()
             snap = None
             try:
-                snap = dcap.snapshot(link, d["image_topic"], d["cloud_topic"])
+                snap = dcap.snapshot(link, d["image_topic"], d["cloud_topic"], lidar_frames=10)
             except Exception as e:  # noqa: BLE001
                 snap = dict(error=str(e))
-            return dict(link=link, topics=topics, raw=raw, snap=snap)
+            return dict(link=link, topics=topics, snap=snap)
         try:
             r = busy(self, f"Connecting to {d['name']} …", work, None, None)
         except RuntimeError as e:
             warn(self, "Could not connect", f"{d['name']}: {e}")
             return
         self.link, self.current, self.topics, self.snap = r["link"], d, r["topics"], r["snap"]
-        self.set_params(r["raw"], "ROS parameter server (/pointcloud_colorizer), as loaded from the device's pipeline.yaml" if r["raw"] else "")
+        self.params = self.params_raw = None
+        self.params_source = ""
+        self.calibration_file_text = None
         self.refresh_list()
         self.show_connected()
+        self.read_from_file()
 
     def disconnect(self, quiet=False):
+        if self.capture_running or self.pending_capture is not None:
+            warn(self, "Captures pending", "Finish and process, or discard the capture set before disconnecting.")
+            return
         if self.link is not None:
             self.link.close()
         self.link = self.params = self.params_raw = self.snap = None
@@ -464,13 +552,16 @@ class DevicePage(QtWidgets.QWidget):
     def set_params(self, raw, source):
         self.params_raw, self.params_source = raw, source
         try:
-            self.params = dm.device_params(raw, effective=True) if raw else None
+            image = (self.snap or {}).get("image")
+            size = tuple(image.shape[1::-1]) if image is not None else None
+            self.params = dm.file_params(raw, image_size=size) if raw else None
         except (ValueError, KeyError, TypeError) as e:
             self.params = None
             warn(self, "Calibration not readable", str(e))
 
     # ---- connected view
     def show_connected(self):
+        self.go = None
         d = self.current
         clear(self.rl)
         c, cl = card()
@@ -480,11 +571,15 @@ class DevicePage(QtWidgets.QWidget):
         self.rl.addWidget(c)
 
         # live view
-        c, cl = card("What the device sees", "LiDAR points drawn on the camera image with the calibration the device uses now, "
-                     "coloured by distance (red near, blue far). If they do not sit on the objects, its calibration is off.")
+        c, cl = card()
+        self.lidar_frames = QtWidgets.QSpinBox()
+        self.lidar_frames.setRange(1, 1000)
+        self.lidar_frames.setValue(10)
+        self.lidar_frames.setSuffix(" frames")
         self.live_box = QtWidgets.QVBoxLayout()
         cl.addLayout(self.live_box)
-        cl.addWidget(hbox(button("Refresh", slot=self.refresh_snapshot), stretch_at=1))
+        self.refresh_preview_btn = button("Refresh", slot=self.refresh_snapshot)
+        cl.addWidget(hbox(self.refresh_preview_btn, stretch_at=1))
         self.render_snapshot()
         self.rl.addWidget(c)
 
@@ -492,8 +587,9 @@ class DevicePage(QtWidgets.QWidget):
         c, cl = card("Calibration on the device")
         self.cal_box = QtWidgets.QVBoxLayout()
         cl.addLayout(self.cal_box)
-        cl.addWidget(hbox(button("Read from the device's pipeline.yaml (SSH)…", slot=self.read_from_file),
-                          button("Use a calibration file instead…", slot=self.use_file), stretch_at=2))
+        file_method = "WSL" if device_file.uses_wsl(d) else "SSH"
+        self.read_cal_btn = button(f"Read device calibration file ({file_method})…", slot=self.read_from_file)
+        cl.addWidget(hbox(self.read_cal_btn, stretch_at=1))
         self.render_params()
         self.rl.addWidget(c)
 
@@ -502,162 +598,346 @@ class DevicePage(QtWidgets.QWidget):
                      "Capture a short sample from this device, then check whether its calibration still holds.")
         g = QtWidgets.QGridLayout()
         g.setHorizontalSpacing(16)
+        g.setVerticalSpacing(12)
+        g.setColumnMinimumWidth(0, 160)
+        g.setColumnMinimumWidth(1, 280)
         self.img_topic, self.cloud_topic = QtWidgets.QComboBox(), QtWidgets.QComboBox()
         for combo, ty, cur in ((self.img_topic, "sensor_msgs/Image", d["image_topic"]), (self.cloud_topic, "sensor_msgs/PointCloud2", d["cloud_topic"])):
             combo.setEditable(True)
             opts = sorted(t for t, typ in self.topics.items() if typ == ty) or [cur]
             combo.addItems(opts if cur in opts else [cur] + opts)
             combo.setCurrentText(cur)
-            combo.setMinimumWidth(260)
-        self.n_caps, self.secs = QtWidgets.QSpinBox(), QtWidgets.QSpinBox()
-        self.n_caps.setRange(1, 6)
-        self.n_caps.setValue(3)
-        self.secs.setRange(2, 15)
-        self.secs.setValue(4)
-        self.secs.setSuffix(" s")
+            combo.setFixedWidth(280)
+        self.n_caps = QtWidgets.QSpinBox()
+        self.n_caps.setRange(1, 1000)
+        self.n_caps.setValue(5)
+        self.n_caps.setMaximumWidth(120)
+        self.n_caps.valueChanged.connect(self.update_go)
+        self.capture_mode = CaptureModeToggle()
+        self.capture_interval = QtWidgets.QSpinBox()
+        self.capture_interval.setRange(1, 3600)
+        self.capture_interval.setValue(10)
+        self.capture_interval.setSuffix(" s")
+        self.capture_interval.setFixedWidth(120)
+        self.interval_label = label("Wait between captures", "muted")
+        self.capture_mode.currentIndexChanged.connect(self.update_go)
         self.update_choice = UpdateChoice()
         for i, (k, w) in enumerate((("Camera topic", self.img_topic), ("LiDAR topic", self.cloud_topic))):
-            g.addWidget(label(k, "muted"), i, 0)
-            g.addWidget(w, i, 1)
-        g.addWidget(label("Captures", "muted"), 0, 2)
-        g.addWidget(self.n_caps, 0, 3)
-        g.addWidget(label("Seconds each", "muted"), 1, 2)
-        g.addWidget(self.secs, 1, 3)
+            g.addWidget(label(k, "muted"), i + 1, 0)
+            g.addWidget(w, i + 1, 1)
+        g.addWidget(label("Capture target", "muted"), 0, 0)
+        g.addWidget(self.n_caps, 0, 1, alignment=Qt.AlignLeft)
+        lidar_window = hbox(label("LiDAR frames per capture", "muted"), self.lidar_frames)
+        lidar_window.setFixedWidth(320)
+        g.addWidget(lidar_window, 2, 2, 1, 2)
+        lidar_window.setToolTip("Applies to Refresh and each recorded capture. One frame is one PointCloud2 message.")
         mode_label = label("What to check", "muted")
-        g.addWidget(mode_label, 2, 0)
-        g.addWidget(self.update_choice, 2, 1, 1, 3)
+        g.addWidget(mode_label, 3, 0)
+        g.addWidget(self.update_choice, 3, 1, 1, 3)
         if not self.choose_mode:
             mode_label.hide()
             self.update_choice.hide()
+        g.addWidget(label("Capture mode", "muted"), 4, 0)
+        g.addWidget(self.capture_mode, 4, 1, 1, 3)
+        g.addWidget(self.interval_label, 5, 0)
+        g.addWidget(self.capture_interval, 5, 1)
         g.setColumnStretch(4, 1)
         cl.addLayout(g)
         self.go = button("Capture and check", "primary", self.capture_and_check)
-        self.go.setStyleSheet("padding: 10px 30px; font-size: 11pt;")
+        self.go.setFixedSize(220, 44)
+        self.go.setStyleSheet("padding: 0 16px; min-height: 0px; max-height: 42px; font-size: 14px;")
         self.go_hint = label("", "muted", wrap=True)
+        self.go_hint.setFixedHeight(44)
         cl.addWidget(hbox(self.go, self.go_hint, stretch_at=2, spacing=16))
         self.cap_box = QtWidgets.QWidget()
-        cb = QtWidgets.QHBoxLayout(self.cap_box)
+        cb = QtWidgets.QVBoxLayout(self.cap_box)
         cb.setContentsMargins(0, 0, 0, 0)
         self.cap_img = ImageView(clickable=False)
-        self.cap_img.setFixedWidth(240)
+        self.cap_img.setFixedSize(124, 132)
+        from cloud_view import CloudView
+        self.cap_cloud = CloudView(np.empty((0, 4)), show_info=False)
+        self.cap_cloud.setMinimumSize(0, 0)
+        self.cap_cloud.setFixedSize(180, 132)
         cv = QtWidgets.QVBoxLayout()
         self.cap_text = label("", wrap=True)
         self.cap_bar = QtWidgets.QProgressBar()
-        self.cap_stop = button("Stop", slot=lambda: self.cap_task and self.cap_task.stop.set())
+        self.cap_stop = button("Stop", slot=self.stop_capture)
+        self.cap_finish = button("Finish capturing and process", "primary", self.process_captures)
+        self.cap_finish.setFixedHeight(44)
+        self.cap_finish.setStyleSheet('padding: 0 16px; min-height: 0px; max-height: 42px;')
+        clear(self.finish_layout)
+        self.finish_layout.addWidget(self.cap_finish)
+        self.cap_finish.hide()
+        self.finish_bar.hide()
+        self.cap_next = button("Capture next", "primary", self.trigger_next_capture)
+        self.cap_next.hide()
         cv.addWidget(self.cap_text)
         cv.addWidget(self.cap_bar)
-        cv.addWidget(hbox(self.cap_stop, stretch_at=1))
+        cv.addWidget(hbox(self.cap_next, self.cap_stop, stretch_at=2))
         cv.addStretch(1)
-        cb.addWidget(self.cap_img)
+        self.active_capture = QtWidgets.QWidget()
+        active_row = QtWidgets.QHBoxLayout(self.active_capture)
+        active_row.setContentsMargins(0, 0, 0, 0)
+        active_row.addWidget(self.cap_img)
+        active_row.addWidget(self.cap_cloud)
+        active_row.addWidget(label("Collecting the next sample…", "muted"), 1)
+        cb.addWidget(self.active_capture)
         cb.addLayout(cv, 1)
         self.cap_box.hide()
         cl.addWidget(self.cap_box)
+        self.capture_rows = QtWidgets.QGridLayout()
+        self.capture_rows.setSpacing(10)
+        self.capture_rows.setColumnStretch(0, 1)
+        self.capture_rows.setColumnStretch(1, 1)
+        cl.addLayout(self.capture_rows)
         self.rl.addWidget(c)
         self.rl.addStretch(1)
         self.cap_task = None
         self.update_go()
 
     def update_go(self):
-        ok = self.params is not None
+        locked = self.capture_running or self.pending_capture is not None
+        ok = self.params is not None and not self.capture_running
         self.go.setEnabled(ok)
-        self.go_hint.setText("Capture first, then compare the update options." if ok else "Load the device calibration to continue.")
+        automatic = self.capture_mode.currentData() == "automatic"
+        self.capture_interval.setVisible(True)
+        self.interval_label.setVisible(True)
+        self.go.setText("Start automatic captures" if automatic else "Capture first sample")
+        self.go_hint.setText(("First capture starts now; the interval is the wait after each completed capture."
+                              if automatic else "Trigger each capture when ready. Finish capturing and process when the full set is ready.")
+                             if self.params is not None else "Read the calibration file from this device to continue.")
+        if self.pending_capture is not None:
+            count = len(self.pending_capture[3])
+            self.go.setText(f"Add {self.n_caps.value()} captures")
+            self.go_hint.setText(f"{count} samples saved. The next batch adds {self.n_caps.value()} samples with the selected settings.")
+        for control in (self.img_topic, self.cloud_topic, self.read_cal_btn, self.update_choice):
+            control.setEnabled(not locked)
+        for control in (self.n_caps, self.lidar_frames, self.capture_mode, self.refresh_preview_btn):
+            control.setEnabled(not self.capture_running)
+        self.capture_interval.setEnabled(automatic and not self.capture_running)
+        self.interval_label.setEnabled(automatic and not self.capture_running)
+
+    def required_captures(self):
+        return self.capture_goal if self.capture_goal is not None else self.n_caps.value()
+
+    def stop_capture(self):
+        if self.capture_running and self.cap_task is not None:
+            self.cap_task.stop.set()
+        elif self.pending_capture is not None:
+            _, _, out, _ = self.pending_capture
+            shutil.rmtree(out, ignore_errors=True)
+            self.pending_capture = None
+            self.capture_goal = None
+            clear(self.capture_rows)
+            self.cap_finish.hide()
+            self.finish_bar.hide()
+            self.cap_box.hide()
+            self.update_go()
+
+    def process_captures(self):
+        if self.capture_running or self.pending_capture is None:
+            return
+        d, name, out, caps = self.pending_capture
+        if len(caps) < self.required_captures() or len(list((out / 'captures').glob('*.npz'))) != len(caps):
+            warn(self, "Capture set incomplete", "Collect the full requested capture set before processing.")
+            return
+        try:
+            self.prepare_capture_check(d, name, out, caps)
+        except Exception as error:
+            warn(self, "Could not prepare the capture set", str(error))
+
+    def add_capture_card(self, index, out, summary):
+        filename = summary.get('file', '')
+        callback = (lambda _checked=False, filename=filename: self.delete_capture(filename)) if filename else None
+        card = capture_row(index, out / 'captures' / filename, summary, on_delete=callback)
+        slot = self.capture_rows.count()
+        self.capture_rows.addWidget(card, slot // 2, slot % 2)
+
+    def delete_capture(self, filename):
+        if self.capture_running:
+            self.delete_after_stop.add(filename)
+            self.cap_task.stop.set()
+            return
+        if self.pending_capture is None:
+            return
+        d, name, out, caps = self.pending_capture
+        if not any(sample.get('file') == filename for sample in caps):
+            return
+        root = (out / 'captures').resolve()
+        path = (root / filename).resolve()
+        if path.parent != root or path.suffix != '.npz':
+            warn(self, 'Cannot delete pair', 'The capture file is outside this capture set.')
+            return
+        try:
+            path.unlink(missing_ok=True)
+            path.with_suffix('.png').unlink(missing_ok=True)
+        except OSError as error:
+            warn(self, 'Cannot delete pair', str(error))
+            return
+        self.captured(d, name, out, [sample for sample in caps if sample.get('file') != filename])
+
+    def lidar_window(self):
+        return 1.0, self.lidar_frames.value()
+
+    def trigger_next_capture(self):
+        if not self.capture_running and self.pending_capture is not None:
+            self.capture_and_check(additional=True)
+            return
+        self.cap_next.setEnabled(False)
+        self.cap_next.hide()
+        self.next_capture.set()
 
     def render_snapshot(self):
         clear(self.live_box)
+        self.camera_preview = None
         s = self.snap or {}
-        if s.get("error") or s.get("image") is None:
+        if s.get("error"):
             self.live_box.addWidget(note_label(f"No camera / LiDAR data: {s.get('error', 'nothing received')}. Check the topics below.",
                                                BAD, BAD_SOFT))
-            return
-        import device_capture as dcap
-        if self.params is not None and len(s["cloud"]):
-            img, n = dcap.overlay(s["image"], s["cloud"][:, :3], self.params)
-            txt = f"{n:,} LiDAR points on the image · LiDAR {s['cloud_hz']:.1f} Hz · camera receiving"
+        from cloud_view import CloudView
+        row = QtWidgets.QHBoxLayout()
+        row.setSpacing(16)
+        if s.get("image") is not None:
+            self.camera_preview = PreviewImage(pixmap=np_to_pixmap(s["image"]), caption="Camera image", max_height=320)
+            camera_view = self.camera_preview
         else:
-            img, txt = s["image"], f"camera image (no calibration to draw the LiDAR with yet) · LiDAR {s['cloud_hz']:.1f} Hz"
-        v = ImageView(pixmap=np_to_pixmap(img), caption="What the device sees", max_height=520)
-        self.live_box.addWidget(v)
-        self.live_box.addWidget(label(txt, "small"))
+            camera_view = note_label("No camera image received. Check the camera topic.", WARN, WARN_SOFT)
+        self.cloud_preview = CloudView(s.get("cloud", np.empty((0, 4))), show_info=False)
+        count = s.get('lidar_frames')
+        extent = f"{count} {'frame' if count == 1 else 'frames'} · " if count is not None else ""
+        camera_rate = s.get('image_hz', 0)
+        camera_footer = (f"{camera_rate:.1f} Hz · click image to enlarge" if camera_rate > 0 else 'Click image to enlarge') if s.get('image') is not None else 'Waiting for camera'
+        lidar_footer = f"{extent}{self.cloud_preview.total:,} points · drag to rotate · scroll to zoom"
+        row.addWidget(sensor_panel('Camera', camera_view, camera_footer, s.get('image') is not None), 1)
+        row.addWidget(sensor_panel('LiDAR', self.cloud_preview, lidar_footer, self.cloud_preview.total > 0), 1)
+        self.live_box.addLayout(row)
+        for message in s.get("errors", {}).values():
+            self.live_box.addWidget(note_label(str(message), WARN, WARN_SOFT))
 
     def refresh_snapshot(self):
+        if self.capture_running:
+            return
         import device_capture as dcap
+        seconds, frames = self.lidar_window()
+        stop = threading.Event()
+        def work(report):
+            return dcap.snapshot(self.link, self.img_topic.currentText(), self.cloud_topic.currentText(),
+                                 seconds=seconds, lidar_frames=frames, progress=report, stop=stop)
         try:
-            self.snap = busy(self, "Reading one image and one second of LiDAR …", dcap.snapshot, self.link,
-                             self.img_topic.currentText(), self.cloud_topic.currentText())
+            self.snap = busy(self, "Reading selected LiDAR window…", work,
+                             with_progress=True, stop=stop)
         except RuntimeError as e:
-            self.snap = dict(error=str(e))
+            if not stop.is_set():
+                warn(self, "Could not refresh the sample", str(e))
+            return
         self.render_snapshot()
 
     def render_params(self):
         clear(self.cal_box)
         if self.params is None:
-            self.cal_box.addWidget(note_label("This device does not show its calibration through this connection (its ROSBridge has "
-                                              "no parameter access). Read it from the device's pipeline.yaml over SSH, or choose "
-                                              "a calibration file.", WARN, WARN_SOFT))
+            method = "Read the configured file from WSL." if device_file.uses_wsl(self.current or {}) else "Connect over SSH and select the calibration file on this device."
+            self.cal_box.addWidget(note_label("Device calibration file has not been read. " + method +
+                                              " Calibration values stay empty until the file is read.", WARN, WARN_SOFT))
         else:
             self.cal_box.addWidget(device_calibration_view(self.params, self.params_source))
-        if hasattr(self, "go"):
+        if getattr(self, "go", None) is not None:
             self.update_go()
 
     def read_from_file(self):
+        if self.capture_running or self.pending_capture is not None:
+            return
         import device_yaml as dy
+        self.params = self.params_raw = None
+        self.params_source = ""
+        self.calibration_file_text = None
+        self.render_params()
+        self.render_snapshot()
+        if device_file.uses_wsl(self.current):
+            try:
+                path, text, source = busy(self, "Reading the device calibration file from WSL…",
+                                          device_file.read_wsl, self.current)
+                raw = dy.read_params(text)
+            except (RuntimeError, ValueError, KeyError) as error:
+                warn(self, "Could not read the calibration file", str(error))
+                return
+            self.set_params(raw, f"{source}, read {datetime.now():%Y-%m-%d %H:%M:%S}")
+            if self.params is not None:
+                self.calibration_file_text = text
+            self.render_params()
+            self.render_snapshot()
+            return
         s = ssh_session(self, self.current)
         if s is None:
             return
         try:
-            path, text = read_device_yaml(self, s, self.current)
+            path, text = read_device_yaml(self, s, self.current, choose_path=True)
             raw = dy.read_params(text)
+        except InterruptedError:
+            return
         except (RuntimeError, ValueError, KeyError) as e:
             warn(self, "Could not read the calibration", str(e))
             return
         finally:
             s.close()
-        if self.params is not None and not same_params(self.params, dm.device_params(raw, effective=True)):
-            QtWidgets.QMessageBox.information(self, "Different calibration in the file",
-                                              "pipeline.yaml on the device holds a different calibration than the running pipeline "
-                                              "loaded (the file changed since the pipeline started). The file's values are shown now.")
-        self.set_params(raw, f"{path} on the device (SSH)")
-        self.render_params()
-        self.render_snapshot()
-
-    def use_file(self):
-        p, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Calibration of this device", str(core.PROJECT),
-                                                   "Calibration files (*.json *.txt)")
-        if not p:
-            return
-        try:
-            cal = core.load_calibration_data(p)
-            params, rep = dm.to_device(cal, theta_max_deg=55.0)
-        except Exception as e:  # noqa: BLE001
-            warn(self, "Not usable", str(e))
-            return
-        self.set_params(params, f"{core.short(p)} (converted to the pinhole model, {rep['rms_px']:.2f} px rms)")
+        self.set_params(raw, f"{s.user}@{s.host}:{s.port} — {path} (SSH), read {datetime.now():%Y-%m-%d %H:%M:%S}")
+        if self.params is not None:
+            self.calibration_file_text = text
         self.render_params()
         self.render_snapshot()
 
     # ---- capture and check
-    def capture_and_check(self):
+    def capture_and_check(self, additional=False):
+        if self.capture_running or self.params is None:
+            return
         import device_capture as dcap
+        from capture_schedule import run_sequence
         d = dict(self.current, image_topic=self.img_topic.currentText().strip(), cloud_topic=self.cloud_topic.currentText().strip())
         devreg.save_settings(d["key"], image_topic=d["image_topic"], cloud_topic=d["cloud_topic"])
-        name = core.run_name(d["name"])
-        out = core.RESULTS / name
-        n, secs, link = self.n_caps.value(), float(self.secs.value()), self.link
+        previous = []
+        if self.pending_capture is not None:
+            d, name, out, previous = self.pending_capture
+            previous = list(previous)
+            goal = (max(len(previous) + 1, self.required_captures()) if additional
+                    else len(previous) + self.n_caps.value())
+        else:
+            name = core.run_name(d["name"])
+            out = core.RESULTS / name
+            clear(self.capture_rows)
+            goal = self.n_caps.value()
+        self.capture_goal = goal
+        n, link = goal, self.link
+        offset = len(previous)
+        collected = list(previous)
+        self.pending_capture = None
+        secs, frame_count = self.lidar_window()
+        automatic = self.capture_mode.currentData() == "automatic"
+        interval = float(self.capture_interval.value()) if automatic else 0
+        self.next_capture = threading.Event()
 
         def work(progress, stop):
-            caps = []
-            for k in range(n):
+            def report(value):
+                progress(dict(value, k=offset + value['k']))
+            def capture(k):
                 f, s = dcap.capture_once(link, d["image_topic"], d["cloud_topic"], secs, out / "captures",
-                                         progress=lambda x, k=k: progress(dict(x, k=k)), stop=stop)
-                caps.append(s)
-                progress(dict(k=k, done=True, images=s["images"], clouds=s["lidar_frames"], image=None))
-                stop.wait(1.0)
-            return caps
-        self.go.setEnabled(False)
+                                         progress=lambda x, k=k: report(dict(x, k=k)), stop=stop, lidar_frames=frame_count)
+                s = dict(s, file=f.name, capture_mode='automatic' if automatic else 'manual',
+                         lidar_target_frames=frame_count, interval_after_capture_s=interval if automatic else None)
+                collected.append(s)
+                return s
+            return previous + run_sequence(capture, n - offset, stop, report,
+                                            next_capture=None if automatic else self.next_capture, interval=interval)
+        self.capture_running = True
+        self.update_go()
+        self.cap_next.hide()
+        self.cap_finish.hide()
+        self.finish_bar.hide()
+        self.cap_stop.setText("Stop")
+        self.active_capture.show()
+        self.cap_cloud.set_cloud(np.empty((0, 4)))
         self.cap_box.show()
         QtCore.QTimer.singleShot(100, lambda: self.scroller.ensureWidgetVisible(self.cap_box, 0, 40))
         self.cap_bar.setRange(0, n)
-        self.cap_bar.setValue(0)
+        self.cap_bar.setValue(offset)
         self.cap_text.setText("Starting …")
         t = Task(work, parent=self)
         self.cap_task = t
@@ -666,31 +946,100 @@ class DevicePage(QtWidgets.QWidget):
         def on_progress(x):
             import time
             self.cap_bar.setValue(x["k"] + (1 if x.get("done") else 0))
+            if x.get("waiting"):
+                self.active_capture.hide()
+                self.cap_text.setText(f"{x['k']} of {n} captured. Prepare the scene, then capture sample {x['k'] + 1}.")
+                self.cap_next.setText(f"Capture sample {x['k'] + 1}")
+                self.cap_next.setEnabled(True)
+                self.cap_next.show()
+                return
+            if "countdown" in x:
+                self.active_capture.hide()
+                self.cap_text.setText(f"{x['k']} of {n} captured. Next capture in {x['countdown']} s…")
+                return
+            self.active_capture.setVisible(not x.get('done', False))
+            if x.get('done'):
+                summary = x.get('summary', {})
+                self.add_capture_card(x['k'] + 1, out, summary)
             self.cap_text.setText(f"Capture {x['k'] + 1} of {n}: {x['images']} images, {x['clouds']} LiDAR frames"
                                   + ("  ✓" if x.get("done") else " …"))
+            if x.get('target_frames'):
+                self.cap_text.setText(f"Capture {x['k'] + 1} of {n}: {x['clouds']} / {x['target_frames']} LiDAR frames")
+            elif 'elapsed' in x:
+                self.cap_text.setText(f"Capture {x['k'] + 1} of {n}: {x['elapsed']:.1f} / {secs:g} s · {x['clouds']} LiDAR frames")
+            if x.get('cloud') is not None:
+                self.cap_cloud.set_cloud(x['cloud'])
             if x.get("image") is not None and time.time() - last["t"] > 0.4:
                 last["t"] = time.time()
                 self.cap_img.set_source(pixmap=np_to_pixmap(x["image"]))
         t.progress.connect(on_progress)
         t.done.connect(lambda caps: self.captured(d, name, out, caps))
-        t.failed.connect(lambda m: (warn(self, "Capture failed", m), shutil.rmtree(out, ignore_errors=True), self.cap_box.hide(), self.update_go()))
+        def failed(message):
+            self.capture_running = False
+            self.cap_next.hide()
+            if collected:
+                self.captured(d, name, out, collected)
+            else:
+                self.cap_box.hide()
+                shutil.rmtree(out, ignore_errors=True)
+                self.update_go()
+            if not t.stop.is_set():
+                warn(self, "Capture failed", message)
+        t.failed.connect(failed)
         t.start()
 
     def captured(self, d, name, out, caps):
-        self.cap_box.hide()
+        self.capture_running = False
+        if self.capture_goal is None:
+            self.capture_goal = self.n_caps.value()
+        self.active_capture.hide()
+        self.cap_next.setText("Capture another" if len(caps) >= self.required_captures() else "Continue capturing")
+        self.cap_next.setEnabled(True)
+        self.cap_next.show()
+        self.pending_capture = (d, name, out, caps)
+        clear(self.capture_rows)
+        for index, summary in enumerate(caps, 1):
+            self.add_capture_card(index, out, summary)
+        self.cap_text.setText(f"{len(caps)} of {self.required_captures()} samples captured. Ready when you have finished capturing.")
+        self.cap_bar.setValue(len(caps))
+        self.cap_finish.setEnabled(len(caps) >= self.required_captures())
+        self.cap_finish.show()
+        self.finish_bar.setVisible(len(caps) >= self.required_captures())
+        self.cap_stop.setText("Discard captures")
         self.update_go()
+        deferred = list(self.delete_after_stop)
+        self.delete_after_stop.clear()
+        for filename in deferred:
+            self.delete_capture(filename)
+
+    def prepare_capture_check(self, d, name, out, caps):
         files = sorted((out / "captures").glob("*.npz"))
         xyz = np.concatenate([np.load(f)["xyz_mm"][::25] for f in files]).astype(float) / 1000.0
         theta = dm.lidar_theta_max(xyz, self.params["extrinsic_matrix"])
         cal, rep = dm.to_calibration(self.params, f"{d['name']} ({self.params_source})", theta_max_deg=theta)
         (out / "device_calibration.json").write_text(json.dumps(cal, indent=2))
-        info = dict(device={k: d.get(k) for k in ("key", "name", "source", "master_uri", "bridge_url", "ssh_host", "ssh_user", "ssh_port")},
+        if self.calibration_file_text is not None:
+            (out / "source_device_pipeline.yaml").write_text(self.calibration_file_text, encoding="utf-8")
+        modes = {sample['capture_mode'] for sample in caps if sample.get('capture_mode')}
+        frame_targets = {sample['lidar_target_frames'] for sample in caps if sample.get('lidar_target_frames') is not None}
+        info = dict(device={k: d.get(k) for k in ("key", "name", "source", "master_uri", "bridge_url", "ssh_host", "ssh_user", "ssh_port",
+                                                "calibration_transport", "file_master_uri", "wsl_distro", "yaml_path")},
                     transport=self.link.describe(), params=self.params, params_raw=self.params_raw, params_source=self.params_source,
                     conversion=rep, theta_max_deg=theta, topics=dict(image=d["image_topic"], cloud=d["cloud_topic"]), captures=caps,
+                    capture_mode='mixed' if len(modes) > 1 else next(iter(modes), self.capture_mode.currentData()),
+                    lidar_window_mode="frames", lidar_seconds=None,
+                    lidar_target_frames=next(iter(frame_targets)) if len(frame_targets) == 1 else None,
+                    interval_after_capture_s=self.capture_interval.value() if self.capture_mode.currentData() == "automatic" else None,
                     date=datetime.now().isoformat(timespec="seconds"))
         (out / "device.json").write_text(json.dumps(info, indent=2, default=float))
         mode = self.update_choice.currentData()
         _, _, args = core.new_run(out / "device_calibration.json", out / "captures", mode, d["name"], name=name)
+        self.pending_capture = None
+        self.capture_goal = None
+        self.cap_finish.hide()
+        self.finish_bar.hide()
+        self.cap_box.hide()
+        self.update_go()
         self.run_ready.emit(name, args)
 
 

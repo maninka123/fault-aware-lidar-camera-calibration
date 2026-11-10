@@ -19,7 +19,13 @@ KEYS = ("camera_matrix", "dist_coeffs", "extrinsic_matrix")
 
 
 def read_params(text):
-    return yaml.safe_load(text)[SECTION]
+    try:
+        document = yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        raise ValueError(f"Invalid calibration YAML: {error}") from error
+    if not isinstance(document, dict) or not isinstance(document.get(SECTION), dict):
+        raise ValueError(f"The calibration file needs a '{SECTION}:' mapping.")
+    return document[SECTION]
 
 
 def _section(lines):

@@ -91,6 +91,12 @@ def regions_map(frame, cap, model, p, region, blocks, circle, nb):
 
 def zooms(frame, cap, model, p_a, p_b, size=48, out=366):
     """One crop per range band on real structure: existing (blue dots) and refined (orange rings)."""
+    width, height = int(model.w * s4.S), int(model.h * s4.S)
+    if width < 2 or height < 2:
+        raise ValueError('Comparison images need at least two pixels in each dimension.')
+    header = min(96, height - 2)
+    out = max(1, min(out, width // 2, (height - header) // 2))
+    size = min(size, model.w, model.h)
     ua, va, oka, r = s4.project_edges(model, cap, p_a)
     ub, vb, okb, _ = s4.project_edges(model, cap, p_b)
     dist = lambda u, v: cap.img["dist"][np.clip(np.rint(v).astype(int), 0, model.h - 1), np.clip(np.rint(u).astype(int), 0, model.w - 1)]
@@ -127,10 +133,15 @@ def zooms(frame, cap, model, p_a, p_b, size=48, out=366):
         cv2.rectangle(tile, (0, 0), (out - 1, out - 1), (200, 200, 200), 1)
         tiles.append(tile)
     grid = np.vstack([np.hstack(tiles[:2]), np.hstack(tiles[2:])])
-    pad = np.full((grid.shape[0], model.w * s4.S - grid.shape[1], 3), 255, np.uint8)
-    s4.legend(pad, [(s4.BLUE, "existing", "dot"), (s4.ORANGE, "refined", "ring")], y0=8)
-    cv2.putText(pad, "zoom x7.6", (12, 80), s4.FONT, 0.45, (78, 81, 82), 1, cv2.LINE_AA)
-    return np.hstack([grid, pad])
+    panel = np.full((height, width, 3), 255, np.uint8)
+    if header:
+        s4.legend(panel[:header], [(s4.BLUE, "existing", "dot"), (s4.ORANGE, "refined", "ring")], y0=8)
+        cv2.putText(panel, f"zoom x{out / size:.1f}", (12, min(80, header - 1)),
+                    s4.FONT, 0.45, (78, 81, 82), 1, cv2.LINE_AA)
+    x = (width - grid.shape[1]) // 2
+    y = header + (height - header - grid.shape[0]) // 2
+    panel[y:y + grid.shape[0], x:x + grid.shape[1]] = grid
+    return panel
 
 
 def compare(frame, cap, model, p_old, p_new, p_exist, title, verdict):

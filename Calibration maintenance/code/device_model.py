@@ -34,6 +34,30 @@ def _flat(v, n=None):
 
 
 # ------------------------------------------------------------------ device parameters
+def file_params(raw, image_size=None):
+    """Read explicit file values, without emulating the colorizer's built-in defaults."""
+    if not isinstance(raw, dict):
+        raise ValueError("The calibration file needs a pointcloud_colorizer mapping.")
+    for key, size in (("camera_matrix", 9), ("dist_coeffs", 5), ("extrinsic_matrix", 16)):
+        if key not in raw:
+            raise ValueError(f"The device calibration file is missing {key}.")
+        values = np.asarray(raw[key], dtype=float)
+        if values.size != size or not np.isfinite(values).all():
+            raise ValueError(f"{key} needs {size} finite numbers in the device calibration file.")
+    data = dict(raw)
+    notes = []
+    if not data.get("image_width") or not data.get("image_height"):
+        if image_size is None:
+            raise ValueError("Image dimensions are missing from the file; receive a camera image and read the file again.")
+        data["image_width"], data["image_height"] = image_size
+        notes.append("Image dimensions come from the received camera image; they are absent from the calibration file.")
+    if int(data["image_width"]) <= 0 or int(data["image_height"]) <= 0:
+        raise ValueError("Image dimensions must be positive.")
+    result = device_params(data)
+    result["notes"] = notes
+    return result
+
+
 def device_params(raw, effective=False) -> dict:
     """Normalise pointcloud_colorizer parameters (ROS parameter server or pipeline.yaml).
     effective=True: the values the colorizer really uses, following its C++ rules: camera_matrix must be

@@ -21,7 +21,8 @@ from settings import load_config
 CACHE_VERSION = 2
 
 
-def _collect(link, topic, msgtype, seconds, decode, stop, on_item, out, every_s=None):
+def _collect(link, topic, msgtype, seconds, decode, stop, on_item, out, every_s=None,
+             max_frames=None, finished=None, min_frames=0):
     """Thread body: decoded messages of one topic for `seconds`; with every_s, at most one message
     per every_s seconds (the reader pauses in between, so the device does not send the rest)."""
     try:
@@ -29,15 +30,21 @@ def _collect(link, topic, msgtype, seconds, decode, stop, on_item, out, every_s=
     except Exception as e:  # noqa: BLE001
         out["error"] = e
         return
-    t0 = time.time()
+    t0 = time.monotonic()
     try:
-        while not stop.is_set() and time.time() - t0 < seconds:
+        while not stop.is_set() and time.monotonic() - t0 < seconds:
+            if finished is not None and finished.is_set() and len(out["items"]) >= min_frames:
+                break
             t, m = stream.next()
+            if time.monotonic() - t0 > seconds:
+                break
             if every_s and out["items"] and t - out["items"][-1][0] < 0.5 * every_s:
                 continue                                 # a message buffered during the pause
             item = decode(m)
             out["items"].append((t, item))
             on_item(item)
+            if max_frames is not None and len(out["items"]) >= max_frames:
+                break
             if every_s:
                 stop.wait(max(0.0, every_s - (time.time() - t)))
     except Exception as e:  # noqa: BLE001
@@ -46,40 +53,83 @@ def _collect(link, topic, msgtype, seconds, decode, stop, on_item, out, every_s=
         stream.close()
 
 
-def capture_once(link, image_topic, cloud_topic, seconds, folder, progress=None, stop=None, image_hz=2.5):
+def collect_sample(link, image_topic, cloud_topic, seconds=1.0, lidar_frames=None,
+                   progress=None, stop=None, image_hz=2.5, min_images=1, frame_timeout=120.0):
+    """Read a timed LiDAR window or exactly N messages; camera follows the same window.
+
+    A missing/slow stream raises an error rather than silently returning fewer requested frames.
+    Camera may finish its minimum image count after a very short LiDAR sample.
+    """
+    if lidar_frames is not None and (int(lidar_frames) != lidar_frames or lidar_frames < 1):
+        raise ValueError("LiDAR frame count must be a positive integer")
+    if seconds <= 0:
+        raise ValueError("LiDAR duration must be positive")
+    stop = stop or threading.Event()
+    imgs, clouds = dict(items=[]), dict(items=[])
+    finished = threading.Event()
+    started, last_emit = time.monotonic(), [0.0]
+    timeout = frame_timeout if lidar_frames is not None else seconds
+
+    def emit(force=False):
+        now = time.monotonic()
+        if progress is None or (not force and now - last_emit[0] < .25):
+            return
+        last_emit[0] = now
+        frames = list(clouds['items'])
+        # Preview is bounded; the saved data retains every selected LiDAR frame.
+        sample = [c[::max(1, int(np.ceil(len(c) * max(1, len(frames)) / 60000)))] for _, c in frames]
+        cloud = np.concatenate(sample) if sample else np.empty((0, 4), np.float32)
+        progress(dict(images=len(imgs['items']), clouds=len(frames),
+                      image=imgs['items'][-1][1] if imgs['items'] else None, cloud=cloud,
+                      elapsed=now-started, target_frames=lidar_frames, target_seconds=seconds))
+
+    def lidar_work():
+        try:
+            _collect(link, cloud_topic, rl.CLOUD, timeout, rl.decode_cloud, stop,
+                     lambda _: emit(), clouds, max_frames=lidar_frames)
+        finally:
+            finished.set()
+
+    camera = threading.Thread(target=_collect, args=(link, image_topic, rl.IMAGE,
+        max(timeout, min_images / image_hz + 2), rl.decode_image, stop, lambda _: None, imgs, 1/image_hz),
+        kwargs=dict(finished=finished, min_frames=min_images), daemon=True)
+    lidar = threading.Thread(target=lidar_work, daemon=True)
+    camera.start(); lidar.start()
+    lidar.join(timeout + 12)
+    camera.join(max(12, min_images / image_hz + 2))
+    if stop.is_set():
+        raise InterruptedError("capture stopped")
+    if lidar.is_alive() or camera.is_alive():
+        raise rl.LinkError("Sensor collection did not finish within its timeout")
+    if lidar_frames is not None and len(clouds['items']) != lidar_frames:
+        reason = clouds.get('error') or 'stream timeout'
+        raise rl.LinkError(f"Received {len(clouds['items'])} of {lidar_frames} requested LiDAR frames: {reason}")
+    emit(force=True)
+    return imgs, clouds
+
+
+def capture_once(link, image_topic, cloud_topic, seconds, folder, progress=None, stop=None, image_hz=2.5,
+                 lidar_frames=None):
     """One stacked capture; returns (npz path, summary). Images at most image_hz (a median of ~10 is
     plenty; the camera's 35 Hz is not needed); every LiDAR frame (the stacked cloud's density)."""
     stop = stop or threading.Event()
     dc = load_config()["decode"]
-    imgs, clouds = dict(items=[]), dict(items=[])
-    last = {}
-
-    def on_img(im):
-        last["image"] = im
-        if progress:
-            progress(dict(images=len(imgs["items"]), clouds=len(clouds["items"]), image=im))
-
-    def on_cloud(c):
-        if progress:
-            progress(dict(images=len(imgs["items"]), clouds=len(clouds["items"]), image=last.get("image")))
-    th = [threading.Thread(target=_collect, args=(link, image_topic, rl.IMAGE, seconds, rl.decode_image, stop, on_img, imgs, 1.0 / image_hz), daemon=True),
-          threading.Thread(target=_collect, args=(link, cloud_topic, rl.CLOUD, seconds, rl.decode_cloud, stop, on_cloud, clouds), daemon=True)]
-    for t in th:
-        t.start()
-    for t in th:
-        t.join(seconds + 20)
+    imgs, clouds = collect_sample(link, image_topic, cloud_topic, seconds, lidar_frames,
+                                  progress, stop, image_hz, min_images=3)
     if stop.is_set():
         raise InterruptedError("capture stopped")
     for what, d in (("camera images", imgs), ("LiDAR frames", clouds)):
         if d.get("error") and not d["items"]:
             raise rl.LinkError(f"no {what}: {d['error']}")
-    if len(imgs["items"]) < 3 or len(clouds["items"]) < 3:
+    if len(imgs["items"]) < 3 or len(clouds["items"]) < 1:
         raise rl.LinkError(f"too little data: {len(imgs['items'])} images, {len(clouds['items'])} LiDAR frames in {seconds:.0f} s")
 
-    import decode_bags  # Targetless calibration (read-only): moving-object frame filter
     cloud_t = np.array([t for t, _ in clouds["items"]])
     cl = [c for _, c in clouds["items"]]
-    keep, frac = decode_bags.lidar_keep(cl, dc)
+    keep = np.ones(len(cl), dtype=bool)
+    if lidar_frames is None and len(cl) >= 3:
+        import decode_bags  # Targetless calibration (read-only): moving-object frame filter
+        keep = decode_bags.lidar_keep(cl, dc)[0]
     sel = np.flatnonzero(keep)
     stack = np.stack([im for _, im in imgs["items"]])
     median = np.median(stack, axis=0).astype(np.uint8)
@@ -98,26 +148,22 @@ def capture_once(link, image_topic, cloud_topic, seconds, folder, progress=None,
     cv2.imwrite(str(out.with_suffix(".png")), median)
     return out, dict(capture=out.stem, images=len(stack), lidar_frames=len(cl), lidar_frames_used=len(sel),
                      lidar_frames_dropped=int((~keep).sum()), lidar_points=len(pts), seconds=seconds,
-                     image_size=list(median.shape[1::-1]))
+                     lidar_target_frames=lidar_frames, image_size=list(median.shape[1::-1]))
 
 
-def snapshot(link, image_topic, cloud_topic, seconds=1.2):
+def snapshot(link, image_topic, cloud_topic, seconds=1.0, lidar_frames=None, progress=None, stop=None):
     """One image and ~1 s of LiDAR for a quick look (not saved)."""
-    stop = threading.Event()
-    imgs, clouds = dict(items=[]), dict(items=[])
-    th = [threading.Thread(target=_collect, args=(link, image_topic, rl.IMAGE, seconds, rl.decode_image, stop, lambda *_: None, imgs, 0.5), daemon=True),
-          threading.Thread(target=_collect, args=(link, cloud_topic, rl.CLOUD, seconds, rl.decode_cloud, stop, lambda *_: None, clouds), daemon=True)]
-    for t in th:
-        t.start()
-    for t in th:
-        t.join(seconds + 15)
+    imgs, clouds = collect_sample(link, image_topic, cloud_topic, seconds, lidar_frames, progress, stop)
     errs = [d["error"] for d in (imgs, clouds) if d.get("error") and not d["items"]]
-    if errs:
+    if errs and not imgs["items"] and not clouds["items"]:
         raise rl.LinkError(str(errs[0]))
     image = imgs["items"][-1][1] if imgs["items"] else None
     cloud = np.concatenate([c for _, c in clouds["items"]]) if clouds["items"] else np.zeros((0, 4), np.float32)
     rate = lambda d: (len(d["items"]) - 1) / max(d["items"][-1][0] - d["items"][0][0], 1e-6) if len(d["items"]) > 1 else 0.0
-    return dict(image=image, cloud=cloud, image_hz=rate(imgs), cloud_hz=rate(clouds))
+    return dict(image=image, cloud=cloud, image_hz=rate(imgs), cloud_hz=rate(clouds),
+                lidar_frames=len(clouds['items']), lidar_target_frames=lidar_frames, lidar_seconds=seconds,
+                errors={name: str(data['error']) for name, data in (("camera", imgs), ("LiDAR", clouds))
+                        if data.get("error") and not data["items"]})
 
 
 def overlay(image, xyz, params, max_points=60000):
