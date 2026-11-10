@@ -68,7 +68,7 @@ def test_default_settings_are_valid_for_every_lidar(tmp_path, profile):
 
 
 @pytest.mark.parametrize("scene", ["warehouse", "laboratory", "urban", "corridor"])
-def test_random_poses_are_valid_distinct_and_reproducible(scene):
+def test_random_poses_are_valid_distinct_and_reproducible(scene, built_scene):
     from simulator.studio import _scene, random_poses
     a = random_poses(scene, 6, z=1.6, seed=11)
     assert a == random_poses(scene, 6, z=1.6, seed=11)            # same seed, same poses
@@ -87,7 +87,7 @@ def test_random_poses_are_valid_distinct_and_reproducible(scene):
 
 
 @pytest.mark.parametrize("scene", ["warehouse", "laboratory", "corridor"])
-def test_random_poses_face_real_surfaces_not_the_void(scene):
+def test_random_poses_face_real_surfaces_not_the_void(scene, built_scene):
     import numpy as np
     from simulator.studio import _scene, random_poses
     mesh, _ = _scene(scene)

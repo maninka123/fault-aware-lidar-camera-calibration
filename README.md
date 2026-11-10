@@ -1,4 +1,4 @@
-﻿# Fault-Aware Camera–LiDAR Calibration
+# Fault-Aware Camera–LiDAR Calibration
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.10 | 3.11](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue)
@@ -39,11 +39,20 @@ python -B -m research_calibration assess --calibration current.json --captures m
 | <img src="docs/images/app/processing-testing.png" alt="Processing: the held-out result of every explanation" width="260"> | <img src="docs/images/app/result-overlay.png" alt="LiDAR points drawn on the camera image" width="260"> | <img src="docs/images/app/report.png" alt="The written report" width="260"> |
 | Every explanation's held-out result appears as it is computed. | Real LiDAR points on the real photo; slide from the current to the proposed calibration. | Verdict, comparison, what the data could see, changes and limits. |
 
+## Camera–LiDAR simulation lab
+
+The **[Camera–LiDAR Simulation Lab](camera-lidar-simulation-lab/README.md)** generates synthetic RGB and LiDAR captures with exact calibration ground truth for controlled calibration and fault experiments. Its browser app supports four procedural environments, five LiDAR profiles, pinhole/fisheye cameras, and batch changes to sensor mounting and camera intrinsics.
+
+![Camera–LiDAR simulator environments: warehouse, laboratory, street and corridor](camera-lidar-simulation-lab/docs/images/environments.png)
+
+The simulator has its own environment, dependencies, tests and setup steps. **[Open the simulator README →](camera-lidar-simulation-lab/README.md)** for installation, examples, batch settings and the separation between algorithm inputs and evaluation truth. Generated scenes and full datasets are built locally.
+
 ## Documentation
 
 | | |
 | --- | --- |
 | **[Desktop app guide](docs/DESKTOP_APP.md)** | Every tab with screenshots: New check, Processing, Result, Calibration review, Report, Use the result, Devices |
+| [Camera–LiDAR Simulation Lab](camera-lidar-simulation-lab/README.md) | Synthetic datasets, browser Studio, batch calibration changes, mass capture and ground-truth exports |
 | [Features](docs/FEATURES.md) | Everything the maintenance app does, and where it lives here |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Path limits, logs, stopped checks, devices, resetting |
 | [Repository layout](docs/REPOSITORY_LAYOUT.md) | Folders, modules, and what a saved check contains |

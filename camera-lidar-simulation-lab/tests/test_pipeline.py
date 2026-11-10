@@ -111,13 +111,14 @@ def test_corrupted_sequence_is_reported_as_invalid(room_mesh,tmp_path):
     assert "Incomplete or invalid" in result["errors"][0]
 
 
-def test_flat_layout_progress_and_legacy_reader(tmp_path):
+def test_flat_layout_progress_and_legacy_reader(tmp_path, room_mesh):
     """Captures sit directly under inference/ and evaluation/, progress is monotonic, older runs stay readable."""
     from simulator.io import capture_dir
     steps = []
     c = dict(scene="warehouse", renderer="geometry", camera=dict(model="pinhole", width=32, height=24, focal_px=30),
              duration=.01, captures=2, interval=1., lidar_options=dict(stride=40), seed=3,
              output=str(tmp_path/"run"))
+    c["mesh"] = str(room_mesh)
     run = generate(c, progress=lambda f, m: steps.append((f, m)))
     assert (run/"inference/capture_0000/image.png").is_file() and (run/"evaluation/capture_0001/ideal_lidar.npz").is_file()
     assert not (run/"inference/captures").exists() and not (run/"evaluation/captures").exists()
@@ -129,11 +130,12 @@ def test_flat_layout_progress_and_legacy_reader(tmp_path):
     assert capture_dir(tmp_path/"old", "evaluation", "capture_0000") == legacy
 
 
-def test_accumulated_scan_saved_beside_snapshot(tmp_path):
+def test_accumulated_scan_saved_beside_snapshot(tmp_path, room_mesh):
     """A non-repetitive scanner integrated for 1 s covers more rays than the 0.1 s snapshot; both are saved."""
     c = dict(scene="warehouse", renderer="geometry", camera=dict(model="pinhole", width=32, height=24, focal_px=30),
              lidar="livox_avia", duration=.1, accumulate_s=1.0, captures=1, lidar_options=dict(stride=40), seed=5,
              output=str(tmp_path/"run"))
+    c["mesh"] = str(room_mesh)
     run = generate(c)
     short = np.load(run/"inference/capture_0000/lidar.npz")["xyz"]
     long = np.load(run/"inference/capture_0000/lidar_accumulated.npz")["xyz"]
@@ -147,7 +149,7 @@ def test_accumulated_scan_saved_beside_snapshot(tmp_path):
         validate_config(bad)
 
 
-def test_batches_carry_their_own_true_calibration(tmp_path):
+def test_batches_carry_their_own_true_calibration(tmp_path, room_mesh):
     """Per-batch T_CL is ground truth; the initial estimate given to an algorithm stays the nominal mount."""
     import sys
     from pathlib import Path
@@ -160,6 +162,7 @@ def test_batches_carry_their_own_true_calibration(tmp_path):
              mounts=[[.05, -.15, .03, 0, 0, 0], [.05, -.15, .03, 0, 0, 0], [.053, -.147, .028, .4, -.3, .6]],
              batch_ids=[0, 0, 1])
     config = make_config(v)
+    config["mesh"] = str(room_mesh)
     run = generate(config)
     truth = json_read(run/"evaluation/ground_truth.json")
     assert [t["batch"] for t in truth] == [0, 0, 1]
@@ -177,8 +180,10 @@ def test_batches_carry_their_own_true_calibration(tmp_path):
         validate_config(dict(config, batch_ids=[0, 1]))
 
 
-def test_batch_plan_is_within_tolerance_and_batch_zero_is_nominal():
+def test_batch_plan_is_within_tolerance_and_batch_zero_is_nominal(monkeypatch):
+    from simulator import studio
     from simulator.studio import batch_plan
+    monkeypatch.setattr(studio, "random_poses", lambda name, n, *args, **kwargs: [[0, 0, 1.6, 0, 0, 0]] * n)
     base = [0.05, -0.15, 0.03, 0, 0, 0]
     plan = batch_plan("warehouse", 4, 3, tol_rot_deg=0.5, tol_trans_mm=5, base_mount=base, seed=2)
     assert plan[0]["mount"] == base and all(len(b["poses"]) == 3 for b in plan)
