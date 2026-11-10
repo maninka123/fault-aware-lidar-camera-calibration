@@ -1,0 +1,24 @@
+Panels:
+  - Class: rviz/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: world
+  Displays:
+    - Class: rviz/Grid
+      Name: Grid
+      Enabled: true
+    - Class: rviz/PointCloud2
+      Name: LiDAR
+      Enabled: true
+      Topic: /lidar/points
+      Size (m): 0.025
+      Color Transformer: Intensity
+    - Class: rviz/Image
+      Name: Camera
+      Enabled: true
+      Image Topic: /camera/image_raw
+    - Class: rviz/TF
+      Name: TF
+      Enabled: true

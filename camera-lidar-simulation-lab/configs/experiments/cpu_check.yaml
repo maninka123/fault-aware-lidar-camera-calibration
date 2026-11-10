@@ -1,0 +1,15 @@
+# Small geometry diagnostic. No Blender, GPU, ROS or WSL process is launched.
+scene: warehouse
+lidar: livox_avia
+lidar_options: {stride: 20}
+camera: {model: fisheye, width: 160, height: 120, focal_px: 80, D: [0.02, -0.005, 0.0, 0.0]}
+renderer: geometry
+duration: 0.02
+captures: 3
+interval: 1.0
+seed: 42
+events:
+  - time: 2.0
+    label: rotation_only
+    fault: {rotation_deg: [0.0, 1.5, 0.5]}
+output: ../../outputs/cpu_check

@@ -1,0 +1,26 @@
+# Paths resolve relative to this configuration file. Output must not exist.
+scene: warehouse
+lidar: livox_avia
+camera:
+  model: fisheye
+  width: 484
+  height: 366
+  focal_px: 200.0
+  D: [0.02, -0.005, 0.0, 0.0]
+renderer: blender
+render:
+  samples: 16
+  cubemap_size: 512
+  device: OPTIX
+duration: 0.1
+captures: 3
+interval: 1.0
+seed: 42
+split: test
+lidar_pose:
+  xyz: [0.0, 0.0, 1.6]
+  rpy_deg: [0.0, 0.0, 0.0]
+initial_fault:
+  rotation_deg: [1.0, -0.5, 0.3]
+  translation_m: [0.02, -0.01, 0.0]
+output: ../../outputs/warehouse_avia

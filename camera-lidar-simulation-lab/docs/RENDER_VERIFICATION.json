@@ -1,0 +1,79 @@
+{
+  "corridor": {
+    "vertices": 3336,
+    "triangles": 6380,
+    "finite": true,
+    "index_valid": true,
+    "image_size": [
+      640,
+      480
+    ],
+    "render": {
+      "requested": "OPTIX",
+      "actual": "OPTIX",
+      "devices": [
+        "NVIDIA GeForce RTX 4080"
+      ],
+      "attempts": []
+    }
+  },
+  "laboratory": {
+    "vertices": 9448,
+    "triangles": 17876,
+    "finite": true,
+    "index_valid": true,
+    "image_size": [
+      640,
+      480
+    ],
+    "render": {
+      "requested": "OPTIX",
+      "actual": "OPTIX",
+      "devices": [
+        "NVIDIA GeForce RTX 4080"
+      ],
+      "attempts": []
+    }
+  },
+  "urban": {
+    "vertices": 22492,
+    "triangles": 42796,
+    "finite": true,
+    "index_valid": true,
+    "image_size": [
+      640,
+      480
+    ],
+    "render": {
+      "requested": "OPTIX",
+      "actual": "OPTIX",
+      "devices": [
+        "NVIDIA GeForce RTX 4080"
+      ],
+      "attempts": []
+    }
+  },
+  "warehouse": {
+    "vertices": 21696,
+    "triangles": 39152,
+    "finite": true,
+    "index_valid": true,
+    "image_size": [
+      640,
+      480
+    ],
+    "render": {
+      "requested": "OPTIX",
+      "actual": "OPTIX",
+      "devices": [
+        "NVIDIA GeForce RTX 4080"
+      ],
+      "attempts": []
+    }
+  },
+  "cube": {
+    "faces": 6,
+    "rotations_valid": true,
+    "images_exist": true
+  }
+}

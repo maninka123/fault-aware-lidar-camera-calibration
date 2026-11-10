@@ -6,6 +6,7 @@
 | --- | --- |
 | `start_research_gui.bat` | Start the desktop app (fault-aware assessment) |
 | `start_app.bat` | Start the original calibration maintenance app |
+| [`camera-lidar-simulation-lab/`](../camera-lidar-simulation-lab/README.md) | Independent synthetic camera–LiDAR simulator, browser app, tests and its own environment |
 | `gui/` | The desktop app (see below) |
 | `research_calibration/` | The assessment engine: observability, hypotheses, decision policy, reporting |
 | `Calibration maintenance/` | The maintenance analysis and app, reused by the Calibration review tab and the Devices page |

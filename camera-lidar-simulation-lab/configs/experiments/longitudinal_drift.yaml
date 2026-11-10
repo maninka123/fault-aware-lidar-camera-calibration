@@ -1,0 +1,20 @@
+scene: warehouse
+lidar: livox_avia
+camera:
+  model: fisheye
+  width: 484
+  height: 366
+  focal_px: 200.0
+  D: [0.02, -0.005, 0.0, 0.0]
+renderer: blender
+render: {samples: 16, cubemap_size: 512, device: OPTIX}
+duration: 0.1
+captures: 5
+interval: 1.0
+seed: 42
+initial_fault: {}
+events:
+  - time: 2.0
+    label: rotation_only
+    fault: {rotation_deg: [0.0, 1.5, 0.5]}
+output: ../../outputs/longitudinal_drift
