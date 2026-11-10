@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "assets": [
+    {
+      "id": "industrial_sunset_02_4k",
+      "file": "assets/industrial_sunset_02_4k.exr",
+      "type": "HDRI environment",
+      "source": "https://polyhaven.com/a/industrial_sunset_02",
+      "download_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/exr/4k/industrial_sunset_02_4k.exr",
+      "author": "Sergej Majboroda",
+      "provider": "Poly Haven",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "downloaded_date": "2026-11-05",
+      "size_bytes": 20828316,
+      "sha256": "095fe4ac8b0542804b4234c358a6096bc22ea5270f96a8d962ece5b17aeb6724",
+      "use": "Urban scene environment lighting and background; packed into generated scene.blend",
+      "limitations": "Photographic environment lighting does not validate LiDAR reflectance or photorealism of procedural objects. No geometry derived from the HDRI."
+    }
+  ]
+}

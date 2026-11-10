@@ -1,0 +1,246 @@
+{
+  "outputs/warehouse_avia_v2": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23751,
+        "occluded": 249,
+        "max_ray_reprojection_error_px": 8.987733679556355e-14,
+        "max_visible_surface_error_m": 2.8812494580421344e-05
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23784,
+        "occluded": 216,
+        "max_ray_reprojection_error_px": 1.1368683772161603e-13,
+        "max_visible_surface_error_m": 4.8408571041491655e-05
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23802,
+        "occluded": 198,
+        "max_ray_reprojection_error_px": 1.1718571004216928e-13,
+        "max_visible_surface_error_m": 9.55945484903964e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/noisy_pinhole": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 19372,
+        "in_image": 6025,
+        "visible_to_camera": 5939,
+        "occluded": 86,
+        "max_ray_reprojection_error_px": 1.0450535404999206e-12,
+        "max_visible_surface_error_m": 3.945821207551603e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/hesai_recovered_existing_rgb": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 153600,
+        "in_image": 153600,
+        "visible_to_camera": 150134,
+        "occluded": 3466,
+        "max_ray_reprojection_error_px": 2.2737367544323206e-13,
+        "max_visible_surface_error_m": 2.1302058870631413e-05
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/cpu_check": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 240,
+        "in_image": 240,
+        "visible_to_camera": 236,
+        "occluded": 4,
+        "max_ray_reprojection_error_px": 2.842170943040401e-14,
+        "max_visible_surface_error_m": 3.904203797588934e-06
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 240,
+        "in_image": 240,
+        "visible_to_camera": 236,
+        "occluded": 4,
+        "max_ray_reprojection_error_px": 2.842170943040401e-14,
+        "max_visible_surface_error_m": 4.065156517185642e-06
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 240,
+        "in_image": 240,
+        "visible_to_camera": 240,
+        "occluded": 0,
+        "max_ray_reprojection_error_px": 2.842170943040401e-14,
+        "max_visible_surface_error_m": 6.140251752384529e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/five_lidars_v2/hesai_at128": {
+    "passed": false,
+    "errors": [
+      "Incomplete or invalid dataset: JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+    ],
+    "captures": [],
+    "file_hashes_checked": false
+  },
+  "outputs/five_lidars_v2/livox_avia": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23751,
+        "occluded": 249,
+        "max_ray_reprojection_error_px": 8.987733679556355e-14,
+        "max_visible_surface_error_m": 2.8812494580421344e-05
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23784,
+        "occluded": 216,
+        "max_ray_reprojection_error_px": 1.1368683772161603e-13,
+        "max_visible_surface_error_m": 4.8408571041491655e-05
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 24000,
+        "in_image": 24000,
+        "visible_to_camera": 23802,
+        "occluded": 198,
+        "max_ray_reprojection_error_px": 1.1718571004216928e-13,
+        "max_visible_surface_error_m": 9.55945484903964e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/five_lidars_v2/livox_mid360": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 15441,
+        "in_image": 7525,
+        "visible_to_camera": 7434,
+        "occluded": 91,
+        "max_ray_reprojection_error_px": 1.4836567898030567e-13,
+        "max_visible_surface_error_m": 1.4044996827777823e-05
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 15461,
+        "in_image": 7564,
+        "visible_to_camera": 7484,
+        "occluded": 80,
+        "max_ray_reprojection_error_px": 1.7053025658242404e-13,
+        "max_visible_surface_error_m": 5.833745007066682e-06
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 15461,
+        "in_image": 7562,
+        "visible_to_camera": 7475,
+        "occluded": 87,
+        "max_ray_reprojection_error_px": 1.7288250917028504e-13,
+        "max_visible_surface_error_m": 4.971061846603675e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/five_lidars_v2/ouster_os1_64": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 49149,
+        "in_image": 25193,
+        "visible_to_camera": 24806,
+        "occluded": 387,
+        "max_ray_reprojection_error_px": 1.797546735911271e-13,
+        "max_visible_surface_error_m": 8.820454738156513e-06
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 49149,
+        "in_image": 25193,
+        "visible_to_camera": 24806,
+        "occluded": 387,
+        "max_ray_reprojection_error_px": 1.797546735911271e-13,
+        "max_visible_surface_error_m": 8.820454738156513e-06
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 49149,
+        "in_image": 25193,
+        "visible_to_camera": 24806,
+        "occluded": 387,
+        "max_ray_reprojection_error_px": 1.797546735911271e-13,
+        "max_visible_surface_error_m": 8.820454738156513e-06
+      }
+    ],
+    "file_hashes_checked": true
+  },
+  "outputs/five_lidars_v2/velodyne_vlp16": {
+    "passed": true,
+    "errors": [],
+    "captures": [
+      {
+        "capture_id": "capture_0000",
+        "points": 20609,
+        "in_image": 10999,
+        "visible_to_camera": 10817,
+        "occluded": 182,
+        "max_ray_reprojection_error_px": 1.7288250917028504e-13,
+        "max_visible_surface_error_m": 5.647137918174394e-06
+      },
+      {
+        "capture_id": "capture_0001",
+        "points": 20600,
+        "in_image": 10993,
+        "visible_to_camera": 10804,
+        "occluded": 189,
+        "max_ray_reprojection_error_px": 1.797546735911271e-13,
+        "max_visible_surface_error_m": 5.121656649009765e-06
+      },
+      {
+        "capture_id": "capture_0002",
+        "points": 20610,
+        "in_image": 10999,
+        "visible_to_camera": 10818,
+        "occluded": 181,
+        "max_ray_reprojection_error_px": 1.7288250917028504e-13,
+        "max_visible_surface_error_m": 4.70255110940343e-06
+      }
+    ],
+    "file_hashes_checked": true
+  }
+}

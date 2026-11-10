@@ -1,0 +1,30 @@
+{
+  "source": "https://github.com/Livox-SDK/livox_laser_simulation",
+  "commit": "1cce1073633a062b92e30243a4c2920e45551bb5",
+  "license": "MIT; Copyright (c) 2021 livox",
+  "conversion": "np.loadtxt(csv,delimiter=comma,skiprows=1,dtype=float64); np.savez_compressed(data=array); no resampling or angle changes",
+  "files": {
+    "avia": {
+      "source_file": "scan_mode/avia.csv",
+      "source_csv_sha256": "9363f7ec8da1541b49214ae18eea840151eda4eed176ebd573bd443eb7970d78",
+      "npz_sha256": "94bdbc88098a2b4cba596249f52f9f26e8cb6e9347e3aa1ed6d320acf9365c7f",
+      "rows": 960000,
+      "columns": [
+        "Time/s (Mid360 contains row counter)",
+        "Azimuth/deg",
+        "Zenith/deg"
+      ]
+    },
+    "mid360": {
+      "source_file": "scan_mode/mid360.csv",
+      "source_csv_sha256": "dfe95b412d78e2054aaf6c083fbfa012390efb82412dba3ecc2cd8d30873d678",
+      "npz_sha256": "e1b2f8f2d3e48cfcca8ff8887f96a5daaf3d86d2540af2e73c0749175eb64389",
+      "rows": 800000,
+      "columns": [
+        "Time/s (Mid360 contains row counter)",
+        "Azimuth/deg",
+        "Zenith/deg"
+      ]
+    }
+  }
+}

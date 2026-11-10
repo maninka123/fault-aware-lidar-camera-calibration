@@ -1,0 +1,45 @@
+{
+  "recorded_date": "2026-11-05",
+  "timezone": "Australia/Sydney",
+  "host_snapshot_before_stability_restriction": {
+    "windows": "Windows 11 Pro",
+    "version": "10.0.26300",
+    "physical_memory_kib": 66843500,
+    "free_memory_kib_at_initial_probe": 13218300,
+    "free_disk_bytes_at_initial_probe": {
+      "C": 117470068736,
+      "D": 461562425344
+    },
+    "gpu": "NVIDIA GeForce RTX 4080",
+    "driver": "610.88",
+    "vram_mib": 16376,
+    "blender": "5.0.1",
+    "verified_render_backend": "OPTIX",
+    "wsl_distribution": "Ubuntu-20.04",
+    "wsl_generation": 2,
+    "ubuntu": "20.04.6 LTS",
+    "ros": "noetic",
+    "windows_python": "3.10.14 (Anaconda)",
+    "wsl_python": "3.8.10"
+  },
+  "python_packages": {
+    "numpy": "1.26.4",
+    "scipy": "1.10.1",
+    "opencv-python": "4.7.0.72",
+    "open3d": "0.17.0",
+    "PyYAML": "6.0.3",
+    "Pillow": null,
+    "pytest": "9.1.1",
+    "setuptools": "65.5.0"
+  },
+  "execution_after_user_stability_request": {
+    "new_blender_jobs": false,
+    "gpu_jobs": false,
+    "wsl_jobs": false,
+    "driver_or_windows_setting_changes": false,
+    "process_local_threads": 1,
+    "native_render_default": "disabled",
+    "raycast_backend": "Open3D CPU:0 nthreads=1"
+  },
+  "crash_cause": "Not diagnosed. Event log alone is insufficient. No dump analysis performed."
+}
