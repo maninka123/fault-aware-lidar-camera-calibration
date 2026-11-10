@@ -61,14 +61,14 @@ Outputs are `assessment.json`, `report.md` and `updated_calibration.json`. A rej
 
 ```powershell
 python -B -m research_calibration benchmark --dataset enclosure_off_ten --methods single_variant --output research_artifacts/single_gate
-python -B -m research_calibration benchmark --dataset enclosure_off_ten --methods fault_aware --config research_configs/random_selection.json --output research_artifacts/random
+python -B -m research_calibration benchmark --dataset enclosure_off_ten --methods fault_aware --config research_data/configs/random_selection.json --output research_artifacts/random
 ```
 
-`research_configs/` also supplies feature-count, D-proxy and E-proxy selection. All compared test partitions stay fixed by seed. Selection budgets and configurations are recorded; changing them after seeing outer results invalidates a claim that those results remain untouched.
+`research_data/configs/` also supplies feature-count, D-proxy and E-proxy selection. All compared test partitions stay fixed by seed. Selection budgets and configurations are recorded; changing them after seeing outer results invalidates a claim that those results remain untouched.
 
 ## Existing desktop and initialization
 
-Start this checkout's `start_app.bat`. In **Manual check**, choose a calibration and at least two stacked captures, then click **Research check…**. Its small progress window runs the same CLI and opens the reports folder on request. It has no accept/device-write control and refuses to start while a normal app check is running. The existing **Check calibration** path remains available. Research desktop entry currently enables only stacked captures; other supported readers are accessible through the API/CLI.
+Start this checkout's `launchers/start_app.bat`. In **Manual check**, choose a calibration and at least two stacked captures, then click **Research check…**. Its small progress window runs the same CLI and opens the reports folder on request. It has no accept/device-write control and refuses to start while a normal app check is running. The existing **Check calibration** path remains available. Research desktop entry currently enables only stacked captures; other supported readers are accessible through the API/CLI.
 
 ```powershell
 # Optional offscreen real-recording test of desktop -> CLI execution

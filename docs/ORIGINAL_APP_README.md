@@ -24,7 +24,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe "Calibration maintenance/code/app.py"
 ```
 
-After setup, double-click **start_app.bat**.
+After setup, double-click **launchers/start_app.bat**.
 
 | Start with | Steps |
 |---|---|
@@ -76,7 +76,7 @@ The development UI previews each option's matrices, highlights changed values, a
 
 ## Inputs and outputs
 
-- **Calibration:** [JSON example](../examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
+- **Calibration:** [JSON example](examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
 - **Captures:** image/PCD pairs, recorded bags or stacked arrays. PCD defaults to metres; millimetres are selectable. [Folder layouts →](DATA_FORMAT.md)
 - **Results:** candidate calibration, summary, report and plots in `Calibration maintenance/results/<run>/`.
 

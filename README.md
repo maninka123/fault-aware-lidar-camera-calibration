@@ -24,7 +24,7 @@ Targetless camera–LiDAR calibration that decides **what** may have drifted, ch
 pip install -r requirements.txt        # Python 3.10 or 3.11
 ```
 
-Start the app with **`start_research_gui.bat`** (or `python gui/research_gui.py`), choose a calibration and a folder of recorded captures, and press **Check calibration**.
+Start the app with **`launchers/start_research_gui.bat`** (or `python gui/research_gui.py`), choose a calibration and a folder of recorded captures, and press **Check calibration**.
 
 From the command line:
 

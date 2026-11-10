@@ -163,7 +163,8 @@ class AutoRunOnNewChecks(unittest.TestCase):
     def setUp(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         self.win = g.MainWindow()
         self.addCleanup(self.win.review.shutdown)
 
@@ -301,7 +302,8 @@ class TabNavigation(unittest.TestCase):
     def test_tabs_are_ordered_and_switching_changes_nothing(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         win = g.MainWindow()
         names = [b.text() for b in win.pager.buttons]
         self.assertEqual(names, ["Processing", "Result", "Calibration review", "Report"])

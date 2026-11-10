@@ -285,7 +285,8 @@ class MainWindowIntegration(unittest.TestCase):
     def setUp(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         self.g = g
         self.win = g.MainWindow()
         self.addCleanup(self.win.review.shutdown)

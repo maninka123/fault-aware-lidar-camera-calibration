@@ -1,9 +1,9 @@
 @echo off
 setlocal
 rem Prefer this checkout's environment; otherwise use the current user's Python.
-cd /d "%~dp0"
-if exist "%~dp0.venv\Scripts\pythonw.exe" (
-    start "" "%~dp0.venv\Scripts\pythonw.exe" gui\research_gui.py
+cd /d "%~dp0.."
+if exist "%~dp0..\.venv\Scripts\pythonw.exe" (
+    start "" "%~dp0..\.venv\Scripts\pythonw.exe" gui\research_gui.py
     exit /b
 )
 if exist "%USERPROFILE%\anaconda3\pythonw.exe" (

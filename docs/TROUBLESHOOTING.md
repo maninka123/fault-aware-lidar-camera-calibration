@@ -11,7 +11,7 @@ log, and leaves your calibration files untouched.
 | Problem | What to do |
 | --- | --- |
 | *"Windows stops at 260 characters"* when starting a check | The repository sits too deep. Move it to a short folder such as `C:\FaultAware`, or turn on long paths in Windows. The message appears before anything runs. |
-| The window does not start | Run `python gui/research_gui.py` in a terminal to see the error, and check that `pip install -r requirements.txt` finished. `start_research_gui.bat` looks for `.venv`, then Anaconda, then `pythonw` on the path. |
+| The window does not start | Run `python gui/research_gui.py` in a terminal to see the error, and check that `pip install -r requirements.txt` finished. `launchers/start_research_gui.bat` looks for `.venv`, then Anaconda, then `pythonw` on the path. |
 | It restored the wrong calibration or captures | Choose the right ones (that replaces them), or press *Forget* on New check. To clear everything, delete `%LOCALAPPDATA%\FaultAwareCalibration\settings.json`. |
 
 ## Checks

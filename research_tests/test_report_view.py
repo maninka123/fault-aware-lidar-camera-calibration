@@ -162,7 +162,8 @@ class WindowIntegration(unittest.TestCase):
     def test_the_report_tab_shows_the_open_check(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         win = g.MainWindow()
         self.addCleanup(win.review.shutdown)
         self.assertIs(win.stack.widget(3), win.report_view)

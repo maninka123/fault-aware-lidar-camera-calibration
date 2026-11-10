@@ -23,7 +23,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets  # noqa: E402
 APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 APP.setStyle("Fusion")
 
-EXAMPLE = ROOT / "examples" / "calibration.example.json"
+EXAMPLE = ROOT / "docs" / "examples" / "calibration.example.json"
 REAL = ROOT.parent.parent / "Calibration maintenance" / "results" / "rig_20261106_151654"
 CHECKS = sorted(p for p in (ROOT / "research_artifacts").glob("gui_*") if (p / "assessment.json").exists() and p.with_name(p.name + ".gui.json").exists())
 
@@ -111,7 +111,8 @@ class MatrixViewTests(unittest.TestCase):
     def test_loading_a_calibration_shows_its_matrices_without_opening_anything(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         win = g.MainWindow()
         win.load_cal(str(EXAMPLE))
         self.assertEqual(len(win.cal.findChildren(matrix_view.MatrixPair)), 1)
@@ -127,7 +128,8 @@ class RememberTests(unittest.TestCase):
     def window(self, store_path):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         win = g.MainWindow()
         win.store = settings_store.Store(store_path)
         self.addCleanup(win.review.shutdown)
@@ -388,7 +390,8 @@ class MainWindowFlow(unittest.TestCase):
     def setUp(self):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         self.g = g
         self.win = g.MainWindow()
         self.addCleanup(self.win.review.shutdown)

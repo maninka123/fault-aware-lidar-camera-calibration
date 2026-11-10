@@ -30,7 +30,8 @@ class Parity(unittest.TestCase):
     def setUpClass(cls):
         sys.argv = ["research_gui.py"]
         import research_gui as g
-        APP.setStyleSheet(g.QSS)
+        if APP.styleSheet() != g.QSS:  # re-applying re-polishes every live window; that aborted natively on the Linux runner
+            APP.setStyleSheet(g.QSS)
         cls.g = g
         cls.win = g.MainWindow()
         cls.win.show_devices()
@@ -118,10 +119,10 @@ class Parity(unittest.TestCase):
         self.win.show_pair_report()          # nothing to show: must not fail
 
     def test_the_example_calibration_exists(self):
-        self.assertTrue((ROOT / "examples" / "calibration.example.json").is_file())
+        self.assertTrue((ROOT / "docs" / "examples" / "calibration.example.json").is_file())
 
     def test_the_original_maintenance_app_is_still_launchable_from_here(self):
-        self.assertTrue((ROOT / "start_app.bat").is_file())
+        self.assertTrue((ROOT / "launchers" / "start_app.bat").is_file())
         self.assertTrue((ROOT / "Calibration maintenance" / "code" / "app.py").is_file())
         text = (ROOT / "Calibration maintenance" / "code" / "app.py").read_text(encoding="utf-8")
         self.assertIn("'gui' / 'research_gui.py'", text, "its button that opens this app must point at the moved file")

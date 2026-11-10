@@ -4,7 +4,7 @@ The app checks whether a camera–LiDAR calibration still holds, shows how it re
 result. This guide follows the order you meet things in: **New check → Processing → Result → Calibration review → Report →
 Use the result**, then **Devices**.
 
-Windows 10/11, Python 3.10/3.11. Start it with `start_research_gui.bat` (or `python gui/research_gui.py`). Other systems are
+Windows 10/11, Python 3.10/3.11. Start it with `launchers/start_research_gui.bat` (or `python gui/research_gui.py`). Other systems are
 untested. For a one-page list of everything the app can do, see [Features](FEATURES.md); if something goes wrong, see
 [Troubleshooting](TROUBLESHOOTING.md).
 

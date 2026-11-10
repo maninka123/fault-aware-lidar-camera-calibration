@@ -4,8 +4,7 @@
 
 | Folder / file | What it holds |
 | --- | --- |
-| `start_research_gui.bat` | Start the desktop app (fault-aware assessment) |
-| `start_app.bat` | Start the original calibration maintenance app |
+| `launchers/` | `start_research_gui.bat` starts the desktop app (fault-aware assessment); `start_app.bat` starts the original calibration maintenance app |
 | [`camera-lidar-simulation-lab/`](../camera-lidar-simulation-lab/README.md) | Independent synthetic camera–LiDAR simulator, browser app, tests and its own environment |
 | `gui/` | The desktop app (see below) |
 | `research_calibration/` | The assessment engine: observability, hypotheses, decision policy, reporting |
@@ -14,8 +13,8 @@
 | `research_tests/` | Tests for the engine and the app |
 | `tools/` | Verification, ablation, report-building and screenshot scripts |
 | `docs/` | Guides, method, results, data formats and the research report |
-| `research_configs/`, `research_data/` | Settings and dataset manifests (recordings are not distributed) |
-| `examples/` | A sample calibration |
+| `research_data/` | Dataset manifests and the generalization registry, plus `configs/` (settings). Recordings are not distributed. The path is fixed because frozen, hash-pinned evaluation files refer to it |
+| `docs/examples/` | A sample calibration |
 | `multi_capture_calibration/` | Multi-capture helpers used by the engine |
 | `research_artifacts/` | Your checks. Created on first use; not committed |
 

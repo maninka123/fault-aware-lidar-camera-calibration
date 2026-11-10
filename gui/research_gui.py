@@ -1262,7 +1262,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.load_cal(d.path)
 
     def use_example(self):
-        example = ROOT / "examples" / "calibration.example.json"
+        example = ROOT / "docs" / "examples" / "calibration.example.json"
         if example.is_file():
             self.cal.combo.setCurrentIndex(0)
             self.load_cal(str(example))
