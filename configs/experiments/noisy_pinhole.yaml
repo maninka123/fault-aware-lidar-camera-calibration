@@ -1,0 +1,12 @@
+scene: laboratory
+lidar: velodyne_vlp16
+camera: {model: pinhole, width: 640, height: 480, focal_px: 420, D: [-0.02, 0.001, 0.0, 0.0, 0.0]}
+renderer: blender
+render: {samples: 16, cubemap_size: 512, device: OPTIX}
+duration: 0.1
+captures: 1
+interval: 1.0
+seed: 17
+noise: {range_std_m: 0.02, angular_std_deg: 0.02, dropout: 0.05, range_std_per_m: 0.0005}
+camera_noise: {noise_std: 2, blur_sigma: 0.4, exposure_stops: -0.2, white_balance: [1.0, 0.98, 1.02], jpeg_quality: 95}
+output: ../../outputs/noisy_pinhole

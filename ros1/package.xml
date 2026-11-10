@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>camera_lidar_simulation_lab</name>
+  <version>0.1.0</version>
+  <description>Optional ROS1 replay and bag export for standalone simulated camera/LiDAR datasets.</description>
+  <maintainer email="maintainer@example.invalid">Simulation Lab</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>rosbag</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>tf2_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+</package>

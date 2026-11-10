@@ -1,0 +1,7 @@
+<launch>
+  <arg name="dataset" />
+  <arg name="rate" default="1.0" />
+  <param name="use_sim_time" value="true" />
+  <node pkg="camera_lidar_simulation_lab" type="replay_dataset.py" name="simulation_replay"
+        args="&quot;$(arg dataset)&quot; --rate $(arg rate)" output="screen" />
+</launch>

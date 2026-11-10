@@ -1,0 +1,15 @@
+# Reuses the verified, already-rendered warehouse cubemap. No Blender/GPU/WSL launch.
+# This path targets the preserved local example and requires those generated files.
+scene: warehouse
+lidar: livox_avia
+camera: {model: fisheye, width: 484, height: 366, focal_px: 200.0, D: [0.02, -0.005, 0.0, 0.0]}
+renderer: cubemap
+cubemap: ../../outputs/warehouse_avia_v2/evaluation/captures/capture_0000/cubemap
+duration: 0.1
+captures: 1
+interval: 1.0
+seed: 42
+initial_fault:
+  rotation_deg: [1.0, -0.5, 0.3]
+  translation_m: [0.02, -0.01, 0.0]
+output: ../../outputs/reused_rgb_avia

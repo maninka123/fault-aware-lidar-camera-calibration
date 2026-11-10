@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camera–LiDAR Simulation Lab</title>
+<style>
+:root{--bg:#f4f6fb;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#2563eb;--accent-ink:#fff;--soft:#eff4ff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1220;--panel:#121a2b;--ink:#e6ebf5;--muted:#8b9ab4;--line:#243049;--accent:#3b82f6;--soft:#16233f;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "Segoe UI",system-ui,sans-serif}
+header{padding:22px 32px 6px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:14px;flex-basis:100%;margin-top:-8px}
+.sub.flow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:-2px;font-size:13.5px}
+.stp{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--muted)}
+.stp b{color:var(--ink);margin-right:4px}
+.arrow{font-size:20px;color:var(--accent);font-weight:700;line-height:1}
+.badge{margin-left:auto;display:flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px;box-shadow:var(--shadow)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}.ok .dot{background:var(--ok)}.bad .dot{background:var(--warn)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;padding:16px 32px 120px;max-width:1320px;margin:auto}
+@media(max-width:980px){main{grid-template-columns:1fr;padding:12px 16px 120px}header{padding:18px 16px 6px}}
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+h2{font-size:15px;margin:0 0 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2 small{color:var(--muted);font-weight:400}
+h2 .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.tile{border:2px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:var(--bg);transition:.15s;text-align:left;padding:0;color:inherit;font:inherit}
+.tile:hover{transform:translateY(-2px);border-color:var(--muted)}
+.tile.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.tile img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#0f172a}
+.tile .t{padding:10px 12px 12px}.tile b{display:block;font-size:14px}.tile span{color:var(--muted);font-size:12.5px;display:block;margin-top:2px}
+.tile .tag{display:inline-block;margin-top:6px;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--accent)}
+.tag.warn{background:#fef3c7;color:#92400e}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:end}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+input,select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+input:disabled{opacity:.6}
+.f{flex:1;min-width:150px}.hint{font-size:12px;color:var(--muted);margin-top:4px}
+details{border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow);margin-bottom:20px}
+details>summary{cursor:pointer;padding:16px 20px;font-weight:700;list-style:none;display:flex;align-items:center;gap:10px}
+details>summary::before{content:"▸";transition:.15s;color:var(--muted)}details[open]>summary::before{transform:rotate(90deg)}
+details>summary small{font-weight:400;color:var(--muted);margin-left:4px}
+.body{padding:2px 20px 20px;display:grid;gap:22px}
+.group h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+button{font:inherit;cursor:pointer}
+.btn{padding:9px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600}
+.btn:hover{background:var(--soft)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;padding:13px 26px;font-size:15px}
+.btn.primary:hover{filter:brightness(1.1)}
+aside{min-width:0}.asidein{position:sticky;top:12px;max-height:calc(100vh - 96px);overflow-y:auto;overflow-x:hidden;padding:2px 4px 2px 0;scrollbar-width:thin}aside .card{margin-bottom:16px}
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 18px;padding:0;list-style:none}
+.steps li{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--muted);box-shadow:var(--shadow)}
+.steps b{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:13px;margin-bottom:3px}
+.steps i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:11px}
+@media(max-width:700px){.steps{grid-template-columns:1fr 1fr}}
+/* Studio: scene, camera, captures and truth left; pose panels right; Activity below both. */
+main.studio-mode{grid-template-columns:minmax(0,1fr) 420px;max-width:1500px;align-items:start}
+main.studio-mode #workspace{display:block}
+main.studio-mode #tab-studio{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+main.studio-mode #tab-studio>.steps{margin-bottom:0}
+main.studio-mode #tab-studio>section{margin-bottom:0}
+main.studio-mode #camview{max-width:none}
+main.studio-mode aside{display:block}main.studio-mode .asidein{position:static;max-height:none;overflow:visible;padding:0}
+main.studio-mode #studio-controls:not(.hide){display:block}
+main.studio-mode #truthcard{margin-top:20px}
+@media(max-width:980px){main.studio-mode{grid-template-columns:minmax(0,1fr)}}
+.caphead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.caphead h2{margin:0}.count{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:800}
+.captools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rndbox{display:flex;align-items:center;gap:8px;padding:5px 6px 5px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.rndbox label{margin:0;white-space:nowrap}.rndbox input{width:64px;padding:6px 8px}
+.rndbox .btn{background:var(--accent);color:var(--accent-ink);border-color:transparent}.rndbox .btn:hover{filter:brightness(1.1);background:var(--accent)}
+.batchbar{display:grid;gap:10px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.saverow{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.saverow .mono{font-size:12.5px;word-break:break-all}.saverow input{padding:7px 9px}
+.optgrid{display:grid;grid-template-columns:minmax(260px,1fr) minmax(420px,2fr);gap:12px;margin-bottom:12px;align-items:stretch}@media(max-width:900px){.optgrid{grid-template-columns:1fr}}
+.optgrid .opt{display:grid;gap:10px;align-content:start;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}.optgrid .batchbar{margin:0}
+.opt .ot{display:flex;align-items:center;gap:10px}.opt .ot b{font-size:13.5px}.opt .ot .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:800}
+.opt .od{font-size:12.5px;color:var(--muted);margin:0}.opt .rndbox{border:0;padding:0;background:none}
+.batchbar .bt{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}.batchbar .bt b{font-size:13.5px}.batchbar .bt span{font-size:12.5px;color:var(--muted)}
+.bfields{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:end}.bfields>div{min-width:130px}.bfields input[type=number]{width:100%;max-width:150px;padding:7px 9px}
+.bfields .chk{display:flex;align-items:center;gap:8px;margin:0 4px 8px;white-space:nowrap}.bfields .chk input{width:auto}
+#bgo{background:var(--accent);color:var(--accent-ink);border-color:transparent}#bgo:hover{background:var(--accent);filter:brightness(1.1)}
+.bhead{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 12px;border-radius:10px;background:var(--soft);font-size:12.5px;color:var(--muted)}
+.bhead b{color:var(--ink);font-size:13.5px}.bhead i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.capempty{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted);font-size:13.5px}
+#capcard .caps{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));margin-top:0}
+main.studio-mode #capcard .caps{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+
+#studio-controls .ctl{margin:4px 0}
+#workspace{min-width:0}
+#activitycard,#masscard{grid-column:1/-1}#activitycard{margin-bottom:0}
+#activitycard pre{max-height:280px;overflow-wrap:anywhere}
+.actgrid{display:grid;grid-template-columns:minmax(0,62fr) minmax(280px,38fr);grid-template-rows:minmax(0,1fr);gap:16px;height:280px}
+#activitycard .actgrid pre{height:100%;max-height:none;min-height:0}
+@media(max-width:980px){.actgrid{grid-template-columns:1fr;grid-template-rows:280px 280px;height:auto}}
+.hw{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;height:100%;min-height:0}
+.hwoff{display:none;grid-column:1/-1;grid-row:1/-1;place-content:center;gap:6px;text-align:center;padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13px}.hwoff b{color:var(--ink);font-size:14px}
+.hw.off .hwoff{display:grid}.hw.off .hwc{display:none}
+.hwc{border:1px solid var(--line);border-radius:12px;padding:8px 11px;background:var(--bg);display:flex;flex-direction:column;gap:3px;min-width:0;min-height:0;overflow:hidden}
+.hwh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--muted);font-weight:600}
+.hwh b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em;white-space:nowrap}
+.hwc canvas{width:100%;flex:1 1 0;min-height:0;display:block}
+.hwc .hint{margin:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cores{display:flex;align-items:flex-end;gap:2px;height:16px;flex:none}.cores i{flex:1;min-width:2px;background:#22c55e;border-radius:1.5px 1.5px 0 0;opacity:.85;transition:height .5s}
+#truthpath{overflow-wrap:anywhere}
+#truth{overflow-x:auto}
+#studio-controls .ctl{grid-template-columns:64px minmax(0,1fr) 78px}
+@media(max-width:980px){.asidein{position:static;max-height:none;overflow:visible}#activitycard{grid-column:1}}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13.5px;margin:0}.kv dt{color:var(--muted)}.kv dd{margin:0;text-align:right;font-weight:600}
+#result{width:100%;border-radius:10px;display:none;margin-top:10px}
+pre{background:#0b1220;color:#cbd5e1;border-radius:10px;padding:12px;font:12px/1.5 Consolas,monospace;max-height:260px;overflow:auto;white-space:pre-wrap;margin:0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:14px 32px;display:flex;align-items:center;gap:18px;z-index:5}
+@media(max-width:980px){.bar{padding:12px 16px}}
+#statuswrap{flex:1;min-width:0}
+#status{color:var(--muted);font-size:14px;min-width:0}
+.prog{display:flex;align-items:center;gap:12px;margin-top:6px}.prog .track{flex:1;height:10px;border-radius:999px;background:var(--line);overflow:hidden;position:relative}
+.prog .fill{height:100%;width:0;border-radius:999px;background:var(--accent);transition:width .4s ease}
+.prog.indet .fill{position:absolute;width:35%;animation:slide 1.2s ease-in-out infinite}
+@keyframes slide{0%{left:-35%}100%{left:100%}}
+.pstats{display:flex;align-items:center;gap:0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pstats .pp{font-size:22px;font-weight:800;line-height:1;color:var(--accent);padding-right:14px;min-width:62px;text-align:right}
+.pstats .pi{display:flex;flex-direction:column;gap:1px;padding:0 14px;border-left:1px solid var(--line);font-size:14px;font-weight:700;line-height:1.15}
+.pstats .pi i{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pstats.done .pp{color:var(--ok)}
+@media(max-width:700px){.pstats .pi.opt{display:none}}
+.spin{width:18px;height:18px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;display:none}.busy .spin{display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+.cam .tile img{aspect-ratio:16/10}
+.err{color:var(--bad)}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;box-shadow:var(--shadow)}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:8px 18px;border-radius:9px;font-weight:700}
+.tabs button{display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.tn{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:13px;font-weight:800;line-height:1;background:var(--line);color:var(--ink)}
+.tabs button.on .tn{background:var(--accent-ink);color:var(--accent)}
+.tabs button.on{background:var(--accent);color:var(--accent-ink)}
+.hide{display:none!important}
+#cancel{display:none}.busy #cancel,.planning #cancel{display:inline-flex}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}.btn.danger:hover{background:color-mix(in srgb,var(--bad) 10%,var(--panel))}
+.btn.danger.solid{background:var(--bad);color:#fff;border-color:transparent}.btn.danger.solid:hover{background:var(--bad);filter:brightness(1.08)}
+dialog#confirm{border:0;border-radius:18px;padding:0;width:min(460px,calc(100vw - 32px));background:var(--panel);color:var(--ink);box-shadow:0 24px 70px rgba(15,23,42,.35)}
+dialog#confirm::backdrop{background:rgba(15,23,42,.5);backdrop-filter:blur(3px)}
+dialog#confirm[open]{animation:pop .16s ease-out}@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.cf{padding:24px 24px 20px}.cfhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}.cfhead h3{margin:0;font-size:17px}
+.cficon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--bad) 14%,var(--panel));color:var(--bad);font-weight:800;font-size:18px;flex:none}
+.cf p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.55}.cf p b{color:var(--ink)}
+.cfbtns{display:flex;justify-content:flex-end;gap:10px}.cfbtns .btn{padding:10px 18px}
+
+.subh{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px}.subh small{text-transform:none;letter-spacing:0;font-weight:400}
+#scan{width:100%;display:block;border-radius:10px;background:#0b1220}.mono{font-variant-numeric:tabular-nums;min-width:120px}
+#plan{width:100%;display:block;border-radius:10px;background:#0b1220;cursor:crosshair;touch-action:none}
+.studio2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media(max-width:1100px){.studio2{grid-template-columns:1fr}}
+#camview{width:100%;max-width:640px;border-radius:10px;background:#0b1220;display:block}
+.ctl{display:grid;grid-template-columns:70px 1fr 78px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.ctl span{color:var(--muted);font-weight:600}.ctl input[type=range]{padding:0;accent-color:var(--accent)}.ctl input[type=number]{padding:5px 7px}
+.warn{background:#fef3c7;color:#92400e;border-radius:8px;padding:7px 10px;font-size:13px;margin-top:8px}
+.stats{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:8px}.stats b{color:var(--ink)}
+.caps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.cap{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px;background:var(--bg)}
+.cap img{width:100%;display:block}.cap div{padding:6px 8px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.cap button{border:0;background:transparent;color:var(--bad);font-weight:700}
+.intr{font-size:12.5px;color:var(--muted);margin-top:12px;font-variant-numeric:tabular-nums;line-height:1.7}.intr b{color:var(--ink)}
+table.gt{width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums;margin-top:8px}
+table.gt td,table.gt th{padding:3px 4px;border-bottom:1px solid var(--line);text-align:right}table.gt th{color:var(--muted)}table.gt td:first-child,table.gt th:first-child{text-align:left}
+dialog#mass{border:0;border-radius:18px;padding:0;width:min(940px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--panel);color:var(--ink);box-shadow:0 24px 70px rgba(15,23,42,.35)}
+dialog#mass::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
+dialog#mass[open]{animation:pop .16s ease-out;display:flex;flex-direction:column}
+#mass .mh{padding:20px 24px 6px}#mass .mh h3{margin:0;font-size:18px}
+#mass .mb{padding:10px 24px 14px;overflow:auto;display:grid;gap:14px;flex:1;min-height:0}
+#mass .mf{padding:14px 24px 18px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#mass .mf .grow{flex:1;min-width:200px;font-size:13px}
+.mgrp{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.mgrp h4{margin:0 0 8px;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mgrp h4 .lnk{margin-left:auto;display:inline-flex;gap:6px}.mgrp h4 .lnk button{border:0;background:none;color:var(--accent);font-size:12px;font-weight:600;padding:2px 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:13px;cursor:pointer;margin:0;color:var(--ink);font-weight:500}
+.chip:has(input:checked){border-color:var(--accent);background:var(--soft)}.chip input{width:auto;margin:0}.chip.dis{opacity:.5;cursor:not-allowed}
+.mcam{display:grid;gap:8px;padding:8px 0;border-top:1px dashed var(--line)}.mcam:first-of-type{border-top:0;padding-top:0}
+.mrad{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:8px}.mrad label{display:flex;align-items:center;gap:7px;margin:0;font-size:13px;color:var(--ink);font-weight:500}.mrad input{width:auto}
+.mgrp .bfields input[type=number]{max-width:130px}
+.msumw{flex:1;min-width:280px;display:grid;gap:4px}#mErr{font-size:13px;font-weight:600}#mErr:empty{display:none}
+#mSummary{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:3px 20px;font-size:13px;color:var(--muted)}
+#mSummary li{display:flex;align-items:baseline;gap:7px}#mSummary li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;transform:translateY(-1px)}
+#mSummary li b{color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}#mSummary li.note{flex-basis:100%;font-size:12px}#mSummary li.note::before{background:var(--muted)}
+#massbox .mi{display:grid;gap:4px;font-size:13px;font-variant-numeric:tabular-nums}#massbox .mi b{color:var(--ink)}#massbox .mi span{color:var(--muted)}
+.mbars{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;margin-bottom:12px}@media(max-width:900px){.mbars{grid-template-columns:1fr}}
+.mbh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;font-size:13px}.mbh span{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.pbar{height:12px;border-radius:999px;background:var(--line);overflow:hidden}.pbar i{display:block;height:100%;width:0;border-radius:999px;background:var(--accent);transition:width .6s ease}
+.mbar.cur .pbar i{background:#14b8a6}
+.mchips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.mchip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--bg);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.mchip i,.mc>i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;font-weight:800;color:#fff;flex:none}
+.mchip.done i,.mc.done>i{background:var(--ok)}.mchip.run i,.mc.run>i{background:var(--accent)}.mchip.wait i,.mc.wait>i{background:var(--muted)}.mchip.fail i,.mc.fail>i{background:var(--bad)}
+.mgridw{max-height:300px;overflow:auto;padding-right:4px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.mc{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:12.5px;position:relative;overflow:hidden}
+.mc b{font-size:13px;display:block}.mc span{color:var(--muted);display:block}.mc em{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;text-align:right}
+.mc.run{border-color:var(--accent);background:var(--soft)}.mc.run>i{animation:pulse 1.4s ease-in-out infinite}.mc.wait{opacity:.72}.mc.fail{border-color:var(--bad)}
+.mc .mp{position:absolute;left:0;bottom:0;height:3px;background:#14b8a6;transition:width .6s}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 25%,transparent)}}
+#mass .mb{grid-template-columns:minmax(0,1fr)}.mgrp{min-width:0}
+.scanout{min-width:0;margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.scansum{padding:9px 12px;font-size:13px;display:flex;flex-wrap:wrap;gap:3px 16px;border-bottom:1px solid var(--line)}.scansum:last-child{border-bottom:0}.scansum .bad{color:var(--bad)}
+.scanwrap{max-height:220px;overflow:auto}
+table.scant{width:100%;border-collapse:collapse;font-size:12.5px}
+table.scant th{position:sticky;top:0;background:var(--bg);text-align:left;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;padding:6px 10px;font-weight:700}
+table.scant td{padding:6px 10px;border-top:1px solid var(--line);white-space:nowrap}
+.scant .ok{color:var(--ok);font-weight:700}.scant .bad{color:var(--bad);font-weight:700}.scant tr.match td{background:var(--soft)}
+#mSummary li.warn::before{background:var(--warn)}
+.mchip.skip i,.mc.skip>i{background:var(--muted)}.mchip.warn i,.mc.warn>i{background:var(--warn)}.mc.skip{opacity:.8}.mc.warn{border-color:var(--warn)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Camera–LiDAR Simulation Lab</h1>
+  <div class="tabs" id="tabs"><button class="on" data-tab="setup"><i class="tn">1</i>Setup</button><button data-tab="studio"><i class="tn">2</i>Studio: place &amp; capture</button></div>
+  <div class="badge" id="gpu"><span class="dot"></span><span>Checking GPU…</span></div>
+  <div class="sub flow"><span class="stp"><i class="tn">1</i><span><b>Setup</b> pick an environment, LiDAR and camera</span></span><span class="arrow" aria-hidden="true">→</span><span class="stp"><i class="tn">2</i><span><b>Studio</b> place the rig, capture poses, generate with ground truth</span></span></div>
+</header>
+<main>
+  <div id="workspace">
+  <div id="tab-setup">
+    <section class="card"><h2><span class="n">1</span>Environment</h2><div class="tiles" id="scenes"></div></section>
+    <section class="card"><h2><span class="n">2</span>LiDAR <small>· real scan pattern, colour = firing time</small></h2><div class="tiles" id="lidars"></div>
+      <div id="scanbox" class="hide"><h3 class="subh">Scan filling the scene <small id="scanname"></small></h3>
+        <canvas id="scan" width="960" height="360"></canvas>
+        <div class="row" style="align-items:center;margin-top:8px"><button class="btn" id="scanplay">⏸ Pause</button><b id="scantime" class="mono"></b><span class="hint" id="scancov"></span></div>
+        <div class="hint">Non-repetitive scanner: it never repeats the same lines, so the field of view fills in the longer it integrates. Shown slowed down; colour = firing time (blue early, red late).</div></div></section>
+    <section class="card cam"><h2><span class="n">3</span>Camera <small>· grid = 10° lines as this lens sees them</small></h2><div class="tiles" id="cams"></div>
+      <div class="row" style="margin-top:16px">
+        <div class="f"><label>Resolution</label><select id="respreset"></select></div>
+        <div class="f"><label>Width (px)</label><input data-key="width" id="resw" inputmode="numeric"></div>
+        <div class="f"><label>Height (px)</label><input data-key="height" id="resh" inputmode="numeric"></div>
+        <div class="f"><label>Focal length (px)</label><input data-key="focal" inputmode="decimal"></div>
+      </div>
+      <label style="margin-top:12px;display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="keepfov" checked style="width:auto"> Keep the field of view when the resolution changes (focal length scales with width)</label>
+      <div class="intr" id="intr"></div>
+    </section>
+    <section class="card"><h2><span class="n">4</span>Capture</h2>
+      <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:18px 24px">
+        <div><label>Captures</label><input data-key="captures" type="number" min="1"><div class="hint" id="capnote">Image + point-cloud pairs from the current rig pose. Use the Studio to capture several different poses.</div></div>
+        <div><label>Camera image</label><select data-key="renderer"><option value="blender">Cycles render (GPU)</option><option value="geometry">Geometry diagnostic (fast, CPU)</option></select><div class="hint">Cycles renders the image on your GPU; the diagnostic is a fast flat-shaded preview.</div></div>
+      </div>
+    </section>
+    <section class="card"><h2><span class="n">5</span>Mass capture <small>· every combination of environment, LiDAR, camera resolution and intrinsics drift, captured automatically</small></h2>
+      <div class="row" style="align-items:center"><button class="btn primary" id="massopen" style="padding:11px 20px">Open mass capture…</button><span class="hint" style="margin:0">Each combination is saved as its own run folder (images, point clouds, ground truth, and the true camera intrinsics of every batch). The Studio follows along while it works.</span></div>
+    </section>
+    <details id="more"><summary>More settings <small>timing, GPU, Blender, output</small></summary>
+      <div class="body">
+        <div class="group"><h3>Timing and sampling</h3><div class="grid2">
+          <div><label>Scan accumulation (s)</label><input data-key="duration"></div><div><label>Capture interval (s)</label><input data-key="interval"></div>
+          <div><label>Random seed</label><input data-key="seed"></div><div><label>Beam stride</label><input data-key="stride"></div>
+          <div><label>Also save accumulated scan (s)</label><input data-key="accumulate"></div></div>
+          <div class="hint">Beam stride: <b>auto</b> = the densest scan the CPU limit allows (1 = full scan; 20 = every twentieth beam). LiDAR ray casting runs on the CPU.</div></div>
+        <div class="group"><h3>Rendering and GPU</h3><div class="grid2">
+          <div><label>Quality preset</label><select id="quality"></select></div>
+          <div><label>Render device</label><select data-key="device"><option value="OPTIX">NVIDIA OptiX (GPU)</option><option value="CUDA">NVIDIA CUDA (GPU)</option><option value="CPU">CPU</option></select></div>
+          <div><label>Samples</label><input data-key="samples"></div><div><label>Cube pixels</label><input data-key="cube_size"></div>
+          <div><label>PC responsiveness while rendering</label><select data-key="load" id="loadsel"></select></div></div>
+          <div class="hint" id="loadhint"></div>
+          <div class="hint">A GPU request never silently falls back to CPU; if no device works the job stops with an error.</div>
+          <div class="row" style="margin-top:10px"><button class="btn" id="testgpu">Test GPU in Blender</button><button class="btn" id="build">Build missing scene</button><button class="btn" id="openscene">Open scene in Blender</button></div></div>
+        <div class="group"><h3>Paths</h3><div class="grid2" style="grid-template-columns:1fr">
+          <div><label>Blender executable</label><input data-key="blender"></div>
+          <div><label>Output folder (must not exist)</label><div class="row" style="flex-wrap:nowrap"><input data-key="output"><button class="btn" id="newout" style="white-space:nowrap">New run name</button></div></div></div></div>
+      </div>
+    </details>
+  </div>
+
+  <div id="tab-studio" class="hide">
+    <ol class="steps">
+      <li><b><i>1</i>Place the rig</b>Click the map; drag to aim it.</li>
+      <li><b><i>2</i>Fine-tune</b>Pose and camera mount on the right.</li>
+      <li><b><i>3</i>Capture</b>Add one or more poses (Captures card).</li>
+      <li><b><i>4</i>Generate</b>Saves images and ground truth.</li>
+    </ol>
+    <section class="card hide" id="massbox"><h2>Mass capture in progress <small id="massrun"></small></h2><div class="mi" id="massinfo"></div></section>
+    <section class="card"><h2>Floor plan <small>· click to place the rig · drag to aim it · cut-away view</small></h2>
+      <canvas id="plan" width="720" height="500"></canvas>
+      <div class="row" style="margin-top:12px"><div class="f"><label>Cut-away height: everything above this is hidden (<span id="cutv">2.0</span> m)</label><input type="range" id="cut" min="0.5" max="6" step="0.1" value="2.0"></div></div>
+      <div class="row" id="plananim" style="align-items:center;margin:6px 0 2px"><button class="btn" id="planplay">⏸ Pause</button><b id="plantime" class="mono"></b><span class="hint">Livox scans fill in over time (looped)</span></div>
+      <div class="hint">Blue dots = LiDAR returns · orange cone = camera field of view · white arrow = rig heading. Numbered markers are captured poses.</div>
+    </section>
+    <section class="card"><h2>What the camera sees <small>· geometry preview with LiDAR returns overlaid (colour = range)</small></h2>
+      <img id="camview" alt="Camera preview"><div class="stats" id="viewstats"></div><div class="warn hide" id="viewwarn"></div>
+      <div class="row" style="margin-top:14px;align-items:center"><span class="opt" style="display:contents"><span class="n" style="display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:800;margin-right:10px">1</span></span><button class="btn primary" id="capture" style="padding:11px 20px">＋ Capture this pose</button><span class="hint">Option 1 · single pose. Adds the current rig pose to the Captures list below.</span></div>
+    </section>
+      <section class="card" id="capcard">
+        <div class="caphead">
+          <h2>Captures <span class="count" id="capcount">0</span><small id="capsnote"></small></h2>
+          <div class="captools"><button class="btn" id="clearcaps">Clear all</button></div>
+        </div>
+        <div class="optgrid">
+        <div class="opt" id="randopt">
+          <div class="ot"><span class="n">2</span><b>Random poses</b></div>
+          <p class="od">Picks valid viewpoints for you (floor below, away from walls, facing open space). Replaces the list. Nothing is generated until you press Generate.</p>
+          <div class="rndbox" title="Adds that many valid random poses (replaces the list). Nothing is generated until you press Generate.">
+            <label for="rndn">How many</label><input type="number" id="rndn" min="1" max="50" value="5"><button class="btn" id="rndgo">Place</button></div>
+        </div>
+        <div class="batchbar" id="batchbar">
+          <div class="bt"><span class="n" style="display:inline-grid;place-items:center;width:22px;height:22px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:800">3</span><b>Capture in batches</b><span>The LiDAR-camera mount stays fixed inside a batch and shifts a little between batches.</span></div>
+          <div class="bfields">
+            <div><label for="bn">Batches</label><input type="number" id="bn" min="1" max="20" value="3"></div>
+            <div><label for="bp">Captures per batch</label><input type="number" id="bp" min="1" max="50" value="5"></div>
+            <div><label for="brot">Mount tolerance ± rotation (°)</label><input type="number" id="brot" min="0" max="10" step="0.1" value="0.5"></div>
+            <div><label for="btr">± translation (mm)</label><input type="number" id="btr" min="0" max="100" step="1" value="5"></div>
+            <label class="chk"><input type="checkbox" id="bmount" checked>Vary mount between batches</label>
+            <label class="chk"><input type="checkbox" id="banim" checked>Show step by step</label>
+          </div>
+          <label class="chk"><input type="checkbox" id="bintrinsics">Vary camera intrinsics between batches</label>
+          <div class="bfields" id="bintrinsicfields">
+            <div><label for="bfocal">Focal length tolerance ± (%)</label><input type="number" id="bfocal" min="0" max="5" step="0.1" value="0.3" disabled></div>
+            <div><label for="bprincipal">Principal point tolerance ± (px)</label><input type="number" id="bprincipal" min="0" max="10" step="0.1" value="0.5" disabled></div>
+            <div><label for="bdistortion">Distortion k1 tolerance ± (0 = off)</label><input type="number" id="bdistortion" min="0" max="0.001" step="0.0001" value="0" disabled></div>
+          </div>
+          <span class="hint">Batch 1 uses nominal intrinsics. Later batches use seeded random offsets within these limits from nominal, fixed within each batch. K and D are saved in evaluation ground truth. Set limits before creating batches; recreate batches to apply changes.</span>
+          <button class="btn" id="bgo">Create batches</button>
+        </div>
+        </div>
+        <div class="capempty" id="capempty">No poses yet. Click the floor plan and press <b>Capture this pose</b>, or use <b>Random poses</b>.</div>
+        <div class="caps" id="caps"></div>
+        <div class="saverow" id="saverow"><b>Save to</b><span class="mono" id="savepath">Not chosen yet: a folder picker opens when you press Generate</span><button class="btn" id="savechoose">Choose folder…</button><label for="savename" class="hint" style="margin:0 0 0 8px">Run folder name</label><input id="savename" placeholder="automatic, e.g. warehouse_20261109_141500_15" style="min-width:260px"><span class="warn hide" id="sOneDrive" style="flex-basis:100%">This folder is inside OneDrive, which uploads every file as it is written and can slow the PC during a long capture. Saving to a folder outside OneDrive (for example C:\SimData) and moving the finished datasets afterwards is lighter.</span><span class="hint">Each run is saved as its own folder inside the chosen folder: <b>inference/</b> (what an algorithm sees) and <b>evaluation/</b> (ground truth, batches.json).</span></div></section>
+  </div>
+    <section class="card hide" id="truthcard"><h2>Ground truth</h2><div class="hint" id="truthpath"></div><div id="truth"></div></section>
+  </div>
+  <aside><div class="asidein">
+    <div id="studio-controls" class="hide">
+
+      <section class="card" id="poseCard"><h2>Rig pose in the world</h2><div id="poseCtl"></div>
+        <div class="hint">World: X forward, Y left, Z up (m); angles in degrees. The rig origin is the LiDAR frame.</div></section>
+      <section class="card" id="relCard"><h2>LiDAR → camera <small>· relative pose</small></h2><div id="relCtl"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="resetrel">Reset to default mount</button></div>
+        <div class="hint">Camera position in the LiDAR frame and its rotation relative to the default forward mounting (roll about X, pitch about Y, yaw about Z of the LiDAR; +yaw turns left). This becomes the ground-truth T_CL.</div></section>
+    </div>
+
+    <section class="card"><h2>Current setup</h2><dl class="kv" id="summary"></dl>
+      <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" id="viewds" style="flex:1">Inspect dataset</button></div>
+      <img id="result" alt="Latest generated camera image"><div class="hint" id="resultcap"></div>
+    </section>
+
+
+  </div></aside>
+  <section class="card hide" id="masscard"><h2>Mass capture <small id="mcsub"></small></h2>
+    <div class="mbars">
+      <div class="mbar"><div class="mbh"><b>Overall</b><span id="mcot"></span></div><div class="pbar"><i id="mcof"></i></div></div>
+      <div class="mbar cur"><div class="mbh"><b>This configuration</b><span id="mcct"></span></div><div class="pbar"><i id="mccf"></i></div><div class="hint" id="mccn"></div></div>
+    </div>
+    <div class="mchips" id="mcchips"></div>
+    <div class="mgridw"><div class="mgrid" id="mcgrid"></div></div>
+  </section>
+  <section class="card" id="activitycard"><h2>Activity <small>· log, and live GPU / CPU use</small></h2>
+    <div class="actgrid"><pre id="log">Nothing running.</pre>
+      <div class="hw" id="hw">
+        <div class="hwoff"><b>Live GPU / CPU graphs</b><span>They appear after the app is restarted with the latest version. Restart it once the current job has finished.</span></div>
+        <div class="hwc"><div class="hwh"><span>GPU load</span><b id="hv-gpu">–</b></div><canvas data-k="gpu"></canvas><div class="hint" id="hs-gpu">Waiting for the first reading…</div></div>
+        <div class="hwc"><div class="hwh"><span>CPU load</span><b id="hv-cpu">–</b></div><canvas data-k="cpu"></canvas><div class="cores" id="cores" title="Each bar is one logical core"></div></div>
+        <div class="hwc"><div class="hwh"><span>GPU memory</span><b id="hv-vram">–</b></div><canvas data-k="vram"></canvas></div>
+        <div class="hwc"><div class="hwh"><span>Memory (RAM)</span><b id="hv-ram">–</b></div><canvas data-k="ram"></canvas></div>
+      </div></div></section>
+</main>
+<div class="bar" id="bar"><div class="spin"></div><div id="statuswrap"><div id="status">Ready.</div><div class="prog hide" id="prog"><div class="track"><div class="fill" id="fill"></div></div><div class="pstats" id="pct"></div></div></div><button class="btn danger" id="cancel" type="button">Cancel</button><button class="btn hide" id="tosetup">← Back to Setup</button><button class="btn primary hide" id="go">Generate captures</button><button class="btn primary" id="tostudio">Continue to Studio →</button></div>
+<dialog id="mass" aria-labelledby="mTitle">
+  <div class="mh"><h3 id="mTitle">Mass capture</h3><p class="hint" style="margin:4px 0 0">Tick what to combine. Every combination becomes its own run folder. Poses and mount changes are the same for every sensor of an environment, so the runs are directly comparable.</p></div>
+  <div class="mb">
+    <div class="mgrp" id="mSave"><h4>1 · Save folder <span class="lnk"><button type="button" id="mScan">Scan this folder</button></span></h4>
+      <div class="saverow" style="margin:0"><span class="mono" id="mPath" style="flex:1">Not chosen yet</span><button class="btn" id="mChoose" type="button">Choose folder…</button></div>
+      <label class="chip" style="margin-top:8px;justify-self:start"><input type="checkbox" id="mSkip" checked>Skip configurations that are already saved here</label>
+      <div class="mrad hide" id="mUnf" style="margin-top:10px"><b style="font-size:12.5px">Unfinished runs in this folder</b>
+        <label><input type="radio" name="munf" value="continue" checked>Continue where they stopped (recommended)</label>
+        <label><input type="radio" name="munf" value="redo">Redo them from the start</label></div>
+      <div class="warn hide" id="mOneDrive">This folder is inside OneDrive, which uploads every file as it is written and can slow the PC during a long capture. Saving to a folder outside OneDrive (for example C:\SimData) and moving the finished datasets afterwards is lighter.</div>
+      <div class="hint hide" id="mUnfHint"><b>Continue</b> keeps the captures that already finished and only produces the rest; the result is identical to a run that never stopped. <b>Redo</b> moves the unfinished attempt to <b>_incomplete</b> (kept, not deleted) and captures everything again. A run made with different settings is always redone.</div>
+      <div class="hint">Every configuration is its own self-contained folder directly inside this one. Existing folders are <b>never overwritten</b>: they are skipped, or, if you untick the box, the configuration is saved again as a new copy (named _v2). A mass capture that stopped half way can be run again with the same options and the same folder to do only what is missing.</div>
+      <div class="scanout hide" id="mScanOut"></div></div>
+    <div class="mgrp"><h4>2 · Environments <span class="lnk"><button type="button" data-all="scenes">All</button><button type="button" data-none="scenes">None</button></span></h4><div class="chips" id="mScenes"></div></div>
+    <div class="mgrp"><h4>3 · LiDARs <span class="lnk"><button type="button" data-all="lidars">All</button><button type="button" data-none="lidars">None</button></span></h4><div class="chips" id="mLidars"></div></div>
+    <div class="mgrp"><h4>4 · Cameras and image resolutions</h4><div id="mCams"></div><div class="hint">The focal length scales with the width, so the field of view stays the same at every resolution (base: <span id="mBase"></span>).</div></div>
+    <div class="mgrp"><h4>5 · Camera intrinsics drift</h4>
+      <div class="mrad"><label><input type="radio" name="mdrift" value="off" checked>Off · nominal intrinsics only</label><label><input type="radio" name="mdrift" value="on">On · later batches drift</label><label><input type="radio" name="mdrift" value="both">Both · every combination twice (fixed and drifting)</label></div>
+      <div class="bfields" id="mDriftFields">
+        <div><label for="mFocal">Focal tolerance ± (%)</label><input type="number" id="mFocal" min="0" max="5" step="0.1" value="0.3"></div>
+        <div><label for="mPrinc">Principal point ± (px)</label><input type="number" id="mPrinc" min="0" max="10" step="0.1" value="0.5"></div>
+        <div><label for="mK1">Distortion k1 ± (0 = off)</label><input type="number" id="mK1" min="0" max="0.001" step="0.0001" value="0"></div></div>
+      <div class="hint">Batch 1 always keeps the nominal intrinsics; later batches drift by a seeded random amount within these limits, fixed inside each batch. The true K and D of every batch are saved.</div></div>
+    <div class="mgrp"><h4>6 · Captures in every combination</h4>
+      <div class="bfields">
+        <div><label for="mB">Batches</label><input type="number" id="mB" min="1" max="20" value="3"></div>
+        <div><label for="mN">Captures per batch</label><input type="number" id="mN" min="1" max="50" value="5"></div>
+        <label class="chk"><input type="checkbox" id="mMount" checked>Vary the camera mount between batches</label>
+        <div><label for="mRot">Mount ± rotation (°)</label><input type="number" id="mRot" min="0" max="10" step="0.1" value="0.5"></div>
+        <div><label for="mTr">± translation (mm)</label><input type="number" id="mTr" min="0" max="100" step="1" value="5"></div>
+        <div><label for="mSeed">Pose seed (optional)</label><input type="number" id="mSeed" min="0" placeholder="automatic"></div></div>
+      <div class="hint">Random valid poses are chosen for you, like the Studio's batch mode. The pose seed is automatic: the same options always give the same poses, so a rerun matches the earlier runs. Type a number to get a different set. Rendering uses your Setup settings: <b id="mRender"></b>.</div></div>
+    <label class="chip" style="justify-self:start"><input type="checkbox" id="mLive" checked>Show it live in the Studio (uses a little CPU)</label>
+  </div>
+  <div class="mf"><div class="msumw"><div class="err" id="mErr"></div><ul id="mSummary"></ul></div><button class="btn" id="mClose" type="button">Close</button><button class="btn primary" id="mStart" type="button">Start mass capture</button></div>
+</dialog>
+<dialog id="confirm" aria-labelledby="cfTitle">
+  <form method="dialog" class="cf">
+    <div class="cfhead"><span class="cficon" id="cfIcon">!</span><h3 id="cfTitle"></h3></div>
+    <p id="cfBody"></p>
+    <div class="cfbtns"><button class="btn" value="no" id="cfNo"></button><button class="btn danger solid" value="yes" id="cfYes"></button></div>
+  </form>
+</dialog>
+<script>
+const TOKEN="__TOKEN__";let S=null,V={},from=0,polling=false,P=[],Q={},map=null,mapImg=null,lastPts=[],lastThumb=null,lastFov=null,massRun=false,massSaved=null,massSeen=-1,massCap=-1;
+const $=s=>document.querySelector(s);
+const post=(p,b)=>fetch(p,{method:"POST",headers:{"X-Token":TOKEN},body:JSON.stringify(b||V)}).then(r=>r.json());
+const CAMS=[{id:"fisheye",name:"Fisheye",d:"Equidistant, wide angle"},{id:"pinhole",name:"Pinhole",d:"Rectilinear, narrower view"}];
+const NAMES={warehouse:"Industrial warehouse",laboratory:"Laboratory / office",urban:"Outdoor street",corridor:"Difficult corridor",livox_avia:"Livox Avia",livox_mid360:"Livox Mid-360",velodyne_vlp16:"Velodyne VLP-16",ouster_os1_64:"Ouster OS1-64",hesai_at128:"Hesai AT128"};
+const PRESETS=[[320,240,"QVGA"],[640,480,"VGA"],[800,600,"SVGA"],[1024,768,"XGA"],[1280,720,"HD 720p"],[1280,800,"WXGA"]];
+const MAXPIX=1048576;
+const POSE=[["x","X",-10,25,.05],["y","Y",-10,10,.05],["z","Z",.2,6,.05],["roll","Roll",-60,60,.5],["pitch","Pitch",-60,60,.5],["yaw","Yaw",-180,180,.5]];
+const REL=[["cx","X fwd",-.5,.5,.005],["cy","Y left",-.5,.5,.005],["cz","Z up",-.5,.5,.005],["croll","Roll",-30,30,.1],["cpitch","Pitch",-30,30,.1],["cyaw","Yaw",-30,30,.1]];
+const REL0={cx:.05,cy:-.15,cz:.03,croll:0,cpitch:0,cyaw:0};
+const nums=s=>String(s).split(",").map(Number);
+
+function tile(id,img,title,desc,tag,key,warn){const b=document.createElement("button");b.className="tile";b.dataset.id=id;
+ b.innerHTML=`<img src="${img}" alt=""><div class="t"><b>${title}</b><span>${desc}</span>${tag?`<span class="tag ${warn?"warn":""}">${tag}</span>`:""}</div>`;
+ b.onclick=async()=>{
+  if((typeof batchRun!=="undefined"&&batchRun)||massRun)return;
+  if(key==="scene"&&V.scene!==id&&P.length){
+   const ok=await askConfirm({title:"Change environment?",body:`The <b>${P.length} captured pose${P.length>1?"s":""}</b> belong to the current environment and will be <b>removed</b>.`,yes:"Yes, change it",no:"Keep this environment",icon:"?"});
+   if(!ok)return;P=[];renderCaps()}
+  V[key]=id;sync();if(key==="scene"){showEnvironmentPreview();loadMap()}};return b}
+function showEnvironmentPreview(){const i=$("#result");i.src=`/preview/scene/${V.scene}.png`;i.alt=`${NAMES[V.scene]} environment preview`;i.style.display="block";
+ i.onerror=()=>{i.style.display="none"};$("#resultcap").textContent=`${NAMES[V.scene]} environment preview. Generate captures to see an image from your selected pose.`;$("#truthcard").classList.add("hide")}
+function build(){
+ $("#scenes").replaceChildren(...S.scenes.map(s=>tile(s.id,`/preview/scene/${s.id}.png`,NAMES[s.id],s.info,s.built?"scene ready":"not built yet","scene",!s.built)));
+ $("#lidars").replaceChildren(...S.lidars.map(l=>tile(l.id,`/preview/lidar/${l.id}.png`,NAMES[l.id],`${l.caption}<br>${l.rate_khz.toFixed(0)} k pts/s · ${l.range[0]}–${l.range[1]} m`,l.fidelity,"lidar",l.fidelity.includes("approx"))));
+ $("#cams").replaceChildren(...CAMS.map(c=>tile(c.id,"data:,",c.name,c.d,"","camera")));
+ $("#quality").innerHTML=Object.keys(S.qualities).map(k=>`<option>${k}</option>`).join("");
+ $("#loadsel").innerHTML=Object.entries(S.load_levels||{}).map(([k,[n]])=>`<option value="${k}">${n}</option>`).join("");
+ $("#respreset").innerHTML=PRESETS.map(([w,h,n],i)=>`<option value="${i}">${w} × ${h} · ${n}</option>`).join("")+`<option value="custom">Custom…</option>`;
+}
+
+/* ---------- resolution and intrinsics ---------- */
+function syncRes(){const w=+V.width,h=+V.height;const i=PRESETS.findIndex(p=>p[0]===w&&p[1]===h);
+ $("#respreset").value=i>=0?String(i):"custom";$("#resw").disabled=$("#resh").disabled=i>=0;
+ const f=+V.focal,ok=w>=2&&h>=2&&f>0&&w*h<=MAXPIX;
+ const fovh=2*Math.atan((w/2)/f)*180/Math.PI;
+ $("#intr").innerHTML=ok?`Intrinsics K · <b>fx = fy = ${f.toFixed(2)}</b> · <b>cx = ${((w-1)/2).toFixed(1)}</b> · <b>cy = ${((h-1)/2).toFixed(1)}</b> px · skew 0 · ${w*h>=1e6?(w*h/1e6).toFixed(2)+" MP":(w*h/1e3).toFixed(0)+" kP"}<br>Distortion D = [0, 0, 0, 0] · pinhole-equivalent horizontal FOV ${fovh.toFixed(1)}° (the lens previews above show the true ${V.camera} FOV)`
+  :`<span class="err">${w*h>MAXPIX?`Too many pixels (${w*h}); the CPU ray-casting limit is ${MAXPIX} pixels per capture.`:"Enter a width and height of at least 2 px and a positive focal length."}</span>`}
+function setRes(w,h){w=Math.round(w);h=Math.round(h);if(!(w>=2&&h>=2))return;
+ const old=+V.width;if($("#keepfov").checked&&old>0&&+V.focal>0)V.focal=String(Math.round(+V.focal*w/old*100)/100);
+ V.width=String(w);V.height=String(h);sync()}
+$("#respreset").onchange=e=>{if(e.target.value!=="custom"){const[w,h]=PRESETS[+e.target.value];setRes(w,h)}else{$("#resw").disabled=$("#resh").disabled=false;$("#resw").focus()}};
+for(const id of["#resw","#resh"])$(id).addEventListener("change",()=>setRes(+$("#resw").value,+$("#resh").value));
+
+/* ---------- shared state ---------- */
+function sync(){
+ document.querySelectorAll("[data-key]").forEach(e=>{if(e!==document.activeElement&&e.value!==V[e.dataset.key])e.value=V[e.dataset.key]});
+ document.querySelectorAll(".tile").forEach(t=>{const g=t.parentElement.id;const k={scenes:"scene",lidars:"lidar",cams:"camera"}[g];t.classList.toggle("sel",V[k]===t.dataset.id)});
+ const dev=V.renderer==="blender"?"Cycles · "+V.device:"Geometry diagnostic · CPU";
+ const n=P.length;
+ $("#summary").innerHTML=[["Environment",NAMES[V.scene]],["LiDAR",NAMES[V.lidar]],["Camera",V.camera+" "+V.width+"×"+V.height],["Captures",n?n+" placed poses":V.captures],["Rig",`<small>${V.xyz} m</small>`],["Image","<small>"+dev+"</small>"],["LiDAR rays","CPU"]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join("");
+ $("#go").textContent=n?`Generate ${n} capture${n>1?"s":""}`:"Generate captures";
+ $("#capnote").textContent=n?`Overridden: ${n} captured pose${n>1?"s":""} from the Studio will be used.`:"Image + point-cloud pairs from the current rig pose. Use the Studio to capture several different poses.";
+ syncRes();
+ $("#loadhint").textContent=((S.load_levels||{})[V.load]||[])[1]||"";
+ const qp=Object.entries(S.qualities).find(([k,[s,c]])=>String(s)===V.samples&&String(c)===V.cube_size);$("#quality").value=qp?qp[0]:"";
+ clearTimeout(sync.t);sync.t=setTimeout(()=>{camPreviews();updateFov();if(studioOn())refreshView()},300);
+}
+async function camPreviews(){
+ for(const c of CAMS){try{const r=await fetch(`/api/camera?model=${c.id}&w=${V.width}&h=${V.height}&f=${V.focal}`);const j=await r.json();
+  const t=document.querySelector(`#cams .tile[data-id=${c.id}]`);if(!t)continue;
+  if(j.error){t.querySelector("span").textContent=j.error;continue}
+  t.querySelector("img").src=j.image;t.querySelector("span").textContent=`FOV ${j.h_fov.toFixed(0)}° × ${j.v_fov.toFixed(0)}° (diag. ${j.diagonal_fov.toFixed(0)}°)`}catch(e){}}
+}
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.key;if(k&&k!=="width"&&k!=="height"){V[k]=e.target.value;sync()}});
+$("#quality").onchange=e=>{const[s,c]=S.qualities[e.target.value];V.samples=String(s);V.cube_size=String(c);sync()};
+$("#newout").onclick=async()=>{V.output=(await (await fetch(`/api/new_output?scene=${V.scene}&captures=${P.length||V.captures}`)).json()).path;sync()};
+
+/* ---------- tabs ---------- */
+const studioOn=()=>!$("#tab-studio").classList.contains("hide");
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+ $("#tab-setup").classList.toggle("hide",b.dataset.tab!=="setup");$("#tab-studio").classList.toggle("hide",b.dataset.tab!=="studio");
+ $("#studio-controls").classList.toggle("hide",b.dataset.tab!=="studio");
+ document.querySelector("main").classList.toggle("studio-mode",b.dataset.tab==="studio");
+ $("#go").classList.toggle("hide",b.dataset.tab!=="studio");$("#tosetup").classList.toggle("hide",b.dataset.tab!=="studio");$("#tostudio").classList.toggle("hide",b.dataset.tab==="studio");
+ if(b.dataset.tab==="studio"){loadMap()}});
+
+/* ---------- studio controls ---------- */
+const dec=s=>s<.01?3:s<.1?2:1;
+function buildCtl(el,spec){el.innerHTML="";for(const[k,l,mn,mx,st]of spec){
+ const d=document.createElement("div");d.className="ctl";d.innerHTML=`<span>${l}</span><input type="range" min="${mn}" max="${mx}" step="${st}" data-q="${k}"><input type="number" step="${st}" data-q="${k}">`;el.appendChild(d)}}
+function showQ(){document.querySelectorAll("[data-q]").forEach(e=>{if(e!==document.activeElement)e.value=e.type==="number"?(+Q[e.dataset.q]).toFixed(dec(+e.step)):Q[e.dataset.q]})}
+function pushQ(){const f=(a,n=3)=>a.map(k=>(+Q[k]).toFixed(n)).join(", ");
+ V.xyz=f(["x","y","z"],2);V.rpy=f(["roll","pitch","yaw"],1);V.cam_xyz=f(["cx","cy","cz"]);V.cam_rpy=f(["croll","cpitch","cyaw"],2);}
+document.addEventListener("input",e=>{const k=e.target.dataset&&e.target.dataset.q;if(!k)return;const v=parseFloat(e.target.value);if(!isFinite(v))return;Q[k]=v;pushQ();showQ();drawPlan();sync();});
+$("#resetrel").onclick=()=>{Object.assign(Q,REL0);pushQ();showQ();sync();drawPlan()};
+function loadQ(){const[x,y,z]=nums(V.xyz),[r,p,w]=nums(V.rpy),[cx,cy,cz]=nums(V.cam_xyz),[cr,cp,cw]=nums(V.cam_rpy);
+ Q={x,y,z,roll:r,pitch:p,yaw:w,cx,cy,cz,croll:cr,cpitch:cp,cyaw:cw}}
+
+/* ---------- floor plan ---------- */
+async function loadMap(){
+ if(!V.scene)return;const j=await (await fetch(`/api/studio/map?scene=${V.scene}&cut=${$("#cut").value}`)).json();
+ if(j.error){$("#viewwarn").textContent=j.error;$("#viewwarn").classList.remove("hide");return}
+ const img=new Image();img.onload=()=>{mapImg=img;map=j;const c=$("#plan");c.width=img.width;c.height=img.height;
+  const[x0,x1,y0,y1]=j.bounds;const set=(k,mn,mx)=>document.querySelectorAll(`[data-q=${k}]`).forEach(e=>{e.min=mn;e.max=mx});
+  set("x",x0.toFixed(1),x1.toFixed(1));set("y",y0.toFixed(1),y1.toFixed(1));set("z",.2,Math.min(j.z_max,8).toFixed(1));
+  $("#cut").max=Math.min(Math.max(j.z_max,3),12);
+  drawPlan();showQ();refreshView()};img.src=j.image}
+const toPx=(x,y)=>{const[x0,x1,y0,y1]=map.bounds,c=$("#plan");return[(x-x0)/(x1-x0)*c.width,(y1-y)/(y1-y0)*c.height]};
+function drawPlan(){if(!map||!mapImg)return;const c=$("#plan"),g=c.getContext("2d");g.drawImage(mapImg,0,0);
+ const k=c.width/720;
+ g.fillStyle="rgba(56,189,248,.85)";const shown=isLivox()?Math.floor(lastPts.length*revealF):lastPts.length;for(let i=0;i<shown;i++){const[px,py]=toPx(lastPts[i][0],lastPts[i][1]);g.fillRect(px-1,py-1,2*k,2*k)}
+ const marker=(pose,label,col)=>{const[px,py]=toPx(pose[0],pose[1]),yaw=pose[5]*Math.PI/180,L=22*k;
+  g.strokeStyle=col;g.fillStyle=col;g.lineWidth=2.5*k;g.beginPath();g.moveTo(px,py);g.lineTo(px+Math.cos(yaw)*L,py-Math.sin(yaw)*L);g.stroke();
+  g.beginPath();g.arc(px,py,7*k,0,7);g.fill();if(label){g.fillStyle="#fff";g.font=`bold ${10*k}px Segoe UI`;g.textAlign="center";g.textBaseline="middle";g.fillText(label,px,py)}};
+ P.forEach((p,i)=>marker(p.pose,String(i+1),p.batch!=null?BC[p.batch%BC.length]:"#16a34a"));
+ // camera field of view cone (horizontal FOV, approximate heading = rig yaw + relative camera yaw)
+ const fov=(lastFov||90)*Math.PI/180,[px,py]=toPx(Q.x,Q.y),h=(Q.yaw+Q.cyaw)*Math.PI/180,R=70*k;
+ g.fillStyle="rgba(251,146,60,.28)";g.beginPath();g.moveTo(px,py);g.arc(px,py,R,-(h+fov/2),-(h-fov/2));g.closePath();g.fill();
+ marker([Q.x,Q.y,0,0,0,Q.yaw],"","#f8fafc");g.fillStyle="#2563eb";g.beginPath();g.arc(px,py,5*k,0,7);g.fill()}
+let drag=null;const plan=$("#plan");
+const world=e=>{const r=plan.getBoundingClientRect(),[x0,x1,y0,y1]=map.bounds;return[x0+(e.clientX-r.left)/r.width*(x1-x0),y1-(e.clientY-r.top)/r.height*(y1-y0),e.clientX,e.clientY]};
+plan.addEventListener("pointerdown",e=>{if(!map||massRun)return;plan.setPointerCapture(e.pointerId);const[x,y,cx,cy]=world(e);drag={cx,cy};Q.x=Math.round(x*20)/20;Q.y=Math.round(y*20)/20;pushQ();showQ();drawPlan();refreshView()});
+plan.addEventListener("pointermove",e=>{if(!drag||!map)return;const[x,y,cx,cy]=world(e);if(Math.hypot(cx-drag.cx,cy-drag.cy)>10){Q.yaw=Math.round(Math.atan2(y-Q.y,x-Q.x)*180/Math.PI*2)/2;pushQ();showQ();drawPlan();refreshView()}});
+plan.addEventListener("pointerup",()=>{drag=null;sync()});
+let cutT;$("#cut").oninput=e=>{$("#cutv").textContent=(+e.target.value).toFixed(1);clearTimeout(cutT);cutT=setTimeout(loadMap,250)};
+
+/* ---------- live camera view ---------- */
+let seq=0,viewT;
+function refreshView(){clearTimeout(viewT);viewT=setTimeout(async()=>{const my=++seq;
+ const q=new URLSearchParams({scene:V.scene,lidar:V.lidar,model:V.camera,w:V.width,h:V.height,f:V.focal,xyz:V.xyz,rpy:V.rpy,cxyz:V.cam_xyz,crpy:V.cam_rpy,accum:isLivox()?(+V.accumulate>0.1?Math.min(+V.accumulate,5):1):0.1});
+ try{const j=await (await fetch("/api/studio/view?"+q)).json();if(my!==seq)return;
+  const w=$("#viewwarn");if(j.error){w.textContent=j.error;w.classList.remove("hide");return}
+  $("#camview").src=j.image;lastThumb=j.image;lastPts=j.points;
+  $("#viewstats").innerHTML=`<span>LiDAR returns <b>${j.lidar_returns.toLocaleString()}</b></span><span>visible to camera <b>${j.in_view.toLocaleString()}</b></span><span>nearest surface <b>${isFinite(j.nearest_m)?j.nearest_m.toFixed(2)+" m":"–"}</b></span>`;
+  w.textContent=j.warn||"";w.classList.toggle("hide",!j.warn);
+  drawPlan()}catch(e){}},120)}
+/* camera FOV for the cone: take it from the lens preview endpoint */
+async function updateFov(){try{const j=await (await fetch(`/api/camera?model=${V.camera}&w=${V.width}&h=${V.height}&f=${V.focal}`)).json();if(!j.error){lastFov=j.h_fov;drawPlan()}}catch(e){}}
+
+/* ---------- captured poses ---------- */
+const BC=["#2563eb","#16a34a","#d97706","#db2777","#7c3aed","#0891b2","#dc2626","#65a30d"];
+const mountNow=()=>[Q.cx,Q.cy,Q.cz,Q.croll,Q.cpitch,Q.cyaw].map(Number);
+function mountText(m,base){const f=(a,n)=>a.map(v=>(+v).toFixed(n)).join(", ");let s=`camera at ${f(m.slice(0,3),3)} m · rpy ${f(m.slice(3),2)}°`;
+ if(base){const dr=Math.max(...m.slice(3).map((v,i)=>Math.abs(v-base[3+i]))),dt=Math.max(...m.slice(0,3).map((v,i)=>Math.abs(v-base[i])))*1000;s+=` · shift from nominal: ${dr.toFixed(2)}° / ${dt.toFixed(1)} mm`}return s}
+function intrinsicText(c){return c?` · intrinsics: fx ${c.K[0][0].toFixed(3)}, fy ${c.K[1][1].toFixed(3)}, cx ${c.K[0][2].toFixed(3)}, cy ${c.K[1][2].toFixed(3)} px; k1 ${c.D[0].toPrecision(4)}`:""}
+function renderCaps(){const items=[];let last=null;
+ P.forEach((p,i)=>{if(p.batch!=null&&p.batch!==last){const n=P.filter(x=>x.batch===p.batch).length,h=document.createElement("div");h.className="bhead";
+   h.innerHTML=`<i style="background:${BC[p.batch%BC.length]}"></i><b>Batch ${p.batch+1}</b><span>${n} capture${n>1?"s":""} · fixed mount: ${mountText(p.mount,p.base)}${intrinsicText(p.camera)}</span>`;items.push(h)}
+  last=p.batch!=null?p.batch:null;
+  const d=document.createElement("div");d.className="cap";if(p.batch!=null)d.style.borderColor=BC[p.batch%BC.length];
+  d.innerHTML=`<img src="${p.thumb}" alt=""><div><span><b>#${i+1}</b> ${p.pose[0].toFixed(1)}, ${p.pose[1].toFixed(1)}, ${p.pose[2].toFixed(1)}<br>yaw ${p.pose[5].toFixed(0)}°</span><button title="Remove">✕</button></div>`;
+  d.querySelector("button").onclick=()=>{P.splice(i,1);renderCaps();sync();drawPlan()};items.push(d)});
+ $("#caps").replaceChildren(...items);
+ $("#capcount").textContent=P.length;$("#capempty").classList.toggle("hide",P.length>0);
+ $("#capsnote").textContent=P.length?"Press Generate captures when ready. ✕ removes a pose.":"Generate will use the current pose once."}
+$("#capture").onclick=()=>{if(!lastThumb)return;P.push({pose:[Q.x,Q.y,Q.z,Q.roll,Q.pitch,Q.yaw].map(Number),thumb:lastThumb,mount:mountNow()});renderCaps();sync();drawPlan()};
+$("#rndgo").onclick=async()=>{const n=Math.max(1,Math.min(50,Math.round(+$("#rndn").value||1)));$("#rndn").value=n;
+ const b=$("#rndgo");b.disabled=true;$("#status").textContent=`Finding ${n} random free spots...`;
+ try{const q=new URLSearchParams({scene:V.scene,lidar:V.lidar,model:V.camera,w:V.width,h:V.height,f:V.focal,z:Q.z,roll:Q.roll,pitch:Q.pitch,n:n,seed:Math.floor(Math.random()*1e9),cxyz:V.cam_xyz,crpy:V.cam_rpy});
+  const j=await (await fetch("/api/studio/random?"+q)).json();if(j.error){$("#status").innerHTML=`<span class="err">${j.error}</span>`;return}
+  P=j.poses.map(p=>({pose:p.pose,thumb:p.thumb,mount:mountNow()}));renderCaps();sync();drawPlan();
+  $("#status").textContent=`${P.length} random capture${P.length>1?"s":""} placed. Remove any you do not want, then press Generate.`}
+ catch(e){$("#status").innerHTML=`<span class="err">Could not place random poses.</span>`}finally{b.disabled=false}};
+
+/* ---------- confirmation dialog + cancel ---------- */
+function askConfirm({title,body,yes,no,icon="!"}){return new Promise(res=>{const d=$("#confirm");
+ $("#cfTitle").textContent=title;$("#cfBody").innerHTML=body;$("#cfYes").textContent=yes;$("#cfNo").textContent=no;$("#cfIcon").textContent=icon;
+ const done=()=>{d.removeEventListener("close",done);res(d.returnValue==="yes")};d.returnValue="no";d.addEventListener("close",done);d.showModal();$("#cfNo").focus()})}
+let cancelBatch=false,batchAbort=null;
+$("#cancel").onclick=async()=>{
+ if(batchRun){
+  const ok=await askConfirm({title:"Stop creating batches?",body:"The batches placed so far will be <b>removed</b>. You can create them again at any time.",yes:"Yes, stop",no:"Keep going"});
+  if(ok&&batchRun){cancelBatch=true;if(batchAbort)batchAbort.abort()}return}
+ const gen=/^Generating/.test(curJob.title),pct=curJob.progress!=null?Math.round(curJob.progress*100)+"% done":"in progress",el=mmss(curJob.elapsed||0);
+ const body=gen?`<b>${curJob.title}</b> is ${pct} (${el} elapsed). Cancelling stops the render right away.<br><br>Files already written stay in the run folder, but the run will be <b>incomplete</b>. You can start a new one any time.`
+  :`<b>${curJob.title||"The current job"}</b> is ${pct}. Cancelling stops it right away.`;
+ const ok=await askConfirm({title:gen?"Cancel this generation?":"Cancel this job?",body,yes:"Yes, cancel it",no:"Keep running"});
+ if(!ok)return;const r=await post("/api/cancel",{});
+ if(r.error)$("#status").textContent="That job had already finished.";else $("#status").textContent="Cancelling..."};
+
+/* ---------- capture in batches: fixed mount per batch, mount shifts between batches ---------- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let batchRun=false,skipAnim=false;
+$("#bintrinsics").onchange=()=>{$("#bintrinsicfields").querySelectorAll("input").forEach(i=>i.disabled=!$("#bintrinsics").checked)};
+$("#bmount").onchange=()=>{for(const id of["#brot","#btr"])$(id).disabled=!$("#bmount").checked};
+const setMount=m=>{Object.assign(Q,{cx:m[0],cy:m[1],cz:m[2],croll:m[3],cpitch:m[4],cyaw:m[5]});pushQ();showQ()};
+$("#bgo").onclick=async()=>{
+ if(batchRun){skipAnim=true;$("#bgo").textContent="Finishing...";return}
+ const B=Math.max(1,Math.min(20,Math.round(+$("#bn").value||1))),N=Math.max(1,Math.min(50,Math.round(+$("#bp").value||1)));
+ const rot=$("#bmount").checked?Math.max(0,Math.min(10,+$("#brot").value||0)):0,tr=$("#bmount").checked?Math.max(0,Math.min(100,+$("#btr").value||0)):0;
+ $("#bn").value=B;$("#bp").value=N;if($("#bmount").checked){$("#brot").value=rot;$("#btr").value=tr}
+ if(B*N>100){$("#status").innerHTML=`<span class="err">At most 100 captures in total (you asked for ${B*N}).</span>`;return}
+ const base=mountNow(),anim=$("#banim").checked;batchRun=true;skipAnim=false;cancelBatch=false;batchAbort=new AbortController();document.body.classList.add("planning");
+ for(const id of["#rndgo","#capture","#clearcaps","#go"])$(id).disabled=true;$("#bgo").textContent=anim?"Skip to end":"Working...";
+ $("#status").textContent=`Planning ${B} batch${B>1?"es":""} of ${N} captures...`;
+ try{
+  const q=new URLSearchParams({scene:V.scene,lidar:V.lidar,model:V.camera,w:V.width,h:V.height,f:V.focal,z:Q.z,roll:Q.roll,pitch:Q.pitch,batches:B,per:N,rot:rot,trans:tr,seed:Math.floor(Math.random()*1e9),cxyz:V.cam_xyz,crpy:V.cam_rpy});
+  q.set("intrinsics",$("#bintrinsics").checked?"1":"0");
+  for(const [key,id] of[["focal_percent","#bfocal"],["principal_px","#bprincipal"],["distortion_delta","#bdistortion"]])q.set(key,$(id).value);
+  const j=await (await fetch("/api/studio/batches?"+q,{signal:batchAbort.signal})).json();if(j.error){$("#status").innerHTML=`<span class="err">${j.error}</span>`;return}
+  P=[];renderCaps();drawPlan();
+  for(const b of j.batches){
+   if(cancelBatch)break;
+   if(anim&&!skipAnim){setMount(b.mount);$("#status").textContent=`Batch ${b.batch+1} of ${j.batches.length}: camera mount shifted (${mountText(b.mount,base)})`;drawPlan();await sleep(700)}
+   for(const [k,p] of b.poses.entries()){
+    if(cancelBatch)break;
+    P.push({pose:p.pose,thumb:p.thumb,batch:b.batch,mount:b.mount,camera:b.camera,base});
+    if(anim&&!skipAnim){Object.assign(Q,{x:p.pose[0],y:p.pose[1],z:p.pose[2],roll:p.pose[3],pitch:p.pose[4],yaw:p.pose[5]});pushQ();showQ();
+     $("#camview").src=p.thumb;renderCaps();drawPlan();
+     $("#status").textContent=`Batch ${b.batch+1} of ${j.batches.length}, capture ${k+1} of ${b.poses.length} placed`;await sleep(260)}
+   }
+  }
+  if(cancelBatch){P=[];setMount(base);renderCaps();drawPlan();sync();refreshView();$("#status").textContent="Batch creation cancelled. Nothing was placed.";return}
+  setMount(base);renderCaps();drawPlan();sync();refreshView();
+  const total=P.length;$("#status").textContent=`${j.batches.length} batch${j.batches.length>1?"es":""} placed (${total} captures). Remove any you do not want, then press Generate captures.`;
+ }catch(e){if(cancelBatch){P=[];setMount(base);renderCaps();drawPlan();sync();refreshView();$("#status").textContent="Batch creation cancelled. Nothing was placed."}else $("#status").innerHTML=`<span class="err">Could not create batches.</span>`}
+ finally{batchRun=false;skipAnim=false;cancelBatch=false;batchAbort=null;document.body.classList.remove("planning");for(const id of["#rndgo","#capture","#clearcaps","#go"])$(id).disabled=false;$("#bgo").textContent="Create batches"}};
+$("#clearcaps").onclick=()=>{P=[];renderCaps();sync();drawPlan()};
+
+/* ---------- jobs ---------- */
+let progStart=0;
+const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
+let curJob={title:"",progress:null,elapsed:0,output:null};
+function setProg(f,step){const p=$("#prog");p.classList.remove("hide");p.classList.toggle("indet",f==null);
+ if(f==null){$("#pct").innerHTML="";return}
+ if(!progStart)progStart=Date.now();const el=(Date.now()-progStart)/1000;
+ $("#fill").style.width=(f*100).toFixed(1)+"%";
+ const dur=t=>{t=Math.max(0,Math.round(t));return t>=3600?`${Math.floor(t/3600)} h ${String(Math.floor(t%3600/60)).padStart(2,"0")} min`:mmss(t)};
+ const item=(label,val,cls="")=>`<span class="pi ${cls}"><i>${label}</i>${val}</span>`;
+ let html=`<b class="pp">${Math.round(f*100)}%</b>`;
+ if(f>=1)html+=item("Finished in",dur(el));
+ else{html+=item("Elapsed",dur(el));
+  if(f>=0.04&&el>=3){const left=el*(1-f)/f;html+=item("Left","~"+dur(left))+item("Done around",new Date(Date.now()+left*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),"opt")}
+  else html+=item("Left","working it out…")}
+ $("#pct").className="pstats"+(f>=1?" done":"");$("#pct").innerHTML=html;if(step)$("#status").textContent=step}
+function busy(b,msg){document.body.classList.toggle("busy",b);if(b){progStart=Date.now();setProg(null)}else setTimeout(()=>{if(!document.body.classList.contains("busy"))$("#prog").classList.add("hide")},1500);document.querySelectorAll("button.btn:not(#cancel):not(#cfYes):not(#cfNo)").forEach(x=>x.disabled=b);if(msg)$("#status").textContent=msg}
+async function act(path,msg){$("#masscard").classList.add("hide");V.poses=P.length?P.map(p=>p.pose):undefined;pushQ();
+ const hasBatches=P.some(p=>p.batch!=null);V.mounts=hasBatches?P.map(p=>p.mount||mountNow()):undefined;V.batch_ids=hasBatches?P.map(p=>p.batch!=null?p.batch:-1):undefined;V.cameras=hasBatches?P.map(p=>p.camera||null):undefined;const r=await post(path);if(r.error){busy(false,r.error);return}
+ from=0;$("#log").textContent="";busy(true,msg);poll()}
+async function poll(){if(polling)return;polling=true;
+ for(;;){const j=await (await fetch("/api/job?from="+from)).json();from=j.next;if(j.running){progStart=Date.now()-(j.elapsed||0)*1000;curJob={title:j.title,progress:j.progress,elapsed:j.elapsed||0}}if(j.running&&massRun)massVisual(j);
+  if(j.running)setProg(j.progress,j.progress==null?"":(j.mass&&j.mass.active?`Run ${j.mass.index+1} of ${j.mass.total} · `:"")+j.title+" - "+j.step);
+  if(j.lines.length){const l=$("#log");l.textContent+=j.lines.join("\n")+"\n";l.scrollTop=l.scrollHeight}
+  if(!j.running){polling=false;busy(false);if(massRun){if(j.mass)massPanel(j);massEnd()}if(j.code===0&&j.progress!=null)setProg(1,"");
+   if(j.code===0){let m=j.title+" finished.";if(j.device)m+=" Rendered on "+j.device+".";$("#status").textContent=m;
+    if(j.last_run&&j.title.startsWith("Generating")){if(j.last_scene===V.scene){const i=$("#result");i.src="/api/result.png?"+Date.now();i.alt=`First generated camera image: ${NAMES[j.last_scene]}`;i.style.display="block";$("#resultcap").textContent=`First generated camera image: ${NAMES[j.last_scene]}.`;loadTruth()}else showEnvironmentPreview()}
+    if(j.title.startsWith("Building"))build2()}
+   else if(j.cancelled){$("#status").textContent=`${j.title} cancelled. Nothing more will run.`}
+   else if(j.code!==null){$("#status").innerHTML=`<span class="err">${j.title} failed. See the Activity log.</span>`}
+   return}
+  await new Promise(r=>setTimeout(r,600))}}
+async function loadTruth(){const j=await (await fetch("/api/truth")).json();if(!j.run)return;$("#truthcard").classList.remove("hide");
+ $("#truthpath").innerHTML=`Saved in <b>${j.run}\\evaluation\\ground_truth.json</b>, kept separate from the measurements in <b>inference\\</b>.`;
+ const f=a=>a.map(v=>(+v).toFixed(2)).join(", ");
+ $("#truth").innerHTML=`<table class="gt"><tr><th>#</th><th>LiDAR in world (m | °)</th></tr>${j.captures.map((c,i)=>`<tr><td>${i+1}</td><td>${f(c.lidar_xyz)} | ${f(c.lidar_rpy)}</td></tr>`).join("")}</table>
+ <table class="gt"><tr><th>T_CL (camera ← LiDAR)</th></tr><tr><td>t = ${f(j.captures[0].T_CL_t)} m</td></tr><tr><td>rpy = ${f(j.captures[0].T_CL_rpy)}°</td></tr><tr><td>${j.captures[0].model} K: fx ${j.captures[0].K[0][0]}, cx ${j.captures[0].K[0][2]}, cy ${j.captures[0].K[1][2]}</td></tr></table>`}
+async function build2(){S=await (await fetch("/api/state")).json();const keep={...V};build();V=keep;sync()}
+$("#tosetup").onclick=()=>document.querySelector("[data-tab=setup]").click();
+$("#tostudio").onclick=()=>document.querySelector("[data-tab=studio]").click();
+let SAVE={parent:null};
+const inOneDrive=p=>/onedrive/i.test(p||"");
+const showSave=()=>{$("#savepath").textContent=SAVE.parent||"Not chosen yet: a folder picker opens when you press Generate";$("#sOneDrive").classList.toggle("hide",!inOneDrive(SAVE.parent));$("#mOneDrive").classList.toggle("hide",!inOneDrive(SAVE.parent))};
+$("#savechoose").onclick=async()=>{
+ $("#savechoose").disabled=true;
+ try{const r=await post("/api/choose_folder",{scene:V.scene,captures:P.length||+V.captures||1});
+  if(r.error){$("#status").innerHTML=`<span class="err">${r.error}</span>`}else if(!r.cancelled){SAVE.parent=r.parent;showSave()}}
+ catch(e){$("#status").innerHTML=`<span class="err">Could not open the folder picker.</span>`}
+ finally{$("#savechoose").disabled=false}};
+$("#go").onclick=async()=>{
+ if(SAVE.parent){
+  busy(true,"Preparing the save folder...");
+  try{
+   const name=$("#savename").value.trim();
+   if(name&&/[\\/:*?"<>|]/.test(name)){busy(false,"The folder name cannot contain \\ / : * ? \" < > |");return}
+   const j=await (await fetch(`/api/new_output?scene=${V.scene}&captures=${P.length||V.captures}&parent=${encodeURIComponent(SAVE.parent)}`)).json();
+   if(j.error){busy(false,j.error);return}
+   V.output=name?SAVE.parent.replace(/[\\/]+$/,"")+"\\"+name:j.path;sync();
+   await act("/api/generate","Generating captures - one job at a time...");
+  }catch(e){busy(false,"Could not prepare the save folder. Please try again.")}
+  return}
+ busy(true,"Choose where to save your captures...");
+ try{
+  const r=await post("/api/choose_output",{scene:V.scene,captures:P.length||+V.captures||1});
+  if(r.error){busy(false,r.error);return}
+  if(r.cancelled){busy(false,"Capture generation cancelled. No capture job was started.");return}
+  V.output=r.path;sync();
+  await act("/api/generate","Generating captures - one job at a time...");
+ }catch(e){busy(false,"Could not select a save folder. Please try again.")}
+};
+$("#testgpu").onclick=()=>act("/api/test_gpu","Listing GPU devices (nothing is rendered)…");
+$("#build").onclick=()=>act("/api/build_scene","Building and rendering the scene…");
+$("#openscene").onclick=async()=>{const r=await post("/api/open_scene");if(r.error)$("#status").innerHTML=`<span class="err">${r.error}</span>`};
+$("#viewds").onclick=async()=>{const r=await post("/api/view_dataset");if(r.error)$("#status").innerHTML=`<span class="err">${r.error}</span>`};
+
+/* ---------- mass capture: every combination of environment, LiDAR, camera resolution and intrinsics drift ---------- */
+const MASS={init:false,scenes:new Set(),lidars:new Set(),res:{fisheye:new Set(),pinhole:new Set()}};
+const resKey=(w,h)=>w+"x"+h;
+const massRes=()=>{const a=PRESETS.map(([w,h,n])=>[w,h,n]);if(!PRESETS.some(p=>p[0]===+V.width&&p[1]===+V.height)&&+V.width>1&&+V.height>1)a.push([+V.width,+V.height,"current"]);return a};
+function massChips(box,items,set){box.replaceChildren(...items.map(([id,label,dis])=>{const l=document.createElement("label");l.className="chip"+(dis?" dis":"");
+ l.innerHTML=`<input type="checkbox" ${set.has(id)?"checked":""} ${dis?"disabled":""}>${label}`;
+ l.querySelector("input").onchange=e=>{e.target.checked?set.add(id):set.delete(id);massSum()};return l}))}
+const massDrift=()=>document.querySelector("input[name=mdrift]:checked").value;
+function massBuild(){
+ if(!MASS.init){MASS.init=true;if(S.scenes.some(s=>s.id===V.scene&&s.built))MASS.scenes.add(V.scene);MASS.lidars.add(V.lidar);if(MASS.res[V.camera])MASS.res[V.camera].add(resKey(+V.width,+V.height));
+  for(const[a,b]of[["#mB","#bn"],["#mN","#bp"],["#mRot","#brot"],["#mTr","#btr"]])$(a).value=$(b).value}
+ massChips($("#mScenes"),S.scenes.map(s=>[s.id,NAMES[s.id]+(s.built?"":" (not built)"),!s.built]),MASS.scenes);
+ massChips($("#mLidars"),S.lidars.map(l=>[l.id,NAMES[l.id]]),MASS.lidars);
+ $("#mCams").replaceChildren(...CAMS.map(c=>{const d=document.createElement("div");d.className="mcam";
+  d.innerHTML=`<h4 style="margin:0;display:flex;gap:8px;align-items:center"><span>${c.name}</span><span class="hint" style="margin:0;font-weight:400">${c.d}</span><span class="lnk"><button type="button" data-cam-all="${c.id}">All</button><button type="button" data-cam-none="${c.id}">None</button></span></h4><div class="chips"></div>`;
+  massChips(d.querySelector(".chips"),massRes().map(([w,h,n])=>[resKey(w,h),`${w} × ${h} · ${n}`]),MASS.res[c.id]);return d}));
+ $("#mBase").textContent=`${(+V.focal).toFixed(2)} px at ${V.width} px wide`;
+ $("#mRender").textContent=V.renderer==="blender"?`Cycles · ${V.device} · ${V.samples} samples`:"geometry diagnostic (fast, CPU)";
+ $("#mPath").textContent=SAVE.parent||"Not chosen yet";showSave();
+ for(const id of["#mRot","#mTr"])$(id).disabled=!$("#mMount").checked;
+ for(const id of["#mFocal","#mPrinc","#mK1"])$(id).disabled=massDrift()==="off";
+ massSum()}
+function massSum(){MASS.check=null;massSumNow();clearTimeout(massCheck.t);massCheck.t=setTimeout(massCheck,350)}
+function massUnfShow(){const any=(MASS.check&&MASS.check.incomplete>0)||(MASS.scan&&MASS.scan.unfinished>0);$("#mUnf").classList.toggle("hide",!any);$("#mUnfHint").classList.toggle("hide",!any)}
+function massSumNow(){massUnfShow();
+ const sc=MASS.scenes.size,li=MASS.lidars.size,cams=MASS.res.fisheye.size+MASS.res.pinhole.size,dr=massDrift()==="both"?2:1,B=Math.round(+$("#mB").value||0),N=Math.round(+$("#mN").value||0),runs=sc*li*cams*dr;let err="";
+ if(!sc)err="Choose at least one environment.";else if(!li)err="Choose at least one LiDAR.";else if(!cams)err="Choose at least one camera resolution.";
+ else if(B<1||B>20||N<1||N>50||B*N>100)err="Use 1–20 batches and 1–50 captures per batch, at most 100 captures per run.";
+ else if(massDrift()!=="off"&&B<2)err="Intrinsics drift needs at least 2 batches (batch 1 always keeps the nominal intrinsics).";
+ else if(runs>200)err=`${runs} runs is too many (the limit is 200). Choose fewer options.`;
+ else if(!SAVE.parent)err="Choose the folder to save into.";
+ const pl=(n,w)=>n+" "+w+(n==1?"":"s"),skip=$("#mSkip").checked,ck=SAVE.parent?MASS.check:null,todo=ck?ck.todo:runs;
+ if(ck&&!err&&skip&&ck.todo===0)err="Everything you selected is already saved in this folder, so there is nothing to capture.";
+ else if(!err&&SAVE.parent&&!ck&&MASS.checkError)err=MASS.checkError;
+ const hm=t=>{t=Math.max(60,Math.round(t/60)*60);const h=Math.floor(t/3600),m=Math.round(t%3600/60);return h?`${h} h ${String(m).padStart(2,"0")} min`:`${m} min`};
+ /* Rough time: measured on this machine about 25 s per cube face at 64 samples, plus about 10 s of CPU work per capture.
+    Fisheye needs 5 faces and pinhole 3 at the same field of view. The range is "time scales with samples" to "it does not". */
+ let est="";if(V.renderer==="blender"&&todo>0){const S=(+V.samples||32)/64,k=Math.pow((+V.cube_size||1024)/1024,2);let lo=0,hi=0;
+  const models=ck?ck.todo_caps:Object.fromEntries(Object.keys(MASS.res).map(m=>[m,sc*li*dr*MASS.res[m].size*B*N]));
+  for(const[m,cnt]of Object.entries(models)){if(!cnt)continue;const faces=m==="fisheye"?5:3,caps=cnt;lo+=caps*(faces*25*k*Math.min(1,S)+10);hi+=caps*(faces*25*k*Math.max(1,S)+10)}
+  est=`<li><b>about ${hm(lo)} to ${hm(hi)}</b> estimated render time</li>`}
+ let saved="";if(ck){
+  if(ck.done)saved+=skip?`<li><b>${ck.done} already saved here</b>: skipped, never overwritten</li>`:`<li><b>${ck.done} already saved here</b>: saved again as new copies (_v2), the existing ones are not touched</li>`;
+  if(ck.different)saved+=skip?`<li class="warn"><b>${ck.different} clash</b>: same folder name but different settings, left untouched</li>`:`<li><b>${ck.different}</b> same name but different settings: saved as new copies</li>`;
+  if(ck.incomplete){const cont=ck.continuing,redo=ck.incomplete-cont;
+   if(cont)saved+=`<li class="warn"><b>${cont} unfinished</b>: continued from where ${cont==1?"it":"they"} stopped (${ck.kept_captures} finished captures are kept)</li>`;
+   if(redo)saved+=`<li class="warn"><b>${redo} unfinished</b>: moved aside to _incomplete and redone from the start</li>`}}
+ $("#mSummary").innerHTML=`<li><b>${runs} configuration${runs==1?"":"s"}</b> = ${pl(sc,"environment")} × ${pl(li,"LiDAR")} × ${pl(cams,"camera setting")}${dr>1?" × 2 drift modes":""}</li>${saved}
+  <li><b>${todo} to capture now</b> · ${B*N} captures each (${pl(B,"batch").replace("batchs","batches")} × ${N}) · <b>${(ck?ck.todo_captures:todo*B*N).toLocaleString()}</b> captures in total</li>${est}
+  <li class="note">${est?"The time is a rough guide (about 25 s per cube face on your GPU at 64 samples; fewer samples should be faster). ":""}Images are rendered one by one, so big runs take a long time. Try a small one first.</li>`;
+ $("#mErr").textContent=err;$("#mStart").disabled=!!err||busyNow();return !err}
+const busyNow=()=>document.body.classList.contains("busy");
+$("#massopen").onclick=()=>{if(!S)return;massBuild();$("#mass").showModal()};
+$("#mClose").onclick=()=>$("#mass").close();
+$("#mass").addEventListener("input",e=>{if(e.target.id==="mMount")for(const id of["#mRot","#mTr"])$(id).disabled=!e.target.checked;
+ if(e.target.name==="mdrift")for(const id of["#mFocal","#mPrinc","#mK1"])$(id).disabled=massDrift()==="off";massSum()});
+$("#mass").addEventListener("click",e=>{const t=e.target;if(!(t instanceof HTMLButtonElement))return;
+ if(t.dataset.all==="scenes"){S.scenes.filter(x=>x.built).forEach(x=>MASS.scenes.add(x.id));massBuild()}
+ else if(t.dataset.none==="scenes"){MASS.scenes.clear();massBuild()}
+ else if(t.dataset.all==="lidars"){S.lidars.forEach(x=>MASS.lidars.add(x.id));massBuild()}
+ else if(t.dataset.none==="lidars"){MASS.lidars.clear();massBuild()}
+ else if(t.dataset.camAll){massRes().forEach(([w,h])=>MASS.res[t.dataset.camAll].add(resKey(w,h)));massBuild()}
+ else if(t.dataset.camNone){MASS.res[t.dataset.camNone].clear();massBuild()}});
+$("#mChoose").onclick=async()=>{$("#mChoose").disabled=true;
+ try{const r=await post("/api/choose_folder",{scene:V.scene,captures:1});
+  if(r.error)$("#mErr").textContent=r.error;else if(!r.cancelled){SAVE.parent=r.parent;showSave();$("#mPath").textContent=SAVE.parent;MASS.scan=null;massScan();massSum()}}
+ catch(e){$("#mErr").textContent="Could not open the folder picker."}finally{$("#mChoose").disabled=false}};
+function massSpec(){
+ const cameras=CAMS.map(c=>({model:c.id,resolutions:[...MASS.res[c.id]].map(k=>k.split("x").map(Number))})).filter(c=>c.resolutions.length);
+ const vary=$("#mMount").checked;pushQ();
+ const typed=$("#mSeed").value.trim(),spec={...V,scenes:[...MASS.scenes],lidars:[...MASS.lidars],cameras,drift:massDrift(),focal_percent:+$("#mFocal").value||0,principal_px:+$("#mPrinc").value||0,distortion_delta:+$("#mK1").value||0,
+  batches:Math.round(+$("#mB").value),per_batch:Math.round(+$("#mN").value),rot:vary?+$("#mRot").value||0:0,trans:vary?+$("#mTr").value||0:0,
+  pose_seed:typed===""?null:Math.round(+typed),rig:[+Q.z,+Q.roll,+Q.pitch],base_mount:mountNow(),base_focal:+V.focal,base_width:+V.width,parent:SAVE.parent,skip_existing:$("#mSkip").checked,unfinished:document.querySelector("input[name=munf]:checked").value};
+ delete spec.poses;delete spec.mounts;delete spec.batch_ids;return spec}
+/* what is already saved in the chosen folder: a read-only scan (listing) and a check against the current selection */
+async function massScan(){if(!SAVE.parent){$("#mErr").textContent="Choose the folder first.";return}
+ const out=$("#mScanOut");out.classList.remove("hide");out.innerHTML='<div class="scansum">Scanning…</div>';
+ try{const r=await post("/api/mass_scan",{parent:SAVE.parent});
+  if(r.error){out.innerHTML=`<div class="scansum bad">${r.error}</div>`;return}
+  MASS.scan=r;massScanShow()}
+ catch(e){out.innerHTML='<div class="scansum bad">Could not scan this folder (restart the app if it was started before this feature).</div>'}}
+function massScanShow(){const r=MASS.scan,out=$("#mScanOut");if(!r||!SAVE.parent)return;
+ if(!r.runs.length){out.innerHTML='<div class="scansum">Nothing is saved in this folder yet: every configuration will be captured.'+(r.set_aside?` (${r.set_aside} earlier unfinished attempt${r.set_aside==1?"":"s"} set aside)`:"")+"</div>";return}
+ const saved=(MASS.check&&MASS.check.saved)||{},by={};for(const x of r.runs)by[x.scene]=(by[x.scene]||0)+1;
+ const rows=r.runs.map(x=>{const cam=`${x.model==="fisheye"?"Fisheye":x.model==="pinhole"?"Pinhole":x.model||"?"} ${x.width}×${x.height}`,st=saved[x.name];
+  return `<tr class="${st==="done"?"match":""}"><td class="${x.finished?"ok":"bad"}">${x.finished?"✓ finished":`● unfinished (${x.captures_done} of ${x.captures})`}</td><td>${NAMES[x.lidar]||x.lidar}</td><td>${cam}</td><td>${NAMES[x.scene]||x.scene}</td><td>${x.drift==null?"–":x.drift?"drift on":"drift off"}</td><td>${x.batches?`${x.batches} × ${x.per_batch}`:`${x.captures} captures`}</td><td>${x.samples!=null?x.samples+" samples":"–"}</td><td title="${x.name}">${st==="done"?"in your selection":x.from_mass?"mass capture":"single run"}</td></tr>`}).join("");
+ out.innerHTML=`<div class="scansum"><span><b>${r.runs.length}</b> saved run${r.runs.length==1?"":"s"}</span><span><b>${r.finished}</b> finished</span>${r.unfinished?`<span class="bad"><b>${r.unfinished}</b> unfinished</span>`:""}<span>${Object.entries(by).map(([k,v])=>`${NAMES[k]||k}: ${v}`).join(" · ")}</span>${r.set_aside?`<span>${r.set_aside} earlier unfinished attempt${r.set_aside==1?"":"s"} set aside</span>`:""}</div>
+  <div class="scanwrap"><table class="scant"><tr><th>Status</th><th>LiDAR</th><th>Camera</th><th>Environment</th><th>Intrinsics</th><th>Batches × captures</th><th>Quality</th><th>Note</th></tr>${rows}</table></div>`}
+async function massCheck(){if(!SAVE.parent){MASS.check=null;return}
+ try{const r=await post("/api/mass_check",massSpec());MASS.check=r.error?null:r;MASS.checkError=r.error||"";massSumNow();massScanShow()}catch(e){MASS.check=null}}
+$("#mScan").onclick=async()=>{await massScan();massCheck()};
+$("#mStart").onclick=async()=>{if(!massSumNow())return;const spec=massSpec();
+ $("#mStart").disabled=true;
+ try{const r=await post("/api/mass",spec);if(r.error){$("#mErr").textContent=r.error;$("#mStart").disabled=false;return}
+  $("#mass").close();massBegin(false);from=0;$("#log").textContent="";busy(true,"Starting mass capture...");poll()}
+ catch(e){$("#mErr").textContent="Could not start the mass capture.";$("#mStart").disabled=false}};
+function massBegin(resume){massRun=true;massSeen=-1;massCap=-1;$("#capcard").classList.add("hide");$("#massbox").classList.remove("hide");
+ if(!resume&&$("#mLive").checked){massSaved={V:{...V},Q:{...Q},P:P};document.querySelector("[data-tab=studio]").click()}}
+function massEnd(){massRun=false;$("#capcard").classList.remove("hide");$("#massbox").classList.add("hide");
+ if(massSaved){const keep=massSaved;massSaved=null;for(const k of["scene","lidar","camera","width","height","focal","xyz","rpy","cam_xyz","cam_rpy"])V[k]=keep.V[k];
+  Q=keep.Q;P=keep.P;pushQ();showQ();renderCaps();loadMap();sync()}}
+function massPanel(j){const m=j.mass;if(!m||!m.runs)return;$("#masscard").classList.remove("hide");
+ const runs=m.runs,total=m.total,n=s=>runs.filter(r=>r.status===s).length,done=n("done"),failed=n("failed"),running=n("running"),cancelled=n("cancelled"),skipped=n("skipped"),clash=n("conflict"),wait=total-done-failed-running-cancelled;
+ const dur=t=>{t=Math.max(0,Math.round(t));return t>=3600?`${Math.floor(t/3600)} h ${String(Math.floor(t%3600/60)).padStart(2,"0")} min`:mmss(t)};
+ const cur=m.active&&j.progress!=null?Math.max(0,Math.min(1,j.progress*m.total-m.index)):0,overall=m.active&&j.progress!=null?j.progress:(done+failed)/total;
+ const k=(/capture (\d+) of (\d+)/.exec(j.step||"")||[]),el=j.elapsed||0;
+ $("#mcsub").textContent=m.active?`· configuration ${m.index+1} of ${total}`:`· ${cancelled?"stopped":"finished"}`;
+ $("#mcof").style.width=(overall*100).toFixed(1)+"%";$("#mccf").style.width=(m.active?cur*100:100).toFixed(1)+"%";
+ $("#mcot").textContent=`${done+failed} of ${total} done · ${Math.round(overall*100)}%`+(m.active&&overall>=.03&&el>=3?` · about ${dur(el*(1-overall)/overall)} left`:"");
+ $("#mcct").textContent=m.active?`${k[1]?`capture ${k[1]} of ${k[2]} · `:""}${Math.round(cur*100)}%`:"";
+ $("#mccn").textContent=m.active?`${NAMES[m.scene]} · ${NAMES[m.lidar]} · ${m.camera.model} ${m.camera.width}×${m.camera.height} · intrinsics drift ${m.drift?"on":"off"}`:"";
+ $("#mcchips").innerHTML=[["done","✓",done,"done"],["run","●",running,"running"],["wait","○",wait,"waiting"],...(failed?[["fail","✕",failed,"failed"]]:[]),...(cancelled?[["fail","–",cancelled,"stopped"]]:[]),...(skipped?[["skip","↺",skipped,"saved earlier (skipped)"]]:[]),...(clash?[["warn","!",clash,"kept as is"]]:[])]
+  .map(([c,i,v,l])=>`<span class="mchip ${c}"><i>${i}</i>${v} ${l}</span>`).join("");
+ const cam=r=>`${NAMES[r.lidar]} · ${r.camera.model==="fisheye"?"Fisheye":"Pinhole"} ${r.camera.width}×${r.camera.height}`;
+ $("#mcgrid").innerHTML=runs.map((r,i)=>{const c={done:"done",running:"run",failed:"fail",cancelled:"fail",skipped:"skip",conflict:"warn"}[r.status]||"wait",icon={done:"✓",run:"●",fail:"✕",skip:"↺",warn:"!",wait:i+1}[c];
+  const right=r.status==="done"?dur(r.seconds||0):r.status==="running"?`${Math.round(cur*100)}%`:r.status==="failed"?"failed":r.status==="cancelled"?"stopped":r.status==="skipped"?"saved earlier":r.status==="conflict"?"kept as is":"waiting";
+  return `<div class="mc ${c}" title="${r.name}${r.error?" - "+String(r.error).replace(/"/g,"'"):""}"><i>${icon}</i><div><b>${cam(r)}</b><span>${NAMES[r.scene]} · drift ${r.intrinsics_drift?"on":"off"}</span></div><em>${right}</em>${c==="run"?`<div class="mp" style="width:${(cur*100).toFixed(1)}%"></div>`:""}</div>`}).join("")}
+function massVisual(j){massPanel(j);const m=j.mass;if(!m||!m.active)return;
+ const k=(/capture (\d+) of (\d+)/.exec(j.step||"")||[])[1],ci=k?Math.min(+k,m.poses.length)-1:Math.max(massCap,0);
+ const b=m.batches.find(x=>ci>=x.start&&ci<x.start+x.count)||m.batches[0],K=b.camera.K,D=b.camera.D,N=m.nominal,f=(v,n)=>(+v).toFixed(n),d=(v,n)=>(v>=0?"+":"")+(+v).toFixed(n);
+ $("#massrun").textContent=`· run ${m.index+1} of ${m.total}`;
+ $("#massinfo").innerHTML=`<div><b>${NAMES[m.scene]}</b> · <b>${NAMES[m.lidar]}</b> · <b>${m.camera.model} ${m.camera.width}×${m.camera.height}</b> · intrinsics drift <b>${m.drift?"on":"off"}</b></div>
+  <div>Batch <b>${b.batch+1}</b> of ${m.batches.length} · capture <b>${ci+1}</b> of ${m.poses.length}</div>
+  <div><span>Camera mount:</span> ${mountText(b.mount,m.batches[0].mount)}</div>
+  <div><span>True intrinsics:</span> fx ${f(K[0][0],3)}, fy ${f(K[1][1],3)}, cx ${f(K[0][2],3)}, cy ${f(K[1][2],3)} px, k1 ${(+D[0]).toPrecision(4)}</div>
+  <div><span>Change from nominal:</span> fx ${d((K[0][0]/N.K[0][0]-1)*100,3)} %, fy ${d((K[1][1]/N.K[1][1]-1)*100,3)} %, cx ${d(K[0][2]-N.K[0][2],3)} px, cy ${d(K[1][2]-N.K[1][2],3)} px, k1 ${d(D[0]-N.D[0],5)}</div>
+  <div class="hint">${m.name}</div>`;
+ if(!$("#mLive").checked||!massSaved)return;
+ if(m.index!==massSeen){massSeen=m.index;massCap=-1;const sceneChanged=V.scene!==m.scene;
+  Object.assign(V,{scene:m.scene,lidar:m.lidar,camera:m.camera.model,width:String(m.camera.width),height:String(m.camera.height),focal:String(m.camera.focal)});
+  P=m.poses.map((p,i)=>({pose:p,thumb:"",batch:m.batch_ids[i]}));sync();if(sceneChanged)loadMap();else drawPlan()}
+ if(k&&ci!==massCap){massCap=ci;const p=m.poses[ci];Object.assign(Q,{x:p[0],y:p[1],z:p[2],roll:p[3],pitch:p[4],yaw:p[5]});setMount(b.mount);drawPlan();refreshView()}}
+
+/* ---------- live hardware use (GPU, CPU, memory), sampled once a second ---------- */
+const HW={gpu:[],vram:[],cpu:[],ram:[]},HN=90,HCOL={gpu:"#3b82f6",vram:"#a855f7",cpu:"#22c55e",ram:"#f59e0b"};
+function spark(c,data,color){const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);
+ const g=c.getContext("2d");g.scale(dpr,dpr);g.clearRect(0,0,w,h);g.lineWidth=1;g.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--line");
+ for(const f of[.25,.5,.75]){g.beginPath();g.moveTo(0,Math.round(h*(1-f))+.5);g.lineTo(w,Math.round(h*(1-f))+.5);g.stroke()}
+ if(data.length<2)return;const step=w/(HN-1),x0=w-(data.length-1)*step,y=v=>h-2-(h-4)*Math.min(1,Math.max(0,v/100));
+ g.beginPath();data.forEach((v,i)=>i?g.lineTo(x0+i*step,y(v)):g.moveTo(x0,y(v)));g.strokeStyle=color;g.lineWidth=2;g.lineJoin="round";g.stroke();
+ g.lineTo(w,h);g.lineTo(x0,h);g.closePath();g.fillStyle=color+"2e";g.fill()}
+function hwDraw(){for(const c of document.querySelectorAll("#hw canvas"))spark(c,HW[c.dataset.k],HCOL[c.dataset.k])}
+function hwPush(k,v){if(v==null)return;const a=HW[k];a.push(v);if(a.length>HN)a.shift()}
+let hwOk=true;
+async function hwTick(){if(document.hidden)return;
+ try{const r=await fetch("/api/stats");if(!r.ok)throw new Error("no stats");const j=await r.json();hwOk=true;
+  $("#hw").classList.remove("off");const gpu=j.gpu,cpu=j.cpu,ram=j.ram,gb=v=>(v/1024).toFixed(1);
+  if(gpu){hwPush("gpu",gpu.util);hwPush("vram",gpu.mem_total_mb?100*gpu.mem_used_mb/gpu.mem_total_mb:null);
+   $("#hv-gpu").textContent=gpu.util==null?"–":Math.round(gpu.util)+" %";
+   $("#hv-vram").textContent=`${gb(gpu.mem_used_mb)} / ${gb(gpu.mem_total_mb)} GB`;
+   $("#hs-gpu").textContent=[(gpu.name||"").replace(/^NVIDIA (GeForce )?/,""),gpu.temp_c!=null?Math.round(gpu.temp_c)+" °C":"",gpu.power_w!=null?Math.round(gpu.power_w)+(gpu.power_limit_w?" / "+Math.round(gpu.power_limit_w):"")+" W":""].filter(Boolean).join(" · ")}
+  else{$("#hv-gpu").textContent="–";$("#hv-vram").textContent="–";$("#hs-gpu").textContent="No NVIDIA GPU reported"}
+  if(cpu){hwPush("cpu",cpu.percent);$("#hv-cpu").textContent=Math.round(cpu.percent)+" %";
+   $("#cores").innerHTML=cpu.cores.map(p=>`<i style="height:${Math.max(4,p)}%"></i>`).join("")}
+  if(ram){hwPush("ram",ram.percent);$("#hv-ram").textContent=`${ram.used_gb.toFixed(1)} / ${ram.total_gb.toFixed(0)} GB`}
+  hwDraw()}
+ catch(e){hwOk=false;$("#hw").classList.add("off")}}
+setInterval(hwTick,1000);hwTick();window.addEventListener("resize",hwDraw);
+
+/* ---------- non-repetitive scan animation (Livox) ---------- */
+const isLivox=()=>!!V.lidar&&V.lidar.startsWith("livox");
+let animT=0,animOn=true,animLast=0,revealF=1,scanData=null,scanFor=null;
+async function loadScan(){scanFor=V.lidar;scanData=null;if(!isLivox())return;
+ try{const j=await (await fetch("/api/scan?lidar="+V.lidar)).json();if(scanFor===V.lidar&&!j.error)scanData=j}catch(e){}}
+function drawScan(r){const c=$("#scan"),g=c.getContext("2d"),d=scanData;if(!d)return;const W=c.width,H=c.height,L=44,T=10,R=W-12,B=H-34;
+ const[a0,a1,e0,e1]=d.view,X=a=>L+(a-a0)/(a1-a0)*(R-L),Y=e=>B-(e-e0)/(e1-e0)*(B-T);
+ g.fillStyle="#0b1220";g.fillRect(0,0,W,H);g.fillStyle="#16203a";g.fillRect(L,T,R-L,B-T);
+ g.strokeStyle="#33415f";g.lineWidth=1;g.fillStyle="#94a3b8";g.font="12px Segoe UI";
+ const sa=(a1-a0)>100?30:20;g.textAlign="center";for(let a=Math.ceil(a0/sa)*sa;a<=a1;a+=sa){g.beginPath();g.moveTo(X(a),T);g.lineTo(X(a),B);g.stroke();g.fillText(a+"°",X(a),B+16)}
+ g.textAlign="right";for(let e=Math.ceil(e0/10)*10;e<=e1;e+=10){g.beginPath();g.moveTo(L,Y(e));g.lineTo(R,Y(e));g.stroke();g.fillText(e+"°",L-6,Y(e)+4)}
+ const n=d.az.length,k=Math.floor(n*r),cell=1,cols=Math.ceil((a1-a0)/cell),seen=new Set();
+ for(let i=0;i<k;i++){const a=d.az[i],e=d.el[i];if(a<a0||a>a1||e<e0||e>e1)continue;const tt=i/n;
+  g.fillStyle=`rgb(${56+199*tt|0},${189-100*tt|0},${248-150*tt|0})`;g.fillRect(X(a)-1,Y(e)-1,2.4,2.4);
+  seen.add(Math.floor((e-e0)/cell)*cols+Math.floor((a-a0)/cell))}
+ if(!d.finalCells){const s=new Set();for(let i=0;i<n;i++){const a=d.az[i],e=d.el[i];if(a<a0||a>a1||e<e0||e>e1)continue;s.add(Math.floor((e-e0)/cell)*cols+Math.floor((a-a0)/cell))}d.finalCells=s.size}
+ $("#scantime").textContent=`${(r*d.seconds).toFixed(2)} s / ${d.seconds.toFixed(2)} s`;
+ $("#scancov").textContent=`${Math.round(100*seen.size/d.finalCells)} % of the 1 s footprint filled (1° cells) · ${Math.round(r*d.nominal_points).toLocaleString()} of ${d.nominal_points.toLocaleString()} points`}
+function frame(ts){requestAnimationFrame(frame);const dt=Math.min(.1,(ts-animLast)/1000);animLast=ts;
+ if(scanFor!==V.lidar&&V.lidar)loadScan();
+ const live=isLivox();$("#scanbox").classList.toggle("hide",!live||!scanData);$("#plananim").classList.toggle("hide",!live);
+ if(animOn){animT+=dt/5;if(animT>1.35)animT=0}else animT=1;
+ const r=Math.min(1,animT);
+ if(live&&scanData&&!document.hidden&&!$("#scanbox").classList.contains("hide")&&$("#tab-setup")&&!$("#tab-setup").classList.contains("hide"))drawScan(r);
+ if(live&&studioOn()&&!document.hidden&&!drag){revealF=r;$("#plantime").textContent=`${(r*(+V.accumulate>0.1?Math.min(+V.accumulate,5):1)).toFixed(2)} s scan`;drawPlan()}else revealF=1}
+for(const id of["#scanplay","#planplay"])$(id).onclick=()=>{animOn=!animOn;for(const b of["#scanplay","#planplay"])$(b).textContent=animOn?"⏸ Pause":"▶ Play scan"}
+requestAnimationFrame(frame);
+(async()=>{if(location.hash==='#studio')setTimeout(()=>document.querySelector('[data-tab=studio]').click(),0);S=await (await fetch("/api/state")).json();V=S.values;build();
+ buildCtl($("#poseCtl"),POSE);buildCtl($("#relCtl"),REL);loadQ();sync();showQ();renderCaps();showEnvironmentPreview();if(studioOn())loadMap();
+ if(location.hash==='#mass')setTimeout(()=>$("#massopen").click(),300);
+ const g=$("#gpu");if(S.gpu){g.className="badge ok";g.lastChild.textContent=`${S.gpu.name} · ${(S.gpu.memory_mb/1024).toFixed(0)} GB · driver ${S.gpu.driver} — OptiX rendering`}
+ else{g.className="badge bad";g.lastChild.textContent="No NVIDIA GPU found — using CPU";V.device="CPU";sync()}
+ const j=await (await fetch("/api/job?from=0")).json();if(j.running){if(j.mass&&j.mass.active)massBegin(true);busy(true,j.title);poll()}})();
+</script>
+</body>
+</html>

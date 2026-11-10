@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+outputs/
+blender/scenes/
+assets/
+research_references/
+*.blend1
+*.bag
+build/
+dist/
+*_build.log
+.simulation-job.lock
+.launcher_preferences.json
+
+# machine-specific: editor settings and the run configs the app generates (they contain local paths)
+.vscode/
+configs/gui/

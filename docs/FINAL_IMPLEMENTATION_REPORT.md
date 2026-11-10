@@ -1,0 +1,9 @@
+# Implementation handoff — 5 November 2026
+
+The independent simulator now has working source, five time-dependent ray schedules, four editable procedural Blender scenes, pinhole/fisheye cameras, shared-mesh geometry, exact transform metadata, controlled initial/physical faults, longitudinal capture generation, ideal/noisy data separation, standard paired/stacked exports, optional ROS1 code, local launcher/viewer code and numerical verification utilities.
+
+It is **not yet the complete photorealistic, hardware-validated research platform requested in the master brief**. The key remaining work is more realistic environments, hardware-specific scan/angle verification, full solver and generated-dataset ROS integration, GUI interaction, motion/sensor-physics extensions and controlled performance measurements. See [verification evidence and limits](VERIFICATION_REPORT.md), [sensor assumptions](SENSOR_MODELS.md) and [ongoing progress](IMPLEMENTATION_PROGRESS.md).
+
+The user's latest instruction prioritizes Windows stability following blue screens. Accordingly, no new native render, GPU job, WSL job, solver optimization, driver change or OS repair is being performed. CPU-only source work and small checks continued. Rendering now requires explicit opt-in and defaults to CPU; process-local threads are limited, jobs are serialized and per-capture allocations are capped. These controls reduce resource use but cannot guarantee against another kernel crash.
+
+For immediate review, open the root README and run `verify outputs/warehouse_avia_v2` or inspect its already-generated image/overlay. The replacement Hesai run uses the same preserved warehouse RGB rather than a new render. Invalid/interrupted runs are retained and identified in the verification audit. The fault-aware algorithm and existing calibration workspaces were not changed, no global development environment was replaced, and nothing was pushed or published.
