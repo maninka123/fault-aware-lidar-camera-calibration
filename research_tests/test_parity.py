@@ -61,7 +61,10 @@ class Parity(unittest.TestCase):
         have = texts(self.devices)
         for button in ("Refresh", "Add device…"):
             self.assertIn(button, have)
-        for method in ("choose_platform", "refresh_list", "select", "read_from_file", "use_file", "capture_and_check", "shutdown"):
+        # Calibration comes from the selected device's file (SSH or explicit WSL mapping).
+        # The former local-file conversion handler was removed to preserve that provenance.
+        for method in ("choose_platform", "refresh_list", "select", "read_from_file", "set_params",
+                       "capture_and_check", "trigger_next_capture", "delete_capture", "process_captures", "shutdown"):
             self.assertTrue(hasattr(self.devices, method), method)
         self.assertFalse(self.devices.choose_mode, "the maintenance 'what to check' choice is replaced by the fault-aware check")
 
