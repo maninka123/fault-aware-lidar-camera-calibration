@@ -54,12 +54,12 @@ def run(args):
     diagnostics = DiagnosticsConfig(**original_protocol['diagnostics'])
     code = [Path(__file__), ROOT/'tools/evaluate_fault_diagnostics.py',
             ROOT/'tools/evaluate_fault_diagnostics_v3.py',
-            ROOT/'research_calibration/fault_diagnostics/config.py',
-            ROOT/'research_calibration/fault_diagnostics/policy.py',
-            ROOT/'research_calibration/parameter_hypotheses.py',
-            ROOT/'research_calibration/fault_diagnostics_v3/update_policy.py',
-            ROOT/'research_calibration/fault_diagnostics_v3/runner.py',
-            ROOT/'research_calibration/fault_diagnostics_v3/config.py']
+            ROOT/'research/research_calibration/fault_diagnostics/config.py',
+            ROOT/'research/research_calibration/fault_diagnostics/policy.py',
+            ROOT/'research/research_calibration/parameter_hypotheses.py',
+            ROOT/'research/research_calibration/fault_diagnostics_v3/update_policy.py',
+            ROOT/'research/research_calibration/fault_diagnostics_v3/runner.py',
+            ROOT/'research/research_calibration/fault_diagnostics_v3/config.py']
     digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
     # V2 evidence semantics must remain those used by the stored experiment.
     for path in code[3:6]:

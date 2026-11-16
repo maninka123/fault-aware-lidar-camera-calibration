@@ -2,7 +2,7 @@
 
 The separate photorealistic simulator is not implemented here. Its five LiDAR profiles can export the same versioned format; `lidar_profile` identifies provenance rather than selecting an invented beam model. The present implementation accepts only the repository's OpenCV equidistant polynomial camera model and canonical metre calibration translations.
 
-`research_calibration/fault_diagnostics_v3/simulator_adapter.py` implements `load_signature_dataset`. This first adapter targets exact-correspondence numerical verification. It does not convert simulator truth into automatic edge correspondences or claim to validate the image/LiDAR front end. For end-to-end matching, export paired images and PCD clouds in the existing [data format](../../DATA_FORMAT.md), and pass their folder to `diagnose-v3`.
+`research/research_calibration/fault_diagnostics_v3/simulator_adapter.py` implements `load_signature_dataset`. This first adapter targets exact-correspondence numerical verification. It does not convert simulator truth into automatic edge correspondences or claim to validate the image/LiDAR front end. For end-to-end matching, export paired images and PCD clouds in the existing [data format](../../DATA_FORMAT.md), and pass their folder to `diagnose-v3`.
 
 An exact-correspondence export has a UTF-8 JSON manifest:
 

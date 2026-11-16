@@ -21,16 +21,16 @@ from research_calibration.config import ResearchConfig
 from research_calibration.fault_diagnostics import DiagnosticsConfig
 from research_calibration.legacy_adapter import REPOSITORY
 
-FROZEN = REPOSITORY / 'docs/research/v3/FROZEN_GENERALIZATION.json'
-SOURCES = ['research_calibration/fault_diagnostics_v3/correspondence.py', 'research_calibration/fault_diagnostics_v3/joint_estimation.py',
-           'research_calibration/fault_diagnostics_v3/config.py', 'research_calibration/fault_diagnostics_v3/diagnostic_inference.py',
-           'research_calibration/fault_diagnostics_v3/hypothesis_separation.py', 'research_calibration/fault_diagnostics_v3/geometry_signatures.py',
-           'research_calibration/fault_diagnostics_v3/generalization.py', 'research_calibration/fault_diagnostics/policy.py',
-           'research_calibration/fault_diagnostics/cues.py', 'research_calibration/fault_diagnostics/config.py',
-           'research_calibration/calibration_pipeline.py', 'tools/evaluate_pairing_v3.py', 'tools/evaluate_fault_diagnostics_v3.py',
+FROZEN = REPOSITORY / 'docs/research/v3/FROZEN_LAYOUT_20261116.json'
+SOURCES = ['research/research_calibration/fault_diagnostics_v3/correspondence.py', 'research/research_calibration/fault_diagnostics_v3/joint_estimation.py',
+           'research/research_calibration/fault_diagnostics_v3/config.py', 'research/research_calibration/fault_diagnostics_v3/diagnostic_inference.py',
+           'research/research_calibration/fault_diagnostics_v3/hypothesis_separation.py', 'research/research_calibration/fault_diagnostics_v3/geometry_signatures.py',
+           'research/research_calibration/fault_diagnostics_v3/generalization.py', 'research/research_calibration/fault_diagnostics/policy.py',
+           'research/research_calibration/fault_diagnostics/cues.py', 'research/research_calibration/fault_diagnostics/config.py',
+           'research/research_calibration/calibration_pipeline.py', 'tools/evaluate_pairing_v3.py', 'tools/evaluate_fault_diagnostics_v3.py',
            'tools/evaluate_fault_diagnostics.py', 'tools/analyze_attribution_root_cause_v3.py', 'tools/summarize_generalization_v3.py',
            'docs/research/v3/PROTOCOL_GENERALIZATION.md']
-# Groups of the study, by manifest id, with their declared roles (see research_data/groups_v3.json).
+# Groups of the study, by manifest id, with their declared roles (see research/research_data/groups_v3.json).
 STUDY = dict(development=['enclosure_off_ten', 'october_device_one'], evaluation=['enclosure_on_twelve', 'october_device_four'],
              not_used_in_design=['generalization_pair2', 'generalization_pair3', 'generalization_nov5_off', 'generalization_nov5_on'])
 VARIANTS = ['oriented', 'geometric', 'geometric_no_visibility', 'geometric_no_balance', 'geometric_no_confidence']

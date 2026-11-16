@@ -1,6 +1,6 @@
 """Render the screenshots used in the README and docs from a real saved check.
 
-    python tools/make_screenshots.py --check research_artifacts/<check> [--out docs/images/app]
+    python tools/make_screenshots.py --check research/research_artifacts/<check> [--out docs/images/app]
 
 The check needs its assessment, and for the full set also the saved maintenance comparison (review/) and the stacked captures
 (inputs/). Individual widgets are rendered, not the whole window, so the sidebar, file paths and device addresses never
@@ -17,7 +17,7 @@ os.environ.setdefault("QT_SCALE_FACTOR", "2")
 if os.name == "nt" and Path("C:/Windows/Fonts").is_dir():
     os.environ.setdefault("QT_QPA_FONTDIR", "C:/Windows/Fonts")
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "gui"))
+sys.path.insert(0, str(ROOT / "app" / "gui"))
 REAL_ARGS = sys.argv[1:]
 sys.argv = ["research_gui.py"]     # the GUI module reads sys.argv at import
 

@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 from research_calibration.benchmark import dataset_paths
 ROOT=Path(__file__).resolve().parents[1]
-sys.path.insert(0,str(ROOT/'Calibration maintenance/code'))
+sys.path.insert(0,str(ROOT/'app/Calibration maintenance/code'))
 from PyQt5 import QtCore,QtWidgets
 from research_dialog import ResearchDialog
 
@@ -31,7 +31,7 @@ def main():
     path=dialog.output/'assessment.json'
     success=bool(code==[0] and path.exists())
     result=dict(success=success,entry_point_enabled=True,exit_codes=code,output=str(dialog.output),status=json.loads(path.read_text(encoding='utf-8'))['status'] if path.exists() else None)
-    (ROOT/'research_artifacts/desktop_bridge.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+    (ROOT/'research/research_artifacts/desktop_bridge.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(result))
     dialog.reject()
     if not success: raise SystemExit(1)

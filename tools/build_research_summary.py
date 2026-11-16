@@ -13,16 +13,16 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    primary=REPOSITORY/'research_artifacts/final_verification/recorded/benchmark.json'
+    primary=REPOSITORY/'research/research_artifacts/final_verification/recorded/benchmark.json'
     data=json.loads(primary.read_text(encoding='utf-8'))
-    additional=json.loads((REPOSITORY/'research_artifacts/additional_ablations/index.json').read_text(encoding='utf-8'))
-    small=json.loads((REPOSITORY/'research_artifacts/creep_three_final/benchmark.json').read_text(encoding='utf-8'))
+    additional=json.loads((REPOSITORY/'research/research_artifacts/additional_ablations/index.json').read_text(encoding='utf-8'))
+    small=json.loads((REPOSITORY/'research/research_artifacts/creep_three_final/benchmark.json').read_text(encoding='utf-8'))
     output=REPOSITORY/'docs/research/evaluation'; output.mkdir(parents=True,exist_ok=True)
     summary=dict(primary_dataset='enclosure_off_ten',configuration=data['configuration'],environment=data['environment'],
                  methods=data['methods'],additional_ablations=additional,small_dataset=small['methods'],limitations=data['limitations'])
-    initialization=json.loads((REPOSITORY/'research_artifacts/guarded_initialization_v2/verification.json').read_text(encoding='utf-8'))
+    initialization=json.loads((REPOSITORY/'research/research_artifacts/guarded_initialization_v2/verification.json').read_text(encoding='utf-8'))
     samples=initialization['memory_samples']
-    scope=json.loads((REPOSITORY/'research_artifacts/initialization_scope_verified/assessment/assessment.json').read_text(encoding='utf-8'))
+    scope=json.loads((REPOSITORY/'research/research_artifacts/initialization_scope_verified/assessment/assessment.json').read_text(encoding='utf-8'))
     summary['initialization']=dict(exit_code=initialization['exit_code'],seconds=initialization['seconds'],stopped=initialization['stopped'],
         max_sampled_process_mb=max(s['process_mb'] for s in samples if s['process_mb'] is not None),
         min_sampled_available_mb=min(s['available_mb'] for s in samples if s['available_mb'] is not None),

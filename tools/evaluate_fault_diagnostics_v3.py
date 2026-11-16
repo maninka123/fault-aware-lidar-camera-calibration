@@ -121,7 +121,7 @@ def run(args):
     if output.exists() and any(output.iterdir()):
         raise FileExistsError('Use a new empty output directory')
     output.mkdir(parents=True, exist_ok=True)
-    code = list((ROOT/'research_calibration').rglob('*.py')) + [Path(__file__), prereg]
+    code = list((ROOT / 'research' / 'research_calibration').rglob('*.py')) + [Path(__file__), prereg]
     protocol = dict(role='development_v3', datasets=args.datasets, replicates=args.replicates,
                     only=args.only, drifts=DRIFTS, nuisances=NUISANCES,
                     research=cfg.to_dict(), diagnostics=diag.to_dict(), signature=signature_cfg.to_dict(),
@@ -129,7 +129,7 @@ def run(args):
                     head=_git('rev-parse', 'HEAD'), branch=_git('branch', '--show-current'),
                     dirty_status=_git('status', '--short'),
                     source_sha256={str(p.relative_to(ROOT)): _digest(p) for p in code},
-                    manifest_sha256=_digest(ROOT/'research_data/manifest.json'),
+                    manifest_sha256=_digest(ROOT/'research/research_data/manifest.json'),
                     ablations=['v3', 'v3_no_geometry', 'v3_no_scene_quality', 'v3_raw_edges'],
                     physical_truth=False, note='All existing V2 recordings are development data for V3.',
                     omitted_comparisons=['Strict original maintenance workflow',

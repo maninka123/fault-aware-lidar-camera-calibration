@@ -1,7 +1,7 @@
 # Features
 
 This app contains everything the calibration maintenance app does, plus the fault-aware assessment. The table is also
-enforced by `research_tests/test_parity.py`: if a control disappears, that test fails.
+enforced by `research/research_tests/test_parity.py`: if a control disappears, that test fails.
 
 ## From the calibration maintenance app
 

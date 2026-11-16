@@ -1,12 +1,12 @@
 # V2 baseline audit
 
-Executed 6 November 2026 before V3 source changes. GitHub branch discovery and `git fetch origin research/fault-diagnostics-v2` confirmed that the remote V2 tip and local HEAD are both `51e1c50dcb0008dcfbc8df432ced6ca8584cc6af`. The new local branch is `research/fault-diagnostics-v3`. Nothing was pushed or merged. The existing local modification to `gui/result_visuals.py` was preserved.
+Executed 6 November 2026 before V3 source changes. GitHub branch discovery and `git fetch origin research/fault-diagnostics-v2` confirmed that the remote V2 tip and local HEAD are both `51e1c50dcb0008dcfbc8df432ced6ca8584cc6af`. The new local branch is `research/fault-diagnostics-v3`. Nothing was pushed or merged. The existing local modification to `app/gui/result_visuals.py` was preserved.
 
 During the work, HEAD was independently advanced to `c09361c0e38fb307fc15d15bc3fd12e07b8c7a07` (overlay figure changes), and the initial GUI modification became clean. The baseline/evaluation worker did not create that commit or change the GUI. The numerical V2 parent remains `51e1c50`; new evaluation protocols record the actual HEAD and source hashes rather than assuming the working tree stays fixed.
 
 ## Reproduction and baseline exception
 
-Command: `python -B tools/verify_research.py --output research_artifacts/v3_baseline_20261106`.
+Command: `python -B tools/verify_research.py --output research/research_artifacts/v3_baseline_20261106`.
 
 | Suite | Result | Recorded duration |
 |---|---|---:|
@@ -15,7 +15,7 @@ Command: `python -B tools/verify_research.py --output research_artifacts/v3_base
 
 The one failure is `test_session_and_flow.MatrixViewTests.test_the_pair_shows_k_and_t_side_by_side_and_stacks_when_narrow`: at line 102, layout direction was `TopToBottom` (2), while the test expected `LeftToRight` (0). This was observed before any V3 implementation. The working tree already contains user changes in the GUI module. The failure is recorded rather than concealed, and those changes are not overwritten. This audit does not infer its cause from the assertion alone. All calibration mathematics, optimizer, pipeline, V2 diagnostic and maintenance tests passed. The V2 documentation's 211-test research count differs from the actual 214-test local suite; the actual count is reported here.
 
-The same single GUI test fails in an isolated fresh Python process, so the failure is not merely test-order contamination. Its widget implementation is `gui/matrix_view.py`; no evidence attributes this failure to `result_visuals.py`.
+The same single GUI test fails in an isolated fresh Python process, so the failure is not merely test-order contamination. Its widget implementation is `app/gui/matrix_view.py`; no evidence attributes this failure to `result_visuals.py`.
 
 A read-only widget probe identifies the immediate sizing mismatch under this environment: Helvetica 12, 100 DPI, requested width 1100 px, actual minimum-constrained width 1214 px, and the widget's side-by-side threshold 1226 px (group minimum widths 661 and 541 plus 24). The widget therefore follows its intended stacking rule. A portable regression test must request a width above the measured threshold instead of assuming 1100 px is sufficient for every font configuration.
 
@@ -23,7 +23,7 @@ Algorithm development can proceed in an isolated experimental package with this 
 
 **Subsequent resolution:** a read-only widget probe found that this environment's font/DPI makes the two groups require more than the test's hard-coded 1100 px. The widget correctly stacks below its computed breakpoint. The test now sizes the wide case from both actual `minimumSizeHint()` widths plus margin, and still checks stacking at 300 px. No production widget code changed. The targeted 35-test session/flow suite passes, and the subsequent complete run passed 246 research plus 56 maintenance tests before the final candidate regression was added. Later final verification is reported separately; the original failed baseline result above is preserved.
 
-Command: `python -B tools/summarize_fault_diagnostics.py research_artifacts/fault_diagnostics_v2/held_out/trials.jsonl --title "V2 cached baseline reproduction"`. No policy recomputation was requested. This reproduces saved trial outcomes; it is not a fresh rerun of every fit.
+Command: `python -B tools/summarize_fault_diagnostics.py research/research_artifacts/fault_diagnostics_v2/held_out/trials.jsonl --title "V2 cached baseline reproduction"`. No policy recomputation was requested. This reproduces saved trial outcomes; it is not a fresh rerun of every fit.
 
 | Recorded V2 comparator | No-change alarms | Drift detections | Exact attribution | Ambiguous including truth | Wrong attribution | No-change updates |
 |---|---:|---:|---:|---:|---:|---:|

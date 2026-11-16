@@ -12,7 +12,7 @@ Per trial and method:
   cost        seconds for pairing, row assembly and inference
 
 Usage:
-  python -B tools/evaluate_pairing_v3.py --datasets enclosure_on_twelve october_device_four --role evaluation --replicates 2 --output research_artifacts/X
+  python -B tools/evaluate_pairing_v3.py --datasets enclosure_on_twelve october_device_four --role evaluation --replicates 2 --output research/research_artifacts/X
 """
 import sys
 from pathlib import Path
@@ -72,7 +72,7 @@ def reserved_split(names, cfg):
 
 def run(args):
     cfg, diag, sig = ResearchConfig(), DiagnosticsConfig(), SignatureConfig()
-    manifest = json.loads((REPOSITORY / 'research_data/manifest.json').read_text(encoding='utf-8'))
+    manifest = json.loads((REPOSITORY / 'research/research_data/manifest.json').read_text(encoding='utf-8'))
     roles = {d['id']: d.get('pairing_role', 'unassigned') for d in manifest['datasets']}
     if any(roles.get(d) != args.role for d in args.datasets):
         raise SystemExit('Every dataset must carry pairing_role=' + args.role + ' in the manifest')

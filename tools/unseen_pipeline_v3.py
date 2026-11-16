@@ -23,7 +23,7 @@ import run_generalization_v3 as R
 from research_calibration.fault_diagnostics_v3 import generalization as G, unseen as U
 from research_calibration.legacy_adapter import REPOSITORY
 
-REGISTRY = REPOSITORY / 'research_data/groups_v3.json'
+REGISTRY = REPOSITORY / 'research/research_data/groups_v3.json'
 FROZEN_UNSEEN = REPOSITORY / 'docs/research/v3/FROZEN_UNSEEN.json'
 
 

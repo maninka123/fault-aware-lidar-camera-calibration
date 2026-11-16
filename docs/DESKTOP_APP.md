@@ -4,7 +4,7 @@ The app checks whether a camera–LiDAR calibration still holds, shows how it re
 result. This guide follows the order you meet things in: **New check → Processing → Result → Calibration review → Report →
 Use the result**, then **Devices**.
 
-Windows 10/11, Python 3.10/3.11. Start it with `launchers/start_research_gui.bat` (or `python gui/research_gui.py`). Other systems are
+Windows 10/11, Python 3.10/3.11. Start it with `launchers/start_research_gui.bat` (or `python app/gui/research_gui.py`). Other systems are
 untested. For a one-page list of everything the app can do, see [Features](FEATURES.md); if something goes wrong, see
 [Troubleshooting](TROUBLESHOOTING.md).
 
@@ -139,10 +139,13 @@ is never changed. Writing and restoring work only for checks captured from a con
 
 **Devices** connects to a sensor device, shows what it sees, reads its calibration (over SSH, or from a file), and captures
 a short sample. When the capture finishes, the check runs on it automatically and the result can be written back to that
-same device from **Use the result**. Devices come from the Central Monitoring Platform folder; *Add device…* adds more.
+same device from **Calibration review**. Devices come from the Central Monitoring Platform folder; *Add device…* adds more.
 Nothing is written until you choose Write and confirm.
 
 ## Where things are saved
 
-Every check is a folder under `research_artifacts/`, with its settings in a `.gui.json` beside it. Your calibration files are
+Every check is a folder under `research/research_artifacts/`, with its settings in a `.gui.json` beside it. Your calibration files are
 never modified. [Repository layout](REPOSITORY_LAYOUT.md) lists what a check contains.
+
+
+Device updates are offered only in Calibration review, not on the Result tab. Edit manually beside the device values imports/edits and previews TXT values, then hands them to Calibration review. Select camera-only, alignment-only or both before writing. Native device values are shown for Keep current; processing-model conversions are labelled. Conversion error and covered angle must be reviewed before a fisheye-to-pinhole write. Restore can select the previous update or the original backup.

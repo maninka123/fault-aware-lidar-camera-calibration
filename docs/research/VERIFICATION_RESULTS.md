@@ -9,26 +9,26 @@ The result is a working offline research prototype. These tests do not establish
 From `Fault-aware calibration/repository`:
 
 ```powershell
-python -B tools/verify_research.py --recorded enclosure_off_ten --output research_artifacts/reproduce
-python -B -m research_calibration benchmark --dataset creep_three --output research_artifacts/reproduce_small
-python -B tools/run_recorded_ablations.py --output research_artifacts/reproduce_ablations
+python -B tools/verify_research.py --recorded enclosure_off_ten --output research/research_artifacts/reproduce
+python -B -m research_calibration benchmark --dataset creep_three --output research/research_artifacts/reproduce_small
+python -B tools/run_recorded_ablations.py --output research/research_artifacts/reproduce_ablations
 python -B tools/verify_desktop_bridge.py
-python -B tools/verify_initialization.py --output research_artifacts/reproduce_initial --timeout 600
-python -B -m research_calibration assess --dataset creep_three --strategy legacy --output research_artifacts/reproduce_legacy
+python -B tools/verify_initialization.py --output research/research_artifacts/reproduce_initial --timeout 600
+python -B -m research_calibration assess --dataset creep_three --strategy legacy --output research/research_artifacts/reproduce_legacy
 ```
 
 Each run needs a new output folder. The manifest hashes are checked before recorded evaluation. Inputs remain in their existing workspace folders; no recording is redistributed. Public-checkout users must supply their own paths or compatible recordings. Source hashes, exact configuration, package versions and individual folds are saved with each benchmark.
 
 Local executed evidence:
 
-- `research_artifacts/verified_37/`: final 28 + 37 test logs and commands.
-- `research_artifacts/final_verification/recorded/`: primary five-method ten-capture benchmark and per-method JSON/Markdown reports. This preceding run had 32 research tests. Later additions cover output protection, Windows paths and initial-report scoping, without changing maintenance optimization/evaluation equations. Each benchmark retains its execution-time source hashes.
-- `research_artifacts/creep_three_final/`: five-method small-data run.
-- `research_artifacts/additional_ablations/`: single-variant and four capture-selection baselines.
-- `research_artifacts/desktop_bridge.json`: successful real-recording child-process bridge, exit code 0, `INSUFFICIENT_EVIDENCE`.
-- `research_artifacts/legacy_original_smoke/`: successful strict original workflow dispatch and retained reference.
-- `research_artifacts/guarded_initialization_v2/`: full inherited coarse search, refinement, outputs and watchdog samples; exit code 0.
-- `research_artifacts/initialization_scope_verified/`: final report scoping and conditional assessment replayed from that saved initial calibration, without repeating the coarse search.
+- `research/research_artifacts/verified_37/`: final 28 + 37 test logs and commands.
+- `research/research_artifacts/final_verification/recorded/`: primary five-method ten-capture benchmark and per-method JSON/Markdown reports. This preceding run had 32 research tests. Later additions cover output protection, Windows paths and initial-report scoping, without changing maintenance optimization/evaluation equations. Each benchmark retains its execution-time source hashes.
+- `research/research_artifacts/creep_three_final/`: five-method small-data run.
+- `research/research_artifacts/additional_ablations/`: single-variant and four capture-selection baselines.
+- `research/research_artifacts/desktop_bridge.json`: successful real-recording child-process bridge, exit code 0, `INSUFFICIENT_EVIDENCE`.
+- `research/research_artifacts/legacy_original_smoke/`: successful strict original workflow dispatch and retained reference.
+- `research/research_artifacts/guarded_initialization_v2/`: full inherited coarse search, refinement, outputs and watchdog samples; exit code 0.
+- `research/research_artifacts/initialization_scope_verified/`: final report scoping and conditional assessment replayed from that saved initial calibration, without repeating the coarse search.
 
 Local artifacts are ignored by Git because they contain machine paths. A durable computed summary is [evaluation/results_summary.json](evaluation/results_summary.json). It includes versions, source hashes, configurations, folds/outer outcomes and all aggregate comparisons. [tools/build_research_summary.py](../../tools/build_research_summary.py) rebuilds it and the figure from actual run JSON.
 
@@ -134,12 +134,12 @@ See [NOVELTY_ASSESSMENT.md](NOVELTY_ASSESSMENT.md) for the resulting negative/pr
 Executed **6 November 2026** on branch `research/fault-diagnostics-v2`. Method:
 [FAULT_DIAGNOSTICS_V2.md](FAULT_DIAGNOSTICS_V2.md). The protocol was frozen in
 [PREREGISTRATION_V2.md](PREREGISTRATION_V2.md) at commit `5125560`, before any held-out run. Summaries are in
-`evaluation/fault_diagnostics_v2/`. Full trial records stay local in `research_artifacts/fault_diagnostics_v2/`
+`evaluation/fault_diagnostics_v2/`. Full trial records stay local in `research/research_artifacts/fault_diagnostics_v2/`
 because they are not committed.
 
 ### Tests
 
-- `research_tests/test_fault_diagnostics.py` has 22 tests, all passing:
+- `research/research_tests/test_fault_diagnostics.py` has 22 tests, all passing:
   - misleading dense edges;
   - ghost edges;
   - poor visibility;

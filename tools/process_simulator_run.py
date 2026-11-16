@@ -14,7 +14,7 @@ What it does, in order (each stage is skipped if its output already exists, so i
 
     python tools/process_simulator_run.py "<...>/Simulator/<run folder made by the simulator lab>"
 
-Results: research_artifacts/simulator/<dataset name>/ (one folder per dataset; not committed), heavy scratch files in %LOCALAPPDATA%/FaultAwareSim
+Results: research/research_artifacts/simulator/<dataset name>/ (one folder per dataset; not committed), heavy scratch files in %LOCALAPPDATA%/FaultAwareSim
 (Windows' 260-character path limit). Run from the repository root with an environment that has the app's requirements. See
 docs/research/simulator/README.md.
 """
@@ -32,7 +32,7 @@ import cv2
 HERE = Path(__file__).resolve().parent
 IN_REPO = (HERE.parent / 'research_calibration').is_dir()          # normally the tool sits in tools/ of the repository
 REPO = HERE.parent if IN_REPO else HERE.parent / 'repository'
-RESULTS = REPO / 'research_artifacts' / 'simulator' if IN_REPO else HERE / 'runs'
+RESULTS = REPO / 'research' / 'research_artifacts' / 'simulator' if IN_REPO else HERE / 'runs'
 PY = sys.executable
 SCRATCH = Path(os.environ.get('LOCALAPPDATA', str(HERE))) / 'FaultAwareSim'
 FRAME_S = 0.1
@@ -155,7 +155,7 @@ def copy_maintenance_run(scratch, final):
     """The strict maintenance run writes into the cloned maintenance project's results folder; bring its files here."""
     try:
         summary = json.loads((scratch / 'assessment.json').read_text(encoding='utf-8'))['validation']['legacy_summary']
-        run_dir = REPO / 'Calibration maintenance' / 'results' / summary['run']
+        run_dir = REPO / 'app' / 'Calibration maintenance' / 'results' / summary['run']
         if run_dir.is_dir():
             copy_tree(run_dir, final / 'maintenance_run')
     except (OSError, KeyError, ValueError, TypeError) as error:

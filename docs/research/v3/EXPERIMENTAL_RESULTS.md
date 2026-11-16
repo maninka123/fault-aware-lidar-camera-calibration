@@ -200,8 +200,8 @@ The improved V3 establishes **why** recorded attribution failed (pairing identit
   the cause is unresolved (IMPLEMENTATION_LOG.md item 17). CI therefore gates on the isolated runner and keeps the single-process run as an informational, non-gating step.
 * **GitHub Actions.** The workflow now runs the maintenance and research suites on Windows and a Linux job. It has **not been executed on GitHub from this session**; the same commands were run locally
   in a clean checkout. The Linux job is marked non-gating until observed green.
-* **Desktop and workflow protection.** `Calibration maintenance/`, `Targetless calibration/` and all application launch scripts are unchanged relative to the original application branch; the only
-  application file changed is `gui/result_visuals.py` (overlay alignment banner). Changes to existing engine modules are 45 inserted and 5 deleted lines: an optional read-only fold observer, an optional
+* **Desktop and workflow protection.** `app/Calibration maintenance/`, `app/Targetless calibration/` and all application launch scripts are unchanged relative to the original application branch; the only
+  application file changed is `app/gui/result_visuals.py` (overlay alignment banner). Changes to existing engine modules are 45 inserted and 5 deleted lines: an optional read-only fold observer, an optional
   reflectivity-sample argument (both default off), an empty-basis LAPACK fix and CLI commands. Smoke runs, all exit code 0: `tools/verify_desktop_bridge.py` (offscreen desktop-to-child-process run),
   `python -m research_calibration diagnose-v3 --dataset october_device_one` (output `DRIFT_AMBIGUOUS`; the V3 entry point works), and `tools/verify_initialization.py` on `creep_three` (targetless
   initialization, 209 s). The maintenance tests pass.

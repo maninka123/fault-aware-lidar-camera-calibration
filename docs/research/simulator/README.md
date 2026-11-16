@@ -12,7 +12,7 @@ python tools/process_simulator_run.py "<path to the simulator run folder>"
 Stages (each is skipped when its output exists, so a run can be resumed): `convert`, `initial` (calibrate from scratch on batch 1), `check`
 (each later batch, one at a time: fault-aware `assess`, the maintenance comparison, experimental V3 `diagnose-v3`), `control` (the same checks
 from the simulator's own initial calibration), `score`. Select stages with `--stages convert,initial,...`; skip the control with
-`--skip-control`. Outputs go to `research_artifacts/simulator/<dataset>/` (not committed), including `results.md` and `results.json`.
+`--skip-control`. Outputs go to `research/research_artifacts/simulator/<dataset>/` (not committed), including `results.md` and `results.json`.
 
 ## First result (preliminary)
 

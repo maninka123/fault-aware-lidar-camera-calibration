@@ -5,20 +5,20 @@
 | Folder / file | What it holds |
 | --- | --- |
 | `launchers/` | `start_research_gui.bat` starts the desktop app (fault-aware assessment); `start_app.bat` starts the original calibration maintenance app |
-| [`camera-lidar-simulation-lab/`](../camera-lidar-simulation-lab/README.md) | Independent synthetic camera–LiDAR simulator, browser app, tests and its own environment |
-| `gui/` | The desktop app (see below) |
-| `research_calibration/` | The assessment engine: observability, hypotheses, decision policy, reporting |
-| `Calibration maintenance/` | The maintenance analysis and app, reused by the Calibration review tab and the Devices page |
-| `Targetless calibration/` | Edge extraction and the targetless initializer, read by both apps |
-| `research_tests/` | Tests for the engine and the app |
+| [`labs/camera-lidar-simulation-lab/`](../labs/camera-lidar-simulation-lab/README.md) | Independent synthetic camera–LiDAR simulator, browser app, tests and its own environment |
+| `app/gui/` | The desktop app (see below) |
+| `research/research_calibration/` | The assessment engine: observability, hypotheses, decision policy, reporting |
+| `app/Calibration maintenance/` | The maintenance analysis and app, reused by the Calibration review tab and the Devices page |
+| `app/Targetless calibration/` | Edge extraction and the targetless initializer, read by both apps |
+| `research/research_tests/` | Tests for the engine and the app |
 | `tools/` | Verification, ablation, report-building and screenshot scripts |
 | `docs/` | Guides, method, results, data formats and the research report |
-| `research_data/` | Dataset manifests and the generalization registry, plus `configs/` (settings). Recordings are not distributed. The path is fixed because frozen, hash-pinned evaluation files refer to it |
+| `research/research_data/` | Dataset manifests and the generalization registry, plus `configs/` (settings). Recordings are not distributed. The path is fixed because frozen, hash-pinned evaluation files refer to it |
 | `docs/examples/` | A sample calibration |
-| `multi_capture_calibration/` | Multi-capture helpers used by the engine |
-| `research_artifacts/` | Your checks. Created on first use; not committed |
+| `app/multi_capture_calibration/` | Multi-capture helpers used by the engine |
+| `research/research_artifacts/` | Your checks. Created on first use; not committed |
 
-## The desktop app (`gui/`)
+## The desktop app (`app/gui/`)
 
 | Module | Role |
 | --- | --- |
@@ -31,13 +31,13 @@
 | `matrix_view.py`, `settings_store.py` | Matrices shown on load; what the app remembers |
 | `app_icon.py`, `assets/`, `version.py` | Icon, drawn in code, and the version number |
 
-The maintenance dialogs and widgets that the app reuses live in `Calibration maintenance/code/`, so there is one
+The maintenance dialogs and widgets that the app reuses live in `app/Calibration maintenance/code/`, so there is one
 implementation of each.
 
 ## What a saved check contains
 
 ```text
-research_artifacts/
+research/research_artifacts/
   <check>.gui.json            what the check was started with (calibration, captures, options)
   <check>/
     assessment.json           the full result: verdict, comparisons, observability, changes
@@ -56,5 +56,5 @@ The maintenance comparison runs in a short scratch folder under `%LOCALAPPDATA%\
 
 ## Tests and tools
 
-`python -B tools/verify_research.py` runs both test suites (`Calibration maintenance/code/tests` and `research_tests`).
+`python -B tools/verify_research.py` runs both test suites (`app/Calibration maintenance/code/tests` and `research_tests`).
 `tools/make_screenshots.py` regenerates the images in `docs/images/app/` from a saved check.

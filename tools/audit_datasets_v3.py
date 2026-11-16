@@ -1,6 +1,6 @@
 """Audit every usable recording for generalization studies: device, session, scene, reference, prior use, duplicates, descriptors.
 
-Writes ``research_data/groups_v3.json`` (the registry used by the grouped evaluation and its leakage tests) and a markdown table. Nothing here
+Writes ``research/research_data/groups_v3.json`` (the registry used by the grouped evaluation and its leakage tests) and a markdown table. Nothing here
 fits or tunes anything. Device and session identity come from the folder history recorded below (a human-declared fact, flagged where unproven);
 duplicate captures, descriptors and scene similarity are measured from the files.
 
@@ -22,10 +22,10 @@ WORKSPACE = (REPOSITORY / '../..').resolve()
 # Declared facts. "used_in" lists every V2/V3 experiment or design decision in which the group's data were seen.
 GROUPS = [
     dict(id='rig_sep29_off', device='rig-A', session='2026-09-29', state='enclosure off', manifest_id='enclosure_off_ten',
-         data='Calibration maintenance/results/rig_20261104_174529/stacked/data', reference='Calibration maintenance/examples/feb2025_enclosure.json',
+         data='app/Calibration maintenance/results/rig_20261104_174529/stacked/data', reference='app/Calibration maintenance/examples/feb2025_enclosure.json',
          used_in=['V2 development', 'V2 evaluation of anchors', 'V3 development', 'pairing development']),
     dict(id='rig_sep29_on', device='rig-A', session='2026-09-29', state='enclosure on', manifest_id='enclosure_on_twelve',
-         data='Calibration maintenance/results/rig_20261104_202917/stacked/data', reference='results/2026_09_29_multi_capture/enclosure_on/calibration.json',
+         data='app/Calibration maintenance/results/rig_20261104_202917/stacked/data', reference='results/2026_09_29_multi_capture/enclosure_on/calibration.json',
          used_in=['V2 held-out evaluation', 'V3 development', 'pairing evaluation']),
     dict(id='pair1_oct28', device='pair_1', session='2026-10-28', state='enclosure on', manifest_id='october_device_one',
          data='Oct 29 test/stacked_data/pair_1', reference='Oct 29 test/results/pair_1/calibration.json',
@@ -38,11 +38,11 @@ GROUPS = [
          data='Oct 29 test/stacked_data/pair_4', reference='Oct 29 test/results/pair_4/calibration.json',
          used_in=['V2 held-out evaluation', 'V3 development', 'pairing evaluation']),
     dict(id='d1_nov5_off', device='pair_1', session='2026-11-05', state='enclosure off', manifest_id=None,
-         data='Calibration maintenance/results/rig_20261106_151100/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
+         data='app/Calibration maintenance/results/rig_20261106_151100/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
          device_note='Nov 5 checks were chained from device 1 (pair_1) calibration files; same physical unit is likely but not proven',
          used_in=['desktop-app checks only (no V2/V3 experiment, no design decision)']),
     dict(id='d1_nov5_on', device='pair_1', session='2026-11-05', state='enclosure on', manifest_id=None,
-         data='Calibration maintenance/results/rig_20261105_230653/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
+         data='app/Calibration maintenance/results/rig_20261105_230653/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
          device_note='as above; its checks used the Oct 28 device-1 calibration as their existing calibration',
          used_in=['desktop-app checks only (no V2/V3 experiment, no design decision)']),
 ]
@@ -122,7 +122,7 @@ def scene_similarity(images_by_group):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', required=True, help='path stem for the markdown/json audit')
-    parser.add_argument('--registry', default=str(REPOSITORY / 'research_data/groups_v3.json'))
+    parser.add_argument('--registry', default=str(REPOSITORY / 'research/research_data/groups_v3.json'))
     args = parser.parse_args()
     registry, images, prints = [], {}, {}
     for g in GROUPS:

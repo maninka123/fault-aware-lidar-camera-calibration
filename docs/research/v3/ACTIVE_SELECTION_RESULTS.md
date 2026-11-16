@@ -7,10 +7,10 @@ Executed **6 November 2026**. The finite-effect selector resolves a deliberately
 Tool: `tools/evaluate_active_selection_v3.py`. Reproduce into a **new** directory:
 
 ```powershell
-python -B tools/evaluate_active_selection_v3.py --output research_artifacts/v3_active_selection_replication
+python -B tools/evaluate_active_selection_v3.py --output research/research_artifacts/v3_active_selection_replication
 ```
 
-Final-source artifacts: `research_artifacts/v3_active_selection_final_20261106/protocol.json` and `results.json`. The tool wrote its protocol, fixed seeds/budgets/geometry/threshold choices and source hashes **before** executing trials; it refuses to overwrite a nonempty output directory. The end-of-run source check was `true`.
+Final-source artifacts: `research/research_artifacts/v3_active_selection_final_20261106/protocol.json` and `results.json`. The tool wrote its protocol, fixed seeds/budgets/geometry/threshold choices and source hashes **before** executing trials; it refuses to overwrite a nonempty output directory. The end-of-run source check was `true`.
 
 Protocol SHA-256: `35c40ac1268379113f78804cd65ac87f410b9198a9e2c5ad43a739fcff8bfd71`.
 

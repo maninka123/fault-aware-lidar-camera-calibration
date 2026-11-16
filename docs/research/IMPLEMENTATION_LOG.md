@@ -64,7 +64,7 @@ Project date: **5 November 2026**. Work is isolated under `Fault-aware calibrati
 
 Final commands and evidence are in [VERIFICATION_RESULTS.md](VERIFICATION_RESULTS.md).
 
-- `python -B verify_research.py --output research_artifacts/verified_37`: **28 baseline + 37 research tests, all pass**.
+- `python -B verify_research.py --output research/research_artifacts/verified_37`: **28 baseline + 37 research tests, all pass**.
 - Five methods on `creep_three`: complete reports; all retain reference for insufficient evidence.
 - Five methods on `enclosure_off_ten`: completed in 27.15 seconds including shared extraction; no accepted update. Fault-aware best CV squared-loss gain 0.6243%, below 1% threshold. One invalid legacy joint fold remains visible.
 - Single-association support and random/feature/D/E selection ablations: all keep current. No performance advantage of the added ensemble/selection mechanism established.
@@ -98,7 +98,7 @@ Protocol: [PREREGISTRATION_V2.md](PREREGISTRATION_V2.md).
   depth edges.
 - `__main__`: a new `diagnose` command.
 
-### New modules: `research_calibration/fault_diagnostics/`
+### New modules: `research/research_calibration/fault_diagnostics/`
 
 | Module | Purpose |
 |---|---|

@@ -12,7 +12,7 @@ offset, averaged over captures:
 A measure that keeps improving as the calibration is moved away from the reference in one direction, while
 the chance-predicted change follows it, is rewarding edge density rather than alignment.
 
-  python -B tools/probe_loss_bias.py --dataset creep_three --output research_artifacts/fault_diagnostics_v2/probe_creep_three.json
+  python -B tools/probe_loss_bias.py --dataset creep_three --output research/research_artifacts/fault_diagnostics_v2/probe_creep_three.json
 """
 import sys
 from pathlib import Path

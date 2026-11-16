@@ -12,12 +12,12 @@ development round.
 | Development | `creep_three`, `enclosure_off_ten`, `october_device_one` | Inspected while designing and tuning the method |
 | Held-out | `enclosure_on_twelve` (12 captures, Sep 29 board reference), `october_device_four` (15 captures, pair_4 board reference) | Not evaluated by any v2 code; only file hashes and capture counts were read |
 
-Roles are recorded in `research_data/manifest.json` (`evaluation_role`). The evaluation tool refuses to run a
+Roles are recorded in `research/research_data/manifest.json` (`evaluation_role`). The evaluation tool refuses to run a
 held-out role on a development recording, and the reverse.
 
 ## Frozen constants
 
-- **Diagnostics:** `DiagnosticsConfig` defaults in `research_calibration/fault_diagnostics/config.py` at the commit
+- **Diagnostics:** `DiagnosticsConfig` defaults in `research/research_calibration/fault_diagnostics/config.py` at the commit
   of this document.
 - **Production engine:** `ResearchConfig` defaults, unchanged.
 - **Ablation switches:** `ABLATIONS` in `policy.py`.

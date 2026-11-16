@@ -4,7 +4,7 @@ Protocol recorded on 6 November 2026 before executing the V3 evaluation. This is
 
 ## Correctness amendment before the final development round
 
-The initial implementation run was intentionally stopped after 56 of 68 planned trials when independent regression tests demonstrated unsafe alias promotion and a coordinate-median effect bug. Completed rows, the initial protocol and hash-verified source archive remain in `research_artifacts/v3_matched_development_20261106/`, explicitly marked `interrupted_for_correctness_review`. Those preliminary outcomes are not the final V3 evaluation.
+The initial implementation run was intentionally stopped after 56 of 68 planned trials when independent regression tests demonstrated unsafe alias promotion and a coordinate-median effect bug. Completed rows, the initial protocol and hash-verified source archive remain in `research/research_artifacts/v3_matched_development_20261106/`, explicitly marked `interrupted_for_correctness_review`. Those preliminary outcomes are not the final V3 evaluation.
 
 The second round repeats the same four recordings, conditions, seeds, fitting budgets and declared numerical tolerances after the correctness fixes. No threshold is chosen to improve the preliminary results. Its output directory and frozen source/configuration distinguish it from the defective first round. A separate frozen-maintenance-optimizer comparison uses the same recorded-data machinery at the common fitting budget, with two recordings, nominal and all seven drift conditions, one replicate. This is an optimizer comparator, not a claim to have rerun the entire strict legacy maintenance application under identical hypotheses.
 

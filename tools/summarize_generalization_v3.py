@@ -3,7 +3,7 @@
     python -B tools/summarize_generalization_v3.py RUN_FOLDER
 
 Reads RUN_FOLDER/{pipeline,original_optimizer,pairing_*}/trials.jsonl (produced by tools/run_generalization_v3.py) and
-research_data/groups_v3.json. Counts only: trials within a group are perturbations of one static scene, so no confidence interval is given.
+research/research_data/groups_v3.json. Counts only: trials within a group are perturbations of one static scene, so no confidence interval is given.
 """
 import sys
 from pathlib import Path
@@ -31,7 +31,7 @@ def norm_pipeline(score):
 
 def build(run):
     run = Path(run)
-    manifest = json.loads((REPOSITORY / 'research_data/manifest.json').read_text(encoding='utf-8'))
+    manifest = json.loads((REPOSITORY / 'research/research_data/manifest.json').read_text(encoding='utf-8'))
     to_group = {d['id']: d.get('registry_group') for d in manifest['datasets']}
     trials = {}
 
@@ -78,7 +78,7 @@ def fmt(m):
 
 
 def main(run):
-    registry = G.load_registry(REPOSITORY / 'research_data/groups_v3.json')
+    registry = G.load_registry(REPOSITORY / 'research/research_data/groups_v3.json')
     roles = {g['id']: g['role'] for g in registry['groups']}
     trials = build(run)
     G.validate_registry(registry)

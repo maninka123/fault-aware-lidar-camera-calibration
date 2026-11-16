@@ -20,13 +20,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main(argv):
-    names = argv or sorted(p.stem for p in (ROOT / 'research_tests').glob('test_*.py'))
+    names = argv or sorted(p.stem for p in (ROOT / 'research' / 'research_tests').glob('test_*.py'))
     env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
     env.setdefault('QT_QPA_PLATFORM', 'offscreen')
     rows, failed = [], False
     for name in names:
         started = time.perf_counter()
-        process = subprocess.run([sys.executable, '-X', 'faulthandler', '-m', 'unittest', 'discover', '-s', 'research_tests', '-p', name + '.py'],
+        process = subprocess.run([sys.executable, '-X', 'faulthandler', '-m', 'unittest', 'discover', '-s', 'research/research_tests', '-p', name + '.py'],
                                  cwd=ROOT, env=env, capture_output=True, text=True, timeout=1200)
         text = process.stdout + process.stderr
         ran = re.search(r'Ran (\d+) tests?', text)

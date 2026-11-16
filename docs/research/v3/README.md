@@ -5,13 +5,13 @@ V3 is an offline experimental sidecar. Production assessment and V2 remain execu
 From the repository root:
 
 ```powershell
-python -B -m research_calibration diagnose-v3 --dataset october_device_one --output research_artifacts/my_new_v3_run
-python -B -m research_calibration diagnose-v3 --dataset october_device_one --signature-config research_data/configs/fault_diagnostics_v3.json --output research_artifacts/my_configured_v3_run
-python -B -m research_calibration diagnose-v3 --calibration current.json --captures paired_data --output research_artifacts/my_explicit_v3_run
-python -B tools/evaluate_fault_diagnostics_v3.py --datasets october_device_one enclosure_off_ten --replicates 1 --output research_artifacts/my_matched_development_run
-python -B tools/evaluate_signature_geometry_v3.py --output research_artifacts/my_known_correspondence_run
-python -B tools/evaluate_active_selection_v3.py --output research_artifacts/my_selection_run
-python -B tools/verify_research.py --output research_artifacts/my_verification_run
+python -B -m research_calibration diagnose-v3 --dataset october_device_one --output research/research_artifacts/my_new_v3_run
+python -B -m research_calibration diagnose-v3 --dataset october_device_one --signature-config research/research_data/configs/fault_diagnostics_v3.json --output research/research_artifacts/my_configured_v3_run
+python -B -m research_calibration diagnose-v3 --calibration current.json --captures paired_data --output research/research_artifacts/my_explicit_v3_run
+python -B tools/evaluate_fault_diagnostics_v3.py --datasets october_device_one enclosure_off_ten --replicates 1 --output research/research_artifacts/my_matched_development_run
+python -B tools/evaluate_signature_geometry_v3.py --output research/research_artifacts/my_known_correspondence_run
+python -B tools/evaluate_active_selection_v3.py --output research/research_artifacts/my_selection_run
+python -B tools/verify_research.py --output research/research_artifacts/my_verification_run
 ```
 
 Use a new output folder each time. `fault_diagnostics_v3.json` contains the V3 decision, unchanged V2/production comparison, geometry diagnostics, ambiguity, proposed observations and validation status. `baseline/` preserves the original assessment and V2 files. The V3 package exports `diagnose_v3`, `diagnose_from_records`, `infer_signatures` and `SignatureConfig`. The recorded runner uses the existing data loader and selective optimizer; the exact-correspondence API is a distinct mathematical-verification path.

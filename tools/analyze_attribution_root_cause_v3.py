@@ -14,7 +14,7 @@ Experiments per condition (all share captures, perturbation and seed):
       so the same geometry and inference are compared across correspondence quality
 
 Usage from the repository root:
-  python -B tools/analyze_attribution_root_cause_v3.py --datasets october_device_one --replicates 2 --output research_artifacts/v3_root_cause_X
+  python -B tools/analyze_attribution_root_cause_v3.py --datasets october_device_one --replicates 2 --output research/research_artifacts/v3_root_cause_X
 """
 import sys
 from pathlib import Path

@@ -58,7 +58,7 @@ What contradicts a stronger claim: exact attribution did not improve over the or
 28 updates passed acceptance; visibility and balancing showed no benefit; the control is a proxy from the anchor, not verified correspondences; both pairs of recordings were examined earlier; no physical truth exists.
 
 Merge safety as an experimental, non-default feature: the V3 package, tools, tests and documents are additive. Changes to existing modules are an optional read-only fold observer in `assess` (default off), an optional
-reflectivity-sample argument of the capture loader (default off), a fix for an empty-basis LAPACK failure, a `diagnose`/`diagnose-v3` command, one application file (`gui/result_visuals.py`, the overlay alignment banner) and CI. No production decision
+reflectivity-sample argument of the capture loader (default off), a fix for an empty-basis LAPACK failure, a `diagnose`/`diagnose-v3` command, one application file (`app/gui/result_visuals.py`, the overlay alignment banner) and CI. No production decision
 rule, hardware path or maintenance code is changed. Remaining merge risks: the desktop-window native crash noted in the CI section (pre-existing, unresolved) and the Linux CI job being unverified.
 
 Most valuable next experiments (unchanged in kind, sharpened by this study): independent correspondence information, since pairing at the current estimate cannot be both unbiased and informative. Options, in order of

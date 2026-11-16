@@ -1,4 +1,5 @@
 .venv/
+.runtime.json
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -18,8 +19,13 @@ devices.json
 *.key
 
 # Local experiments include machine paths and private recording references.
-research_artifacts/
+research/research_artifacts/
 
 # Recordings captured from devices, and machine-specific shortcuts.
-device_captures/
+data/device_captures/
 *.lnk
+installation-check*.json
+build/
+dist/
+
+data/legacy-environment/

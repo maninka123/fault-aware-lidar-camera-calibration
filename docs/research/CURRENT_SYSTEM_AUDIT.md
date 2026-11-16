@@ -14,11 +14,11 @@ Executed before research-engine edits:
 
 ```powershell
 # From Fault-aware calibration/repository
-python -B -m unittest discover -s "Calibration maintenance/code/tests"
+python -B -m unittest discover -s "app/Calibration maintenance/code/tests"
 # Ran 28 tests in 0.521s: OK
 
 # From the original workspace (read-only comparison)
-python -B -m unittest discover -s "Calibration maintenance/code/tests"
+python -B -m unittest discover -s "app/Calibration maintenance/code/tests"
 # Ran 56 tests in 0.867s: OK
 ```
 
@@ -26,7 +26,7 @@ The 28 committed checks cover constrained selection, invalid fits, fixed paramet
 
 ## Existing numerical pipeline
 
-`Targetless calibration/code/calib.py` defines thirteen parameters:
+`app/Targetless calibration/code/calib.py` defines thirteen parameters:
 
 `wx wy wz tx ty tz fx fy cx cy k1 k2 delta`.
 
@@ -40,7 +40,7 @@ The camera projection is OpenCV's equidistant/fisheye polynomial, not a general 
 
 `step1_calibrate.py` searches mounting/focal hypotheses, jointly refines, checks NID agreement, compares k1 versus k1/k2 and exports calibration JSON/TXT. `step2_compare.py` contains an independently obtained checkerboard comparison route; merely having this route does not supply ground truth for every maintenance recording. `full_calibration.py` runs the existing scratch solver and supplies that result as an additional start for a subsequent joint maintenance check.
 
-`Calibration maintenance/code/update_options.py` already compares keep, extrinsic, intrinsic and full updates. Each comparison fold fits its nuisance baseline, proposals and constrained alternatives using training captures. It scores the intersection of points visible under all four models, requiring sufficient coverage. With at least three captures it leaves one capture out; otherwise it leaves image regions out. Selection uses a one-percentage-point minimum edge-share gain, gain exceeding two paired standard errors and a majority of improved folds. A joint update must outperform both simple updates. These are explicit decision heuristics, not posterior fault probabilities. Intrinsic/extrinsic compensation can leave several physical explanations unresolved.
+`app/Calibration maintenance/code/update_options.py` already compares keep, extrinsic, intrinsic and full updates. Each comparison fold fits its nuisance baseline, proposals and constrained alternatives using training captures. It scores the intersection of points visible under all four models, requiring sufficient coverage. With at least three captures it leaves one capture out; otherwise it leaves image regions out. Selection uses a one-percentage-point minimum edge-share gain, gain exceeding two paired standard errors and a majority of improved folds. A joint update must outperform both simple updates. These are explicit decision heuristics, not posterior fault probabilities. Intrinsic/extrinsic compensation can leave several physical explanations unresolved.
 
 ## Published source versus local development source
 
@@ -64,15 +64,15 @@ The local development `edge_distance_metrics()` computes nearest-image-edge dist
 
 ## Available real recordings
 
-The path-only manifest is [`research_data/manifest.json`](../../research_data/manifest.json). Its `workspace_root_relative_to_repository` is `../..`; paths resolve relative to that workspace. It records hashes, point counts, dimensions and units for the two primary caches. No recordings were copied into this repository.
+The path-only manifest is [`research/research_data/manifest.json`](../../research/research_data/manifest.json). Its `workspace_root_relative_to_repository` is `../..`; paths resolve relative to that workspace. It records hashes, point counts, dimensions and units for the two primary caches. No recordings were copied into this repository.
 
 | ID | Local cache | Captures | Compressed bytes | Suggested use |
 |---|---|---:|---:|---|
-| `creep_three` | `Targetless calibration/stacked_data/creep_data` | 3 | 17,008,336 | Small backend smoke/integration evaluation |
-| `enclosure_off_ten` | `Calibration maintenance/results/rig_20261104_174529/stacked/data` | 10 | 67,217,832 | Larger identical-input comparison |
-| `enclosure_on_twelve` | `Calibration maintenance/results/rig_20261104_202917/stacked/data` | 12 | 70,421,453 | Additional recorded configuration |
-| `october_device_one` | `Calibration maintenance/results/rig_20261104_220224/stacked/data` | 11 | 27,041,903 | Additional device/scene recording |
-| `october_device_four` | `Calibration maintenance/results/rig_20261104_221306/stacked/data` | 15 | 54,053,136 | Additional device/scene recording |
+| `creep_three` | `app/Targetless calibration/stacked_data/creep_data` | 3 | 17,008,336 | Small backend smoke/integration evaluation |
+| `enclosure_off_ten` | `app/Calibration maintenance/results/rig_20261104_174529/stacked/data` | 10 | 67,217,832 | Larger identical-input comparison |
+| `enclosure_on_twelve` | `app/Calibration maintenance/results/rig_20261104_202917/stacked/data` | 12 | 70,421,453 | Additional recorded configuration |
+| `october_device_one` | `app/Calibration maintenance/results/rig_20261104_220224/stacked/data` | 11 | 27,041,903 | Additional device/scene recording |
+| `october_device_four` | `app/Calibration maintenance/results/rig_20261104_221306/stacked/data` | 15 | 54,053,136 | Additional device/scene recording |
 
 NPZ inputs contain BGR uint8 images at 484 × 366, `xyz_mm` int16 points, intensity, per-point frame indices and frame timestamps. The existing loader converts millimetres to metres. A capture contains many accumulated scans, not one independent observation per point. The first three-capture file contains 970,185 points; the first ten-capture file contains 1,142,076. Temporal synchronization and physical-unit accuracy cannot be proven by these arrays alone.
 

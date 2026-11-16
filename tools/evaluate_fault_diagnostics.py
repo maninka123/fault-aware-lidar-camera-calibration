@@ -16,7 +16,7 @@ Replicates r = 0..R-1 drop two captures chosen at random (seeded) and draw a per
 replicate is a paired comparison across conditions and methods.
 
 Usage (from the repository root):
-  python -B tools/evaluate_fault_diagnostics.py --datasets october_device_one enclosure_off_ten --role development --output research_artifacts/fault_diagnostics_v2/development
+  python -B tools/evaluate_fault_diagnostics.py --datasets october_device_one enclosure_off_ten --role development --output research/research_artifacts/fault_diagnostics_v2/development
 """
 import sys
 from pathlib import Path
@@ -54,7 +54,7 @@ NUISANCES = P.NUISANCES
 # Development only: the reference of enclosure_off_ten is ~18 px from the scene (outside the local fit), so its
 # anchor starts from the maintenance refinement of the same captures. Held-out recordings always start from
 # their own reference.
-ANCHOR_START = {'enclosure_off_ten': 'Calibration maintenance/results/rig_20261104_174529/refined_calibration.json'}
+ANCHOR_START = {'enclosure_off_ten': 'app/Calibration maintenance/results/rig_20261104_174529/refined_calibration.json'}
 
 
 def params_in(cal, model):
@@ -77,7 +77,7 @@ def pixel_error(caps, model, p, p_true):
 
 
 def anchor_calibration(dataset, reference_path, bundle, cfg):
-    root = (REPOSITORY/json.loads((REPOSITORY/'research_data/manifest.json').read_text(encoding='utf-8'))
+    root = (REPOSITORY/json.loads((REPOSITORY/'research/research_data/manifest.json').read_text(encoding='utf-8'))
             ['workspace_root_relative_to_repository']).resolve()
     start_path = root/ANCHOR_START[dataset] if dataset in ANCHOR_START else reference_path
     start = read_calibration(start_path)
@@ -124,7 +124,7 @@ def score(row):
 
 def run(args):
     cfg = ResearchConfig(); diag = DiagnosticsConfig()
-    manifest = json.loads((REPOSITORY/'research_data/manifest.json').read_text(encoding='utf-8'))
+    manifest = json.loads((REPOSITORY/'research/research_data/manifest.json').read_text(encoding='utf-8'))
     roles = {d['id']: d.get('evaluation_role') for d in manifest['datasets']}
     wanted = 'held_out_v2' if args.role == 'held_out' else 'development_v2'
     if any(roles.get(d) != wanted for d in args.datasets):

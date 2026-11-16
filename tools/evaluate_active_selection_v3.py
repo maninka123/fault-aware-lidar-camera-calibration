@@ -49,8 +49,8 @@ def run(output):
     output.mkdir(parents=True, exist_ok=True)
     root = Path(__file__).resolve().parents[1]
     sources = [Path(__file__), root/'tools/evaluate_signature_geometry_v3.py',
-               *sorted((root/'research_calibration/fault_diagnostics_v3').glob('*.py')),
-               root/'research_calibration/evidence_selection.py']
+               *sorted((root/'research/research_calibration/fault_diagnostics_v3').glob('*.py')),
+               root/'research/research_calibration/evidence_selection.py']
     protocol = dict(seeds=SEEDS, budgets=BUDGETS, conditions=CONDITIONS, methods=METHODS,
                     candidates=CANDIDATES, initial=dict(scene='great_circle', points=120),
                     independent_validation=dict(scene='wide_depth_rich', points=240),

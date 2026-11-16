@@ -2,7 +2,7 @@
 
 Run 6 November 2026 on the two **development** recordings (`october_device_one`, `enclosure_off_ten`), two replicates, seven injected changes
 (R 0.5 / 1 degree, T 3 / 6 cm, principal point 3 px, focal 2 %, RT), a nominal condition and two nuisances. Tools:
-`tools/analyze_attribution_root_cause_v3.py` (evidence in `research_artifacts/v3_root_cause_20261106`, `v3_pairing_development_20261106`).
+`tools/analyze_attribution_root_cause_v3.py` (evidence in `research/research_artifacts/v3_root_cause_20261106`, `v3_pairing_development_20261106`).
 Truth is relative to each recording's anchor, not physical. "Reference pairs" are the pairs the anchor itself finds under a strict gate (2 px,
 15 degrees): a proxy for true correspondences, used here as an experimental control that no real method has.
 

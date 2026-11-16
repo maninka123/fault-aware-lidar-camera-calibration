@@ -1,8 +1,8 @@
 # Fault diagnostics v2: chance-referenced, multi-cue evidence for calibration faults
 
 Branch `research/fault-diagnostics-v2`. This is an experimental layer beside the production assessment. It never
-changes a production verdict, threshold or output file. Code: `research_calibration/fault_diagnostics/`. Tests:
-`research_tests/test_fault_diagnostics.py`. Tools: `tools/probe_loss_bias.py`, `tools/evaluate_fault_diagnostics.py`,
+changes a production verdict, threshold or output file. Code: `research/research_calibration/fault_diagnostics/`. Tests:
+`research/research_tests/test_fault_diagnostics.py`. Tools: `tools/probe_loss_bias.py`, `tools/evaluate_fault_diagnostics.py`,
 `tools/evaluate_sequential_monitor.py`, `tools/summarize_fault_diagnostics.py`. Command line:
 `python -B -m research_calibration diagnose --calibration current.json --captures folder --output new_folder`.
 

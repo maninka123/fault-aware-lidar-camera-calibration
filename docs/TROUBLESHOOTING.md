@@ -11,14 +11,14 @@ log, and leaves your calibration files untouched.
 | Problem | What to do |
 | --- | --- |
 | *"Windows stops at 260 characters"* when starting a check | The repository sits too deep. Move it to a short folder such as `C:\FaultAware`, or turn on long paths in Windows. The message appears before anything runs. |
-| The window does not start | Run `python gui/research_gui.py` in a terminal to see the error, and check that `pip install -r requirements.txt` finished. `launchers/start_research_gui.bat` looks for `.venv`, then Anaconda, then `pythonw` on the path. |
+| The window does not start | Run `python app/gui/research_gui.py` in a terminal to see the error, and check that `pip install -r requirements.txt` finished. `launchers/start_research_gui.bat` looks for `.venv`, then Anaconda, then `pythonw` on the path. |
 | It restored the wrong calibration or captures | Choose the right ones (that replaces them), or press *Forget* on New check. To clear everything, delete `%LOCALAPPDATA%\FaultAwareCalibration\settings.json`. |
 
 ## Checks
 
 | Problem | What to do |
 | --- | --- |
-| A check shows **Stopped** or **Could not finish** | The last line of the log (Processing → *Show log*) says why. The partial folder stays in `research_artifacts/` and is marked in the list. Your calibration is unchanged. |
+| A check shows **Stopped** or **Could not finish** | The last line of the log (Processing → *Show log*) says why. The partial folder stays in `research/research_artifacts/` and is marked in the list. Your calibration is unchanged. |
 | "At least two recorded captures are needed" | The held-out comparison needs several captures. Add more, from different viewpoints. |
 | Closing the window during a check | The app asks first and stops the check cleanly. |
 | The result says *Not enough evidence* | The captures could not separate the explanations, or no explanation helped consistently. Collect more varied captures (turn the rig a little between them). That is an answer, not a failure. |
@@ -43,4 +43,4 @@ log, and leaves your calibration files untouched.
 ## Reset everything the app stored
 
 Delete `%LOCALAPPDATA%\FaultAwareCalibration` (settings and log) and `%LOCALAPPDATA%\FaultAwareReview` (temporary
-comparison files). Your checks in `research_artifacts/` and your calibration files are separate and are not touched.
+comparison files). Your checks in `research/research_artifacts/` and your calibration files are separate and are not touched.

@@ -1,6 +1,6 @@
 # Implemented mathematical method
 
-Implementation: `research_calibration/`. This document supersedes the exploratory [draft](MATHEMATICAL_METHOD_DRAFT.md). Established components and literature decisions are identified in [PAPER_TO_ALGORITHM.md](PAPER_TO_ALGORITHM.md). Thresholds are declared engineering choices, not learned fault probabilities or statistical guarantees.
+Implementation: `research/research_calibration/`. This document supersedes the exploratory [draft](MATHEMATICAL_METHOD_DRAFT.md). Established components and literature decisions are identified in [PAPER_TO_ALGORITHM.md](PAPER_TO_ALGORITHM.md). Thresholds are declared engineering choices, not learned fault probabilities or statistical guarantees.
 
 ## 1. Parameters and coordinates
 

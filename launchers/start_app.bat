@@ -1,2 +1,2 @@
 @echo off
-call "%~dp0..\Calibration maintenance\start_app.bat"
+call "%~dp0..\app\Calibration maintenance\start_app.bat"

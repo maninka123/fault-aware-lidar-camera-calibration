@@ -21,7 +21,7 @@ git clone https://github.com/maninka123/automated-lidar-camera-calibration-optim
 cd automated-lidar-camera-calibration-optimizer
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe "Calibration maintenance/code/app.py"
+.\.venv\Scripts\python.exe "app/Calibration maintenance/code/app.py"
 ```
 
 After setup, double-click **launchers/start_app.bat**.
@@ -78,7 +78,7 @@ The development UI previews each option's matrices, highlights changed values, a
 
 - **Calibration:** [JSON example](examples/calibration.example.json); transform convention `p_camera = R @ p_lidar + t`, translation in metres.
 - **Captures:** image/PCD pairs, recorded bags or stacked arrays. PCD defaults to metres; millimetres are selectable. [Folder layouts →](DATA_FORMAT.md)
-- **Results:** candidate calibration, summary, report and plots in `Calibration maintenance/results/<run>/`.
+- **Results:** candidate calibration, summary, report and plots in `app/Calibration maintenance/results/<run>/`.
 
 For live data, the included ROS 1 integration reads `/camera/image_raw` and `/livox/lidar`. Topics are configurable. Adapting another camera model or device may require code changes.
 
@@ -89,5 +89,5 @@ For live data, the included ROS 1 integration reads `/camera/image_raw` and `/li
 - Recordings, credentials and machine-specific settings are excluded. Live-device writes were not exercised in the recorded-data checks.
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s "Calibration maintenance/code/tests" -v
+.\.venv\Scripts\python.exe -m unittest discover -s "app/Calibration maintenance/code/tests" -v
 ```
