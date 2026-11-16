@@ -28,8 +28,10 @@ def display_options(calibrations, meta):
     record = device_record(meta)
     existing = (calibrations or {}).get('existing') or {}
     previous = record.get('params') or existing.get('device_parameters')
+    missing = {mode: 'No valid full-data fit was saved for this option. The option score comes from separate held-out fits; it is not a saved calibration.'
+               for mode in ('intrinsic', 'extrinsic', 'full') if not (calibrations or {}).get(mode)}
     if not previous:
-        return calibrations
+        return dict(calibrations or {}, _unavailable=missing)
     shown = {'existing': native_calibration(previous)}
     for mode, cal in (calibrations or {}).items():
         if mode not in ('intrinsic', 'extrinsic', 'full') or not cal:
@@ -39,9 +41,11 @@ def display_options(calibrations, meta):
             if mode == 'intrinsic':
                 new['extrinsic_matrix'] = copy.deepcopy(previous['extrinsic_matrix'])
             shown[mode] = native_calibration(new)
-        except (ValueError, KeyError, TypeError):
+        except (ValueError, KeyError, TypeError) as error:
             # An unconvertible candidate must not be presented as writable native values.
+            missing[mode] = 'The fitted processing-model calibration cannot be converted to this device model: ' + str(error)
             continue
+    shown['_unavailable'] = missing
     return shown
 
 

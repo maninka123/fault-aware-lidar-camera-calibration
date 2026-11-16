@@ -138,6 +138,10 @@ class MatrixPreview(QtWidgets.QFrame):
         self.mode = mode
         self.update_heading()
         current, candidate = self.calibrations.get('existing'), self.calibrations.get(mode)
+        unavailable = None
+        if current and not candidate:
+            unavailable = (self.calibrations.get('_unavailable') or {}).get(mode) or 'No fitted calibration was saved for this option.'
+            candidate = current
         if not current or not candidate:
             for key, (value, delta) in self.cells.items():
                 value.setText('—')
@@ -157,6 +161,9 @@ class MatrixPreview(QtWidgets.QFrame):
         if native:
             self.note.setText('Native device pinhole values. Keep current preserves the original device values exactly; processing uses a separate fisheye representation.')
             self.note.show()
+        if unavailable:
+            self.note.setText(unavailable + ' Showing the unchanged current values for reference. No update from this option is available.')
+            self.note.show()
         def arrays(cal):
             return dict(K=np.asarray(cal['intrinsics']['camera_matrix'], float),
                         T=np.asarray(cal['extrinsics']['transform_lidar_to_camera'], float),
@@ -167,7 +174,7 @@ class MatrixPreview(QtWidgets.QFrame):
             count = int((np.abs(after[key] - before[key]) > 1e-9).sum())
             if key == 'K':
                 count += int((np.abs(after['D'] - before['D']) > 1e-9).sum())
-            state.setText(f'{count} changed values' if count else '')
+            state.setText('Current values only' if unavailable else f'{count} changed values' if count else '')
             state.setStyleSheet(f'color: {BLUE}; font-size: 9pt;')
         for index, (value, delta_label) in self.cells.items():
             key, row, col = index

@@ -148,4 +148,6 @@ Every check is a folder under `research/research_artifacts/`, with its settings 
 never modified. [Repository layout](REPOSITORY_LAYOUT.md) lists what a check contains.
 
 
-Device updates are offered only in Calibration review, not on the Result tab. Edit manually beside the device values imports/edits and previews TXT values, then hands them to Calibration review. Select camera-only, alignment-only or both before writing. Native device values are shown for Keep current; processing-model conversions are labelled. Conversion error and covered angle must be reviewed before a fisheye-to-pinhole write. Restore can select the previous update or the original backup.
+Calculated device updates are offered in Calibration review. Manual values also have a direct Update device action in the manual editor; the Result tab has no write control. Edit manually beside the device values imports/edits and previews TXT values, then offers a confirmed device update. Select camera-only, alignment-only or both before writing. Native device values are shown for Keep current; processing-model conversions are labelled. Conversion error and covered angle must be reviewed before a fisheye-to-pinhole write. Restore can select the previous update or the original backup.
+
+After a successful write, the saved original and written YAML open side by side with changed lines highlighted. The popup also provides parameter differences and the recorded device read-back status.

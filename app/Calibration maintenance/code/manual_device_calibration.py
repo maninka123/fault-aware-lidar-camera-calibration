@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import device_model as dm
 import device_ui as ui
@@ -112,8 +112,130 @@ def parse_values(text, previous, mode='full'):
     return raw, note
 
 
+def parameter_change_rows(previous, candidate):
+    rows = []
+    def append(name, before, after):
+        delta = after - before
+        rows.append([name, format(before, '.12g'), format(after, '.12g'), format(delta, '+.6g') if delta else '-'])
+    for name, row, column in (('fx (px)', 0, 0), ('fy (px)', 1, 1), ('cx (px)', 0, 2), ('cy (px)', 1, 2)):
+        append(name, previous['camera_matrix'][row][column], candidate['camera_matrix'][row][column])
+    for index, name in enumerate(('k1', 'k2', 'p1', 'p2', 'k3')):
+        append(name, previous['dist_coeffs'][index], candidate['dist_coeffs'][index])
+    for index, name in enumerate(('x', 'y', 'z')):
+        append('t ' + name + ' (mm)', previous['extrinsic_matrix'][index][3] * 1000, candidate['extrinsic_matrix'][index][3] * 1000)
+    for i in range(3):
+        for j in range(3):
+            a, b = previous['extrinsic_matrix'][i][j], candidate['extrinsic_matrix'][i][j]
+            append(f'Rotation R[{i+1},{j+1}]', a, b)
+    return rows
+
+
+class DeviceMatrixEditor(QtWidgets.QWidget):
+    """Read-only matrix preview; edits arrive exclusively from the parameter table."""
+    textChanged = QtCore.pyqtSignal()
+
+    def __init__(self, previous):
+        super().__init__()
+        self.previous = copy.deepcopy(previous)
+        self.imported_text = self.invalid_text = None
+        self.values = copy.deepcopy(previous)
+        self.cells = {}
+        layout = QtWidgets.QGridLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setHorizontalSpacing(12)
+        for key, title, rows, columns, position in (
+                ('camera_matrix', 'Camera matrix K (pixels) - OpenCV pinhole', 3, 3, (0, 0, 1)),
+                ('extrinsic_matrix', 'LiDAR to camera T - translation in metres', 4, 4, (0, 1, 1)),
+                ('dist_coeffs', 'Distortion coefficients', 1, 5, (1, 0, 2))):
+            group = QtWidgets.QGroupBox(title)
+            grid = QtWidgets.QGridLayout(group)
+            grid.setContentsMargins(14, 24, 14, 10)
+            grid.setHorizontalSpacing(12)
+            grid.setVerticalSpacing(6)
+            for row in range(rows):
+                for column in range(columns):
+                    cell = QtWidgets.QWidget(); cell_layout = QtWidgets.QVBoxLayout(cell)
+                    cell_layout.setContentsMargins(2, 0, 2, 0); cell_layout.setSpacing(1)
+                    if key == 'dist_coeffs':
+                        name = ui.label(('k1', 'k2', 'p1', 'p2', 'k3')[column], 'small')
+                        name.setAlignment(QtCore.Qt.AlignCenter)
+                        cell_layout.addWidget(name)
+                    value = QtWidgets.QLabel(); delta = QtWidgets.QLabel()
+                    for label in (value, delta):
+                        label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+                        label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+                        if key == 'dist_coeffs':
+                            label.setAlignment(QtCore.Qt.AlignCenter)
+                        label.setWordWrap(True)
+                    value.setMinimumWidth(76)
+                    delta.setMinimumHeight(16)
+                    delta.setStyleSheet('color: #c62828; font-size: 11px; background: transparent;')
+                    cell_layout.addWidget(value); cell_layout.addWidget(delta)
+                    grid.addWidget(cell, row, column)
+                    grid.setColumnStretch(column, 1)
+                    self.cells[key, row, column] = (value, delta)
+            layout.addWidget(group, position[0], position[1], 1, position[2])
+        self.setPlainText(template(previous))
+
+    def setPlainText(self, text):
+        try:
+            self.values, _ = parse_values(text, self.previous)
+        except (ValueError, KeyError, TypeError):
+            self.invalid_text = text
+            self.textChanged.emit()
+            return
+        self.invalid_text = None
+        self.imported_text = text
+        self.show_values(self.values)
+        self.textChanged.emit()
+
+    def set_value(self, key, row, column, text, scale=1.):
+        self.invalid_text = self.imported_text = None
+        try:
+            value = float(text) / scale
+        except ValueError:
+            value = text
+        if key == 'dist_coeffs':
+            self.values[key][column] = value
+        else:
+            self.values[key][row][column] = value
+        self.show_values(self.values)
+        self.textChanged.emit()
+
+    def toPlainText(self):
+        if self.invalid_text is not None:
+            return self.invalid_text
+        if self.imported_text is not None:
+            return self.imported_text
+        return template(self.values)
+
+    def show_values(self, values):
+        for (key, row, column), (value_label, delta_label) in self.cells.items():
+            before = self.previous[key][column] if key == 'dist_coeffs' else self.previous[key][row][column]
+            after = values[key][column] if key == 'dist_coeffs' else values[key][row][column]
+            try:
+                after = float(after)
+                valid = np.isfinite(after)
+                difference = after - before
+                changed = difference != 0
+                value_label.setText(format(after, '.12g'))
+                delta_label.setText(('Delta ' + format(difference, '+.6g')) if changed and valid else 'Invalid value' if not valid else '')
+            except (ValueError, TypeError):
+                changed = True
+                value_label.setText(str(after)); delta_label.setText('Invalid value')
+            value_label.setStyleSheet('font-family: Consolas; font-size: 13px; background: transparent; color: ' + ('#c62828;' if changed else '#1d1d1f;'))
+            value_label.setToolTip('Existing: ' + format(before, '.15g') + '\nNew: ' + str(after))
+
+
+def editable_parameters():
+    return ([('camera_matrix', r, c, 1.) for r, c in ((0, 0), (1, 1), (0, 2), (1, 2))]
+            + [('dist_coeffs', 0, c, 1.) for c in range(5)]
+            + [('extrinsic_matrix', r, 3, 1000.) for r in range(3)]
+            + [('extrinsic_matrix', r, c, 1.) for r in range(3) for c in range(3)])
+
+
 class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
-    def __init__(self, page, allow_write=False):
+    def __init__(self, page, allow_write=False, embedded=False):
         super().__init__(page)
         self.page = page
         self.allow_write = allow_write
@@ -122,9 +244,9 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
         key = hashlib.sha256(page.current['key'].encode()).hexdigest()[:12]
         self.folder = Path(os.environ.get('LOCALAPPDATA') or Path.home()) / 'FaultAwareCalibration' / 'manual_updates' / key
         self.setWindowTitle('Edit device calibration manually - ' + page.current['name'])
-        self.resize(1000, 780)
+        self.resize(1100, 820)
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(ui.label('Import a TXT file, or edit the current values below. Preview compares with the values read from the device. Device updates require a separate review and confirmation.', wrap=True))
+        layout.addWidget(ui.label('Edit only the New value column in the table below and press Enter. Matrices above show the selected changes and their deltas in red. Import TXT remains available. Sending values to the device requires review and confirmation.', wrap=True))
         self.mode = QtWidgets.QComboBox()
         self.mode.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
         self.mode.setMinimumContentsLength(12)
@@ -132,31 +254,33 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
         for title, value in (('Camera intrinsics + LiDAR-to-camera extrinsics', 'full'), ('Camera intrinsics only', 'intrinsic'), ('LiDAR-to-camera extrinsics only', 'extrinsic')):
             self.mode.addItem(title, value)
         layout.addWidget(ui.hbox(ui.button('Import TXT...', slot=self.import_file), ui.button('Save current template...', slot=self.save_template), self.mode))
-        self.editor = QtWidgets.QPlainTextEdit(template(self.previous))
-        self.editor.setMinimumHeight(160)
-        layout.addWidget(self.editor, 1)
+        self.editor = DeviceMatrixEditor(self.previous)
+        layout.addWidget(self.editor)
         self.note = ui.label('', wrap=True)
         layout.addWidget(self.note)
         self.comparison = QtWidgets.QWidget()
         self.comparison_layout = QtWidgets.QVBoxLayout(self.comparison)
         self.comparison_layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(ui.scroll(self.comparison), 2)
-        self.write_button = ui.button('Review device update...' if allow_write else 'Use in Calibration review', 'primary', self.write if allow_write else self.send_to_review)
+        self.write_button = ui.button('Update device...' if allow_write else 'Use in Calibration review', 'primary', self.write if allow_write else self.send_to_review)
         self.write_button.setEnabled(False)
         self.restore_button = ui.button('Restore previous values...', slot=self.restore)
+        from device_update_review import SavedDeviceUpdateDialog
+        self.saved_update_button = ui.button('View saved device update...', slot=lambda: SavedDeviceUpdateDialog.open_saved(self, self.folder))
         close = ui.button('Close', slot=self.reject)
-        layout.addWidget(action_flow([ui.button('Preview changes', slot=self.preview), self.write_button, self.restore_button, close]))
+        self.reset_button = ui.button('Cancel edits / use existing', slot=self.reset_edits)
+        layout.addWidget(action_flow([self.reset_button, self.write_button, self.restore_button, self.saved_update_button, close]))
         self.restore_button.setVisible(allow_write)
-        close.setVisible(not allow_write)
+        self.saved_update_button.setVisible(allow_write)
+        close.setVisible(not embedded)
         self.editor.textChanged.connect(self.invalidate)
-        self.mode.currentIndexChanged.connect(self.invalidate)
+        self.mode.currentIndexChanged.connect(self.preview)
         self.refresh_restore()
         self.preview()
 
     def invalidate(self, *_):
         self.candidate = None
         self.write_button.setEnabled(False)
-        ui.clear(self.comparison_layout)
         self.note.setText('Values changed. Preview again before updating the device.')
 
     def import_file(self):
@@ -176,22 +300,56 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
             except OSError as error:
                 ui.warn(self, 'Could not save template', str(error))
 
-    def preview(self):
+    def reset_edits(self):
+        self.editor.previous = copy.deepcopy(self.previous)
+        self.editor.setPlainText(template(self.previous))
+        self.preview()
+
+    def preview(self, *_):
         self.invalidate()
         try:
             candidate, note = parse_values(self.editor.toPlainText(), self.previous, self.mode.currentData())
         except (ValueError, KeyError, TypeError) as error:
             self.note.setText(str(error))
             return
-        rows = ui.param_rows(self.previous, candidate)
-        for i in range(3):
-            for j in range(3):
-                a, b = self.previous['extrinsic_matrix'][i][j], candidate['extrinsic_matrix'][i][j]
-                rows.append([f'Rotation R[{i+1},{j+1}]', f'{a:.8g}', f'{b:.8g}', f'{b-a:+.8g}'])
-        self.comparison_layout.addWidget(ui.table(['Parameter', 'Existing device value', 'New value', 'Difference'], rows, numeric=[1, 2, 3]))
+        rows = parameter_change_rows(self.previous, candidate)
+        self.editor.show_values(candidate)
+        if not hasattr(self, 'values_table'):
+            self.values_table = ui.table(['Parameter', 'Existing device value', 'New value (edit here)', 'Difference'], rows, numeric=[1, 2, 3], stretch=(1, 2, 3))
+            self.values_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+            self.values_table.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked | QtWidgets.QAbstractItemView.SelectedClicked | QtWidgets.QAbstractItemView.EditKeyPressed)
+            self.values_table.itemClicked.connect(lambda item: self.values_table.editItem(item) if item.column() == 2 and item.flags() & QtCore.Qt.ItemIsEditable else None)
+            self.values_table.itemChanged.connect(self.table_edited)
+            self.comparison_layout.addWidget(self.values_table)
+        self.values_table.blockSignals(True)
+        for row, values in enumerate(rows):
+            key, _, _, _ = editable_parameters()[row]
+            enabled = self.mode.currentData() != ('intrinsic' if key == 'extrinsic_matrix' else 'extrinsic')
+            for column, text in enumerate(values):
+                item = self.values_table.item(row, column)
+                item.setText(str(text))
+                flags = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+                if column == 2 and enabled:
+                    flags |= QtCore.Qt.ItemIsEditable
+                item.setFlags(flags)
+                item.setForeground(QtGui.QColor('#c62828' if column in (2, 3) and values[3] != '-' else '#1d1d1f' if enabled else '#6e6e73'))
+        self.values_table.blockSignals(False)
         self.note.setText(note)
+        if self.mode.currentData() == 'intrinsic':
+            self.note.setText(note + ' Camera only: the existing device alignment stays unchanged.')
+        elif self.mode.currentData() == 'extrinsic':
+            self.note.setText(note + ' Alignment only: the existing device camera values stay unchanged.')
         self.candidate = candidate
-        self.write_button.setEnabled(not ui.same_params(self.previous, candidate))
+        changed = any(not np.array_equal(self.previous[key], candidate[key]) for key in ('camera_matrix', 'dist_coeffs', 'extrinsic_matrix'))
+        self.write_button.setEnabled(changed)
+
+    def table_edited(self, item):
+        if item.column() != 2:
+            return
+        item.setForeground(QtGui.QColor('#c62828'))
+        key, row, column, scale = editable_parameters()[item.row()]
+        self.editor.set_value(key, row, column, item.text(), scale)
+        self.preview()
 
     def info(self):
         writes = json.loads((self.folder / 'device_writes.json').read_text(encoding='utf-8')) if (self.folder / 'device_writes.json').exists() else []
@@ -214,16 +372,16 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
         dialog = ui.WriteDialog(self, self.info())
         dialog.exec_()
         if getattr(dialog, 'written_record', None):
-            self.previous = copy.deepcopy(dialog.new)
-            self.page.set_params(dialog.new, f"{self.page.current['ssh_host']}:{dialog.path}, written {datetime.now():%Y-%m-%d %H:%M:%S}")
+            self.previous = copy.deepcopy(dialog.written_record['new'])
+            self.page.set_params(self.previous, f"{self.page.current['ssh_host']}:{dialog.path}, written {datetime.now():%Y-%m-%d %H:%M:%S}")
             self.page.calibration_file_text = dialog.new_text
             self.page.render_params()
-            self.editor.setPlainText(template(self.previous))
-            self.preview()
+            self.reset_edits()
         self.refresh_restore()
 
     def refresh_restore(self):
         self.restore_button.setEnabled((self.folder / 'device_writes.json').is_file())
+        self.saved_update_button.setEnabled((self.folder / 'device_writes.json').is_file())
 
     def restore(self):
         if not self.allow_write:
@@ -235,6 +393,5 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
             self.page.calibration_file_text = restored['text']
             self.page.render_params()
             self.previous = copy.deepcopy(self.page.params)
-            self.editor.setPlainText(template(self.previous))
-            self.preview()
+            self.reset_edits()
         self.refresh_restore()

@@ -106,8 +106,9 @@ class MatrixPreviewTests(unittest.TestCase):
         self.assertEqual(preview.mode, 'extrinsic')
         cards.detail_dialog.close()
         preview.set_mode('full')
-        self.assertEqual(preview.cells['K', 0, 0][0].text(), '—')
-        self.assertIn('not saved', preview.note.text())
+        self.assertEqual(preview.cells['K', 0, 0][0].text(), '200.0000')
+        self.assertIn('unchanged current values', preview.note.text())
+        self.assertEqual(preview.states['K'].text(), 'Current values only')
         self.assertEqual(data, untouched)
         cards.close()
 

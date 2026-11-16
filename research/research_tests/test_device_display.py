@@ -57,6 +57,24 @@ class DeviceDisplayTests(unittest.TestCase):
         self.assertFalse(preview.frames[('D', 0, 4)].isHidden())
         preview.close()
 
+    def test_missing_camera_fit_shows_current_values_and_the_real_reason(self):
+        shown = display.display_options(dict(existing=self.cal, full=self.cal), self.meta)
+        preview = MatrixPreview(); preview.set_calibrations(shown); preview.set_mode('intrinsic')
+        self.assertEqual(preview.cells[('K', 0, 0)][0].text(), '236.578852')
+        self.assertIn('held-out fits', preview.note.text())
+        self.assertIn('unchanged current values', preview.note.text())
+        self.assertEqual(preview.states['K'].text(), 'Current values only')
+        self.assertNotIn('intrinsic', shown)
+        preview.close()
+
+    def test_failed_device_conversion_is_not_misreported_as_a_missing_fit(self):
+        with patch.object(dm, 'to_device', side_effect=ValueError('cannot reproduce this lens')):
+            shown = display.display_options(dict(existing=self.cal, intrinsic=self.cal), self.meta)
+        preview = MatrixPreview(); preview.set_calibrations(shown); preview.set_mode('intrinsic')
+        self.assertIn('cannot reproduce this lens', preview.note.text())
+        self.assertNotIn('were not saved', preview.note.text())
+        preview.close()
+
     def test_result_heading_identifies_the_device_and_has_no_device_write_controls(self):
         import research_gui as g
         folder = self.source / 'results'; folder.mkdir()
@@ -90,6 +108,108 @@ class DeviceDisplayTests(unittest.TestCase):
             self.assertTrue(window.review.manual_panel.write_button.isEnabled())
         finally:
             popup.close(); window.close(); page.close()
+
+    def test_matrix_edit_write_readback_and_restore_for_all_three_modes(self):
+        import research_gui as g
+        import device_ui as ui
+        import device_yaml as dy
+        from manual_device_calibration import ManualDeviceCalibrationDialog, template
+        from device_update_review import saved_comparison, SavedDeviceUpdateDialog
+
+        class Page(QtWidgets.QWidget):
+            def set_params(self, raw, source):
+                self.params = dm.file_params(raw)
+                self.params_source = source
+            def render_params(self):
+                pass
+
+        class Device:
+            password = 'test'
+            def __init__(self):
+                self.files = {'/pipeline.yaml': template(PARAMS)}
+                self.writes = 0
+            def read(self, path):
+                return self.files[path]
+            def backup(self, path, stamp):
+                backup = path + '.calib_backup_' + stamp
+                self.files[backup] = self.files[path]
+                return backup
+            def write(self, path, value):
+                self.files[path] = value
+                self.writes += 1
+            def restart(self, password):
+                return 'active'
+            def close(self):
+                pass
+
+        for mode, direct in ((mode, direct) for mode in ('intrinsic', 'extrinsic', 'full') for direct in (False, True)):
+            with self.subTest(mode=mode, direct=direct):
+                window = g.MainWindow(); page = Page()
+                page.params = copy.deepcopy(PARAMS)
+                page.current = dict(self.record['device'], master_uri=None)
+                page.main = window
+                device = Device(); original = device.files['/pipeline.yaml']
+                popup = ManualDeviceCalibrationDialog(page, allow_write=direct)
+                try:
+                    popup.values_table.item(0, 2).setText('239.578852')
+                    popup.values_table.item(9, 2).setText('84.04')
+                    popup.mode.setCurrentIndex(popup.mode.findData(mode))
+                    if not direct:
+                        popup.send_to_review()
+                    self.assertEqual(device.writes, 0, 'Preview and handoff cannot write to the device')
+                    panel = popup if direct else window.review.manual_panel
+                    panel.folder = Path(self.tmp.name) / (mode + str(direct))
+                    panel.refresh_restore()
+                    self.assertEqual(panel.mode.currentData(), mode)
+
+                    opened_comparisons = []
+                    def interact(dialog):
+                        if isinstance(dialog, SavedDeviceUpdateDialog):
+                            opened_comparisons.append(dialog)
+                        if isinstance(dialog, ui.WriteDialog):
+                            dialog.restart.setChecked(False)
+                            dialog.connect_and_diff()
+                            self.assertEqual(device.writes, 0, 'The file diff is shown before a write')
+                            dialog.write()
+                        return QtWidgets.QDialog.Accepted
+
+                    with patch.object(ui.devreg, 'load', return_value=[]), \
+                            patch.object(ui, 'ssh_session', return_value=device), \
+                            patch.object(ui, 'read_device_yaml', side_effect=lambda *a: ('/pipeline.yaml', device.read('/pipeline.yaml'))), \
+                            patch.object(ui, 'busy', side_effect=lambda parent, text, fn, *args: fn(*args)), \
+                            patch.object(ui, 'ask', return_value=True) as confirmations, \
+                            patch.object(ui.core, 'mark_history'), \
+                            patch.object(QtWidgets.QDialog, 'exec_', new=interact), \
+                            patch.object(QtWidgets.QMessageBox, 'information'):
+                        panel.write_button.click()
+                        self.assertEqual(device.writes, 1)
+                        actual = dm.file_params(dy.read_params(device.read('/pipeline.yaml')))
+                        expected = copy.deepcopy(PARAMS)
+                        if mode != 'extrinsic':
+                            expected['camera_matrix'][0][0] = 239.578852
+                        if mode != 'intrinsic':
+                            expected['extrinsic_matrix'][0][3] = .08404
+                        for key in ('camera_matrix', 'dist_coeffs', 'extrinsic_matrix'):
+                            np.testing.assert_array_equal(actual[key], expected[key])
+                            np.testing.assert_array_equal(page.params[key], actual[key])
+                        self.assertTrue(saved_comparison(panel.folder)['verified'])
+                        self.assertEqual(len(opened_comparisons), 1)
+                        comparison = opened_comparisons[0]
+                        self.assertEqual(comparison.before_file.toPlainText(), original)
+                        self.assertEqual(comparison.after_file.toPlainText(), device.files['/pipeline.yaml'])
+                        self.assertTrue(comparison.before_file.isReadOnly())
+                        self.assertTrue(comparison.after_file.isReadOnly())
+                        self.assertGreater(len(comparison.after_file.extraSelections()), 0)
+                        self.assertTrue(panel.saved_update_button.isEnabled())
+                        self.assertTrue(panel.restore_button.isEnabled())
+                        panel.restore_button.click()
+                        self.assertEqual(device.files['/pipeline.yaml'], original)
+                        for key in ('camera_matrix', 'dist_coeffs', 'extrinsic_matrix'):
+                            np.testing.assert_array_equal(page.params[key], PARAMS[key])
+                        self.assertFalse(panel.write_button.isEnabled())
+                        self.assertGreaterEqual(confirmations.call_count, 2)
+                finally:
+                    popup.close(); window.close(); page.close()
 
 
 if __name__ == '__main__':

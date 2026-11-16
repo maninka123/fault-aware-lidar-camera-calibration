@@ -10,6 +10,7 @@ pipeline restart only when confirmed separately. Restore dialog: put the backup 
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
 import threading
 from datetime import datetime
@@ -892,7 +893,7 @@ class DevicePage(QtWidgets.QWidget):
         if self.params is None or self.capture_running:
             return
         from manual_device_calibration import ManualDeviceCalibrationDialog
-        ManualDeviceCalibrationDialog(self).exec_()
+        ManualDeviceCalibrationDialog(self, allow_write=True).exec_()
 
     def read_from_file(self):
         if self.capture_running or self.pending_capture is not None:
@@ -1186,7 +1187,13 @@ class WriteDialog(QtWidgets.QDialog):
         if not info.get('manual'):
             v.addWidget(label(f"With the new calibration, the device's colouring moves LiDAR points by <b>{core.fmt(self.shift)} px</b> "
                               "(median, 1.5-10 m) compared with now.", wrap=True, rich=True))
-        v.addWidget(table(["", "on the device now", "new", "change"], param_rows(self.prev, self.new), numeric=[1, 2, 3]))
+        from manual_device_calibration import parameter_change_rows
+        rows = parameter_change_rows(self.prev, self.new) if info.get('manual') else param_rows(self.prev, self.new)
+        changes = QtWidgets.QWidget()
+        changes_layout = QtWidgets.QVBoxLayout(changes)
+        changes_layout.setContentsMargins(0, 0, 0, 0)
+        changes_layout.addWidget(table(["", "on the device now", "new", "change"], rows, numeric=[1, 2, 3], stretch=(1, 2, 3)))
+        v.addWidget(scroll(changes), 1)
         conv = ("The device's camera settings are kept unchanged." if s["mode"] == 'extrinsic' else
                 "Native OpenCV pinhole values: no camera-model conversion." if not self.converted_camera else
                 f"The new intrinsics were converted to the device's pinhole model: {self.rep['rms_px']:.3f} px rms, "
@@ -1253,7 +1260,9 @@ class WriteDialog(QtWidgets.QDialog):
             cancel.setDefault(True)
             self.set_buttons(button("Back", slot=lambda: self.show_page(0)), cancel, button("Write to the device…", "primary", self.write))
         else:
-            self.set_buttons(button("Close", "primary", self.accept))
+            from device_update_review import SavedDeviceUpdateDialog
+            self.set_buttons(button("View saved before / after...", slot=lambda: SavedDeviceUpdateDialog.open_saved(self, self.info['out'])),
+                             button("Close", "primary", self.accept))
 
     def connect_and_diff(self):
         import device_yaml as dy
@@ -1294,18 +1303,39 @@ class WriteDialog(QtWidgets.QDialog):
             return
         out = self.info["out"]
         steps = []
+        attempted_write = False
+        backup = None
         try:
             backup = busy(self, "Backing up the current file on the device …", self.ssh.backup, self.path, self.stamp)
             (out / f"device_backup_{self.stamp}_pipeline.yaml").write_text(self.old_text, encoding="utf-8")
             steps.append(f"✓ backup on the device: {backup}")
+            attempted_write = True
             busy(self, "Writing the new file …", self.ssh.write, self.path, self.new_text)
+            readback = busy(self, "Reading back the written device file...", self.ssh.read, self.path)
+            if readback != self.new_text:
+                raise RuntimeError('The device read-back does not match the requested file. The update is not verified; its backup remains available.')
             (out / f"device_written_{self.stamp}_pipeline.yaml").write_text(self.new_text, encoding="utf-8")
+            (out / f"device_readback_{self.stamp}_pipeline.yaml").write_text(readback, encoding='utf-8')
             steps.append(f"✓ written and verified (checksum): {self.path}")
-        except RuntimeError as e:
-            warn(self, "Writing failed", f"{e}\n\nThe device's file was not changed, or the backup is in place.")
+        except (RuntimeError, OSError) as e:
+            # Retry must re-read the device and allocate a fresh backup name, not overwrite this backup.
+            self.show_page(0)
+            state = ('The device file may already have changed, but this attempt was not verified. The app did not restart the pipeline. '
+                     f'Read the device file before retrying. Backup: {backup}' if attempted_write else
+                     'This attempt stopped before writing the device file. The pipeline was not restarted.')
+            warn(self, "Writing failed", f"{e}\n\n{state}")
             return
         record = dict(date=datetime.now().isoformat(timespec="seconds"), device=self.device["name"], key=self.device["key"],
                       path=self.path, backup=backup, previous=self.prev, new=self.new, mode=self.info['summary']['mode'], restarted=False, verified=None)
+        import device_yaml as dy
+        record.update(local_backup=f'device_backup_{self.stamp}_pipeline.yaml', local_written=f'device_written_{self.stamp}_pipeline.yaml',
+                      local_readback=f'device_readback_{self.stamp}_pipeline.yaml', file_verified=True,
+                      written_sha256=hashlib.sha256(self.new_text.encode('utf-8')).hexdigest(),
+                      readback_sha256=hashlib.sha256(readback.encode('utf-8')).hexdigest())
+        actual = dy.read_params(readback)
+        actual.setdefault('image_width', self.prev['image_width'])
+        actual.setdefault('image_height', self.prev['image_height'])
+        record['new'] = dm.file_params(actual)
         restarted = False
         if self.restart.isChecked():
             if ask(self, "Restart the sensor pipeline?", f"Restart node-pc.service on {name} now, so the colorizer loads the new "
@@ -1334,6 +1364,8 @@ class WriteDialog(QtWidgets.QDialog):
         self.ssh = None
         self.log.setText("<br>".join(steps) + "<br><br>To undo: <b>Restore the previous calibration on the device…</b> in this check's result.")
         self.show_page(2)
+        from device_update_review import SavedDeviceUpdateDialog
+        SavedDeviceUpdateDialog(self, out, record=record).exec_()
 
     def reject(self):
         if self.ssh is not None:

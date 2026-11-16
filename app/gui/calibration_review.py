@@ -181,7 +181,7 @@ class CalibrationReview(QtWidgets.QWidget):
         self._reset()
         card, lay = _frame("Manual calibration review - " + page.current['name'], "Imported values are not an algorithm-validated calibration. Select camera, alignment, or both; review the differences before confirming a device update.")
         self.lay.addWidget(card)
-        self.manual_panel = ManualDeviceCalibrationDialog(page, allow_write=True)
+        self.manual_panel = ManualDeviceCalibrationDialog(page, allow_write=True, embedded=True)
         self.manual_panel.setParent(self.body)
         self.manual_panel.setWindowFlags(Qt.Widget)
         self.manual_panel.editor.setPlainText(text)
@@ -402,6 +402,9 @@ class CalibrationReview(QtWidgets.QWidget):
         again.setEnabled(self.ready_to_run())
         self.write_device_button = _button("Write to the device…", lambda: self.device_action(info))
         self.restore_device_button = _button("Restore previous device calibration…", lambda: self.device_action(info, restore=True))
+        from device_update_review import SavedDeviceUpdateDialog
+        self.saved_update_button = _button('View saved device update...', lambda: SavedDeviceUpdateDialog.open_saved(self, self.folder / use_result.USE_DIR))
+        self.saved_update_button.setEnabled(any(w.get('backup') for w in use_result.device_writes(self.folder)))
         self.restore_device_button.setToolTip("Revert the device camera intrinsics and LiDAR-to-camera extrinsics to the backup made before the last update. Review and confirmation required.")
         has_device = use_result.device_dir(self.meta) is not None
         self.restore_device_button.setEnabled(has_device and any(w.get("backup") for w in use_result.device_writes(self.folder)))
@@ -409,7 +412,7 @@ class CalibrationReview(QtWidgets.QWidget):
                                             if has_device else "This check has no source device. Capture from a connected device to enable writing.")
         buttons = [self.export_button,
                    _button("Save refined JSON…", lambda: self.save_refined(out)),
-                   self.write_device_button, self.restore_device_button,
+                   self.write_device_button, self.restore_device_button, self.saved_update_button,
                    _button("Open results folder", lambda: open_path(out)),
                    _button("Show report", lambda: self.show_report(out)),
                    again]
@@ -439,6 +442,7 @@ class CalibrationReview(QtWidgets.QWidget):
                 actions.combo.setCurrentIndex(index)
                 actions.do_write()
             self.restore_device_button.setEnabled(any(w.get("backup") for w in use_result.device_writes(self.folder)))
+            self.saved_update_button.setEnabled(any(w.get('backup') for w in use_result.device_writes(self.folder)))
             self.changed.emit()
         finally:
             actions.deleteLater()
@@ -452,7 +456,10 @@ class CalibrationReview(QtWidgets.QWidget):
         available = bool(self.export_calibrations.get(mode))
         self.export_button.setEnabled(available)
         self.write_device_button.setEnabled(mode in ("intrinsic", "extrinsic", "full") and available and use_result.valid_calibration(self.export_calibrations.get(mode))
-                                            and use_result.device_dir(self.meta) is not None)
+                                            and mode in self.matrices.calibrations and use_result.device_dir(self.meta) is not None)
+        reason = (self.matrices.calibrations.get('_unavailable') or {}).get(mode)
+        if reason:
+            self.write_device_button.setToolTip(reason)
         self.export_button.setToolTip(f"Save the {title} camera intrinsics, distortion and LiDAR → camera extrinsics."
                                       if available else "This option’s fitted calibration was not saved.")
 

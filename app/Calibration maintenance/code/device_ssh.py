@@ -15,6 +15,8 @@ import hashlib
 import json
 import os
 import shlex
+import re
+import time
 from pathlib import Path
 
 import paramiko
@@ -114,16 +116,22 @@ class DeviceSSH:
             ch.sendall(stdin if isinstance(stdin, bytes) else stdin.encode())
             ch.shutdown_write()
         out, err = bytearray(), bytearray()
-        while True:
-            if ch.recv_ready():
-                out += ch.recv(65536)
-            if ch.recv_stderr_ready():
-                err += ch.recv_stderr(65536)
-            if ch.exit_status_ready() and not ch.recv_ready() and not ch.recv_stderr_ready():
-                break
-            ch.status_event.wait(0.05)
-        code = ch.recv_exit_status()
-        ch.close()
+        deadline = time.monotonic() + timeout
+        try:
+            while True:
+                while ch.recv_ready():
+                    out += ch.recv(65536)
+                while ch.recv_stderr_ready():
+                    err += ch.recv_stderr(65536)
+                # An exit status alone does not mean the output streams have reached EOF.
+                if ch.exit_status_ready() and (ch.eof_received or ch.closed) and not ch.recv_ready() and not ch.recv_stderr_ready():
+                    break
+                if time.monotonic() >= deadline:
+                    raise SSHError('SSH command timed out before its output completed; its remote effect is not confirmed.')
+                time.sleep(0.01)
+            code = ch.recv_exit_status()
+        finally:
+            ch.close()
         return code, out.decode(errors="replace"), err.decode(errors="replace")
 
     # ---- the calibration file
@@ -146,9 +154,9 @@ class DeviceSSH:
 
     def backup(self, path, stamp):
         dst = f"{path}.calib_backup_{stamp}"
-        code, _, err = self.run(f"cp -p -- {shlex.quote(path)} {shlex.quote(dst)}")
+        code, _, err = self.run(f"test ! -e {shlex.quote(dst)} && cp -p -- {shlex.quote(path)} {shlex.quote(dst)}")
         if code:
-            raise SSHError(f"backup failed: {err.strip()}")
+            raise SSHError(f"backup failed (an existing backup will not be overwritten): {err.strip()}")
         return dst
 
     def write(self, path, text):
@@ -160,7 +168,14 @@ class DeviceSSH:
         if code:
             raise SSHError(f"writing {path} failed: {err.strip()}")
         code, out, _ = self.run(f"sha256sum -- {q}")
-        if code or out.split()[0] != hashlib.sha256(text.encode()).hexdigest():
+        fields = out.split()
+        expected = hashlib.sha256(text.encode('utf-8')).hexdigest()
+        if code == 0 and fields and re.fullmatch(r'[0-9a-fA-F]{64}', fields[0]):
+            matches = fields[0].lower() == expected
+        else:
+            # Some devices lack sha256sum or return no usable checksum. Verify the actual file instead.
+            matches = hashlib.sha256(self.read(path).encode('utf-8')).hexdigest() == expected
+        if not matches:
             raise SSHError(f"{path} on the device does not match what was written")
 
     # ---- the pipeline service

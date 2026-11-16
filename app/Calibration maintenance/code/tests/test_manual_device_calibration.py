@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtTest
 import yaml
 import numpy as np
 import manual_device_calibration as manual
@@ -34,6 +34,86 @@ def changed():
 
 
 class ManualImports(unittest.TestCase):
+    def test_device_editor_entry_has_a_direct_update_button(self):
+        page = QtWidgets.QWidget()
+        page.params, page.current, page.main = copy.deepcopy(CURRENT), dict(key='test', name='Device 5'), Mock()
+        page.capture_running = False
+        try:
+            with patch.object(manual, 'ManualDeviceCalibrationDialog') as constructor:
+                ui.DevicePage.edit_manually(page)
+                constructor.assert_called_once_with(page, allow_write=True)
+            popup = manual.ManualDeviceCalibrationDialog(page, allow_write=True)
+            self.assertEqual(popup.write_button.text(), 'Update device...')
+            popup.values_table.item(0, 2).setText('239.578852')
+            self.assertTrue(popup.write_button.isEnabled())
+            self.assertFalse(popup.restore_button.isHidden())
+            popup.close()
+        finally:
+            page.close()
+
+    def test_matrix_edits_update_comparison_and_reset_cancels_them(self):
+        page = QtWidgets.QWidget()
+        page.params, page.current, page.main = copy.deepcopy(CURRENT), dict(key='test', name='Device 5'), Mock()
+        popup = manual.ManualDeviceCalibrationDialog(page)
+        try:
+            self.assertNotIsInstance(popup.editor, QtWidgets.QPlainTextEdit)
+            popup.show(); APP.processEvents()
+            camera = popup.values_table
+            self.assertFalse(camera.item(0, 1).flags() & manual.QtCore.Qt.ItemIsEditable)
+            self.assertTrue(camera.item(0, 2).flags() & manual.QtCore.Qt.ItemIsEditable)
+            QtTest.QTest.mouseClick(camera.viewport(), manual.QtCore.Qt.LeftButton, pos=camera.visualItemRect(camera.item(0, 2)).center())
+            entry = camera.findChild(QtWidgets.QLineEdit)
+            self.assertIsNotNone(entry)
+            QtTest.QTest.keyClick(entry, manual.QtCore.Qt.Key_A, manual.QtCore.Qt.ControlModifier)
+            QtTest.QTest.keyClicks(entry, '236.578853')
+            QtTest.QTest.keyClick(entry, manual.QtCore.Qt.Key_Return)
+            APP.processEvents()
+            self.assertEqual(popup.candidate['camera_matrix'][0][0], 236.578853)
+            comparison = popup.comparison_layout.itemAt(0).widget()
+            self.assertEqual(comparison.item(0, 2).text(), '236.578853')
+            self.assertNotEqual(comparison.item(0, 3).text(), '-')
+            self.assertTrue(popup.write_button.isEnabled())
+            self.assertNotIn(0, popup.values_table.stretch_columns)
+            self.assertIn(3, popup.values_table.stretch_columns)
+            value, delta = popup.editor.cells['camera_matrix', 0, 0]
+            self.assertEqual(value.text(), '236.578853')
+            self.assertIn('#c62828', value.styleSheet())
+            self.assertIn('+', delta.text())
+            self.assertFalse(popup.editor.findChildren(QtWidgets.QLineEdit))
+            popup.values_table.item(4, 2).setText('0.09894868')
+            coefficient, change = popup.editor.cells['dist_coeffs', 0, 0]
+            self.assertEqual(coefficient.text(), '0.09894868')
+            self.assertEqual(change.text(), 'Delta +0.01')
+            for index in range(5):
+                coefficient, _ = popup.editor.cells['dist_coeffs', 0, index]
+                self.assertFalse(coefficient.isHidden())
+                self.assertNotIn('...', coefficient.text())
+            popup.reset_button.click()
+            np.testing.assert_array_equal(popup.candidate['camera_matrix'], CURRENT['camera_matrix'])
+            self.assertFalse(popup.write_button.isEnabled())
+            page.main.review_manual_device.assert_not_called()
+        finally:
+            popup.close(); page.close()
+
+    def test_invalid_rotation_blocks_apply_and_mode_preserves_unselected_values(self):
+        page = QtWidgets.QWidget()
+        page.params, page.current, page.main = copy.deepcopy(CURRENT), dict(key='test', name='Device 5'), Mock()
+        popup = manual.ManualDeviceCalibrationDialog(page)
+        try:
+            transform = popup.values_table
+            transform.item(12, 2).setText('2')
+            self.assertIsNone(popup.candidate)
+            self.assertFalse(popup.write_button.isEnabled())
+            popup.reset_edits()
+            transform.item(9, 2).setText('80')
+            self.assertTrue(popup.write_button.isEnabled())
+            popup.mode.setCurrentIndex(popup.mode.findData('intrinsic'))
+            np.testing.assert_array_equal(popup.candidate['extrinsic_matrix'], CURRENT['extrinsic_matrix'])
+            self.assertFalse(transform.item(9, 2).flags() & manual.QtCore.Qt.ItemIsEditable)
+            self.assertFalse(popup.write_button.isEnabled())
+        finally:
+            popup.close(); page.close()
+
     def test_native_values_and_mode_selection_do_not_convert_other_parameters(self):
         candidate = changed()
         for mode in ('full', 'intrinsic', 'extrinsic'):
@@ -155,6 +235,25 @@ class NativeWrites(unittest.TestCase):
                 self.assertIsNotNone(dialog.written_record)
             records = json.loads((Path(tmp) / 'device_writes.json').read_text())
             self.assertNotEqual(records[0]['backup'], records[1]['backup'])
+            from device_update_review import saved_comparison
+            comparison = saved_comparison(tmp)
+            self.assertTrue(comparison['verified'])
+            self.assertEqual(comparison['after']['camera_matrix'][0][0], records[-1]['new']['camera_matrix'][0][0])
+            written = Path(tmp) / records[-1]['local_written']
+            written.write_text(written.read_text() + '\n# changed after verification\n')
+            self.assertFalse(saved_comparison(tmp)['verified'])
+            failed = ui.WriteDialog(None, info)
+            failed.restart.setChecked(False)
+            failed.connect_and_diff()
+            with patch.object(fake, 'read', return_value='corrupted read-back'), patch.object(ui, 'warn') as warning:
+                failed.write()
+                warning.assert_called_once()
+                self.assertIn('may already have changed', warning.call_args.args[2])
+                self.assertIn('did not restart', warning.call_args.args[2])
+                self.assertIn('Backup:', warning.call_args.args[2])
+            self.assertIsNone(failed.written_record)
+            self.assertEqual(failed.pages.currentIndex(), 0, 'Retry must re-read the file and create a fresh backup')
+            self.assertEqual(len(json.loads((Path(tmp) / 'device_writes.json').read_text())), 2)
             info['device_writes'] = records
             ui.RestoreDialog.run(None, info)
             self.assertEqual(fake.files['/pipeline.yaml'], original)
