@@ -58,6 +58,7 @@ class SyncTests(unittest.TestCase):
     def test_exact_committed_bytes_and_executable_mode_are_preserved(self):
         raw = b'#!/bin/sh\r\necho sensor\r\n'
         (self.source / 'run.sh').write_bytes(raw)
+        (self.source / 'run.sh').chmod(0o755)
         module.git(self.source, 'add', 'run.sh')
         module.git(self.source, 'update-index', '--chmod=+x', 'run.sh')
         module.git(self.source, 'commit', '-qm', 'Executable fixture')
