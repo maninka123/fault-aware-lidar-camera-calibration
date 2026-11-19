@@ -1,0 +1,40 @@
+name: Sync fault-aware-lidar-camera-calibration to UNSW
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: amt-fault-aware-lidar-camera-calibration-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GIT_LFS_SKIP_SMUDGE: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out current personal default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: source
+      - name: Check out the UNSW project collection
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: unsw-edu-au/AMT-project
+          ref: main
+          path: collection
+          fetch-depth: 0
+          ssh-key: ${{ secrets.AMT_PROJECT_DEPLOY_KEY }}
+      - name: Verify folder isolation and source fidelity
+        run: python source/.github/scripts/test_sync_amt_project.py
+      - name: Synchronize project and referenced LFS objects
+        run: python source/.github/scripts/sync_amt_project.py --source source --collection collection --push

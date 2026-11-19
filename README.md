@@ -56,3 +56,7 @@ Research prototype: fault attribution and physical calibration accuracy are not 
 Optional EXE build: install PyInstaller and run `python packaging/build_portable.py --output <new-folder>`. This is not required to install from GitHub; the current Windows EXE build has not passed verification.
 
 [MIT license](LICENSE). Third-party libraries retain their own licenses.
+
+## UNSW collection
+
+Pushes to personal `main` automatically update `fault-aware-lidar-camera-calibration/` in the [UNSW AMT collection](https://github.com/unsw-edu-au/AMT-project). See [repository sync and existing working folders](docs/amt-repository-sync.md).
