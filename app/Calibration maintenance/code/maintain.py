@@ -219,7 +219,7 @@ def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units=
     stage("features", "edges detected - LiDAR (its own view; red depth jumps, green plane creases, blue reflectivity) "
           f"and image (sub-pixel Canny): LiDAR edge points per capture {', '.join(str(len(c.xyz)) for c in caps)}, "
           f"image edge pixels {', '.join(str(len(c.img['q'])) for c in caps)}", imgs)
-    model = Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle, cal.D)
+    model = Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle, cal.D, cal.raw)
     p_exist = params_of(cal, model.R0)
 
     rcfg = copy.deepcopy(cfg)

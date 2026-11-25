@@ -9,11 +9,22 @@ import calib as cb
 
 
 class Model(cb.Model):
-    def __init__(self, R_mount, size, circle, distortion):
+    def __init__(self, R_mount, size, circle, distortion, calibration=None):
         super().__init__(R_mount, size, circle)
         self.higher_order = np.asarray(distortion, float)[2:4].copy()
+        conversion = (calibration or {}).get('conversion')
+        covered = conversion.get('covered_deg') if isinstance(conversion, dict) else None
+        self.covered_angle = (np.radians(covered)
+                              if type(covered) in (int, float) and 0 < covered < 90
+                              and conversion.get('direction') == 'device pinhole -> fisheye' else None)
 
     def project(self, Pc, p):
+        u, v, inside = self._project(Pc, p)
+        if self.covered_angle is not None:
+            inside &= np.hypot(Pc[:, 0], Pc[:, 1]) <= Pc[:, 2] * np.tan(self.covered_angle)
+        return u, v, inside
+
+    def _project(self, Pc, p):
         if not np.any(self.higher_order):
             return super().project(Pc, p)
         fx, fy, cx, cy, k1, k2 = p[6:12]
@@ -36,11 +47,13 @@ class Model(cb.Model):
         return K, D, T
 
     def validation_angle(self, caps, p):
-        """Check higher-order lenses over the rays present in these captures.
+        """Check monotonicity over the supported range for this projection.
 
-        A calibrated polynomial need not extrapolate to a 180-degree field of view.
-        Keep the original validation range for the existing k1/k2 workflow.
+        A device conversion is only valid over its fitted field of view. For standalone
+        higher-order models, use the observed capture rays.
         """
+        if self.covered_angle is not None:
+            return self.covered_angle
         if not np.any(self.higher_order):
             return np.pi / 2
         maximum = 0.0

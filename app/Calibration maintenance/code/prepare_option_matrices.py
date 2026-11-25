@@ -35,7 +35,7 @@ def prepare(name):
             cb.prepare_nid(cap, frame, cfg['calib']['nid']['points_per_capture'], cfg['calib']['nid']['bins'], rng)
         caps.append(cap)
         log(f'Loaded features: {frame.short}')
-    model = Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle, cal.D)
+    model = Model(cal.T[:3, :3], frames[0].image.shape[1::-1], circle, cal.D, cal.raw)
     existing = params_of(cal, model.R0)
     refine_cfg = copy.deepcopy(cfg)
     refine_cfg['calib']['gates_px'] = cfg['refine']['gates_px']

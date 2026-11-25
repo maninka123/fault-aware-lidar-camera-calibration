@@ -112,7 +112,7 @@ def render_option(data, calibration, title):
         distortion = np.r_[intrinsics['distortion_coefficients'], np.zeros(4)][:4]
         transform = np.asarray(calibration['extrinsics']['transform_lidar_to_camera'])
         cal = Calibration(np.asarray(intrinsics['camera_matrix']), distortion, transform, '', '', calibration)
-        model = Model(transform[:3, :3], (w, h), circle, distortion)
+        model = Model(transform[:3, :3], (w, h), circle, distortion, calibration)
         params = params_of(cal, model.R0)
 
     u, v, inside = model.project(model.to_camera(points, np.zeros(len(points)), params), params)

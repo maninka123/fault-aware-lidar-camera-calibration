@@ -82,6 +82,21 @@ class ExampleCalibrationTests(unittest.TestCase):
         self.assertTrue(valid_solution(p, model.higher_order, angle))
         self.assertFalse(valid_solution(p, model.higher_order, np.radians(70)))
 
+    def test_device_conversion_checks_and_projects_only_its_fitted_ray_range(self):
+        distortion = [0.12336, -0.07401, 0.0, 0.0]
+        conversion = {'direction': 'device pinhole -> fisheye', 'covered_deg': 40.8255}
+        circle = dict(cx=250., cy=250., radius=250.)
+        model = Model(np.eye(3), (500, 500), circle, distortion, {'conversion': conversion})
+        standalone = Model(np.eye(3), (500, 500), circle, distortion)
+        params = np.zeros(13)
+        params[6:12] = [100., 100., 250., 250., *distortion[:2]]
+        rays = np.c_[np.tan(np.radians([30., 55.])), [0., 0.], [1., 1.]]
+        self.assertAlmostEqual(model.validation_angle([], params), np.radians(40.8255))
+        self.assertTrue(valid_solution(params, model.higher_order, model.validation_angle([], params)))
+        self.assertFalse(valid_solution(params, standalone.higher_order, standalone.validation_angle([], params)))
+        np.testing.assert_array_equal(model.project(rays, params)[2], [True, False])
+        np.testing.assert_array_equal(standalone.project(rays, params)[2], [True, True])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,7 +35,7 @@ def refresh(out):
     circle = image_circle(frames)
     previous = load_calibration((code / summary['existing']).resolve())
     refined = load_calibration(out / 'refined_calibration.json')
-    model = Model(previous.T[:3, :3], frames[0].image.shape[1::-1], circle, previous.D)
+    model = Model(previous.T[:3, :3], frames[0].image.shape[1::-1], circle, previous.D, previous.raw)
     caps = []
     for frame in frames:
         edges, _ = le.extract(frame, cfg['lidar'], cfg['seed'])

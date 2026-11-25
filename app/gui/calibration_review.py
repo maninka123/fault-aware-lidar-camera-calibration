@@ -15,7 +15,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 import review_adapter as ra
@@ -310,6 +310,7 @@ class CalibrationReview(QtWidgets.QWidget):
             log.setReadOnly(True)
             log.setMaximumHeight(170)
             lay.addWidget(log)
+            log.moveCursor(QtGui.QTextCursor.End)
         lay.addWidget(_label("Nothing about the fault-aware assessment or your calibration files was changed.", "small"))
         row = QtWidgets.QHBoxLayout()
         self.run_button = _button("Run maintenance comparison again", self.start, "primary")
