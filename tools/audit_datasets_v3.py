@@ -17,15 +17,15 @@ import numpy as np
 import cv2
 from research_calibration.legacy_adapter import REPOSITORY
 
-WORKSPACE = (REPOSITORY / '../..').resolve()
+WORKSPACE = (REPOSITORY / '../../reference_projects').resolve()
 
 # Declared facts. "used_in" lists every V2/V3 experiment or design decision in which the group's data were seen.
 GROUPS = [
     dict(id='rig_sep29_off', device='rig-A', session='2026-09-29', state='enclosure off', manifest_id='enclosure_off_ten',
-         data='app/Calibration maintenance/results/rig_20261104_174529/stacked/data', reference='app/Calibration maintenance/examples/feb2025_enclosure.json',
+         data='Calibration maintenance/results/rig_20261104_174529/stacked/data', reference='Calibration maintenance/examples/feb2025_enclosure.json',
          used_in=['V2 development', 'V2 evaluation of anchors', 'V3 development', 'pairing development']),
     dict(id='rig_sep29_on', device='rig-A', session='2026-09-29', state='enclosure on', manifest_id='enclosure_on_twelve',
-         data='app/Calibration maintenance/results/rig_20261104_202917/stacked/data', reference='results/2026_09_29_multi_capture/enclosure_on/calibration.json',
+         data='Calibration maintenance/results/rig_20261104_202917/stacked/data', reference='../results/2026_09_29_multi_capture/enclosure_on/calibration.json',
          used_in=['V2 held-out evaluation', 'V3 development', 'pairing evaluation']),
     dict(id='pair1_oct28', device='pair_1', session='2026-10-28', state='enclosure on', manifest_id='october_device_one',
          data='Oct 29 test/stacked_data/pair_1', reference='Oct 29 test/results/pair_1/calibration.json',
@@ -38,11 +38,11 @@ GROUPS = [
          data='Oct 29 test/stacked_data/pair_4', reference='Oct 29 test/results/pair_4/calibration.json',
          used_in=['V2 held-out evaluation', 'V3 development', 'pairing evaluation']),
     dict(id='d1_nov5_off', device='pair_1', session='2026-11-05', state='enclosure off', manifest_id=None,
-         data='app/Calibration maintenance/results/rig_20261106_151100/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
+         data='Calibration maintenance/results/rig_20261106_151100/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
          device_note='Nov 5 checks were chained from device 1 (pair_1) calibration files; same physical unit is likely but not proven',
          used_in=['desktop-app checks only (no V2/V3 experiment, no design decision)']),
     dict(id='d1_nov5_on', device='pair_1', session='2026-11-05', state='enclosure on', manifest_id=None,
-         data='app/Calibration maintenance/results/rig_20261105_230653/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
+         data='Calibration maintenance/results/rig_20261105_230653/stacked/data', reference='Oct 29 test/results/pair_1/calibration.json',
          device_note='as above; its checks used the Oct 28 device-1 calibration as their existing calibration',
          used_in=['desktop-app checks only (no V2/V3 experiment, no design decision)']),
 ]
@@ -147,7 +147,7 @@ def main():
         print(g['id'], len(files), flush=True)
     duplicates = {fp: v for fp, v in prints.items() if len({x[0] for x in v}) > 1}
     similarity = scene_similarity(images)
-    payload = dict(schema_version=1, workspace_root_relative_to_repository='../..', groups=registry, excluded=EXCLUDED,
+    payload = dict(schema_version=1, workspace_root_relative_to_repository='../../reference_projects', groups=registry, excluded=EXCLUDED,
                    cross_group_duplicate_captures=duplicates, scene_similarity_orb=similarity,
                    independence_note=('Groups are NOT claimed statistically independent. Captures within a group are one static scene; devices may share a '
                                       'laboratory, the same room layout and the same LiDAR model; Nov 5 groups are likely the same unit as pair_1.'))

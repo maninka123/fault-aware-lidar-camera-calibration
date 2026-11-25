@@ -2,7 +2,7 @@
   "schema_version": 1,
   "audited_date": "2026-11-05",
   "base_commit": "d0931889bf2f2a5ecb2cca9dd3c8a77c9fa8c763",
-  "workspace_root_relative_to_repository": "../..",
+  "workspace_root_relative_to_repository": "../../reference_projects",
   "path_resolution": "Resolve workspace_root_relative_to_repository against repository root, then resolve each path against that workspace. Recordings remain external and were not copied.",
   "datasets": [
     {
@@ -15,7 +15,7 @@
       "camera_model": "OpenCV equidistant/fisheye polynomial",
       "image_encoding": "BGR uint8",
       "reference_calibration": {
-        "path": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+        "path": "../results/2026_09_29_multi_capture/enclosure_on/calibration.json",
         "bytes": 14945,
         "sha256": "f64be8f4471523be700a5f03db767050af3c5afcf046bab4764af2255859c8e5"
       },
@@ -404,7 +404,7 @@
       "camera_model": "OpenCV equidistant/fisheye polynomial",
       "image_encoding": "BGR uint8",
       "reference_calibration": {
-        "path": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+        "path": "../results/2026_09_29_multi_capture/enclosure_on/calibration.json",
         "bytes": 14945,
         "sha256": "f64be8f4471523be700a5f03db767050af3c5afcf046bab4764af2255859c8e5"
       },

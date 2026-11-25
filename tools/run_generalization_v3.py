@@ -21,7 +21,7 @@ from research_calibration.config import ResearchConfig
 from research_calibration.fault_diagnostics import DiagnosticsConfig
 from research_calibration.legacy_adapter import REPOSITORY
 
-FROZEN = REPOSITORY / 'docs/research/v3/FROZEN_LAYOUT_20261116.json'
+FROZEN = REPOSITORY / 'docs/research/v3/FROZEN_LAYOUT_20261117.json'
 SOURCES = ['research/research_calibration/fault_diagnostics_v3/correspondence.py', 'research/research_calibration/fault_diagnostics_v3/joint_estimation.py',
            'research/research_calibration/fault_diagnostics_v3/config.py', 'research/research_calibration/fault_diagnostics_v3/diagnostic_inference.py',
            'research/research_calibration/fault_diagnostics_v3/hypothesis_separation.py', 'research/research_calibration/fault_diagnostics_v3/geometry_signatures.py',

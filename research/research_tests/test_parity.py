@@ -19,7 +19,7 @@ from PyQt5 import QtWidgets  # noqa: E402
 APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 APP.setStyle("Fusion")
 
-REAL = ROOT.parent.parent / "Calibration maintenance" / "results" / "rig_20261106_151654"
+REAL = ROOT.parent.parent / "reference_projects" / "Calibration maintenance" / "results" / "rig_20261106_151654"
 
 
 def texts(root):

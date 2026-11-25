@@ -54,7 +54,7 @@ NUISANCES = P.NUISANCES
 # Development only: the reference of enclosure_off_ten is ~18 px from the scene (outside the local fit), so its
 # anchor starts from the maintenance refinement of the same captures. Held-out recordings always start from
 # their own reference.
-ANCHOR_START = {'enclosure_off_ten': 'app/Calibration maintenance/results/rig_20261104_174529/refined_calibration.json'}
+ANCHOR_START = {'enclosure_off_ten': 'Calibration maintenance/results/rig_20261104_174529/refined_calibration.json'}
 
 
 def params_in(cal, model):

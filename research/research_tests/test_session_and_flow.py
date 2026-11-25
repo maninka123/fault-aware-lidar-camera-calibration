@@ -24,7 +24,7 @@ APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 APP.setStyle("Fusion")
 
 EXAMPLE = ROOT / "docs" / "examples" / "calibration.example.json"
-REAL = ROOT.parent.parent / "Calibration maintenance" / "results" / "rig_20261106_151654"
+REAL = ROOT.parent.parent / "reference_projects" / "Calibration maintenance" / "results" / "rig_20261106_151654"
 CHECKS = sorted(p for p in (ROOT / "research" / "research_artifacts").glob("gui_*") if (p / "assessment.json").exists() and p.with_name(p.name + ".gui.json").exists())
 
 

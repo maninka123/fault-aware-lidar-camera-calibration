@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "workspace_root_relative_to_repository": "../..",
+  "workspace_root_relative_to_repository": "../../reference_projects",
   "groups": [
     {
       "id": "rig_sep29_off",
@@ -104,7 +104,7 @@
         "pairing evaluation"
       ],
       "data_directory": "Calibration maintenance/results/rig_20261104_202917/stacked/data",
-      "reference_calibration": "results/2026_09_29_multi_capture/enclosure_on/calibration.json",
+      "reference_calibration": "../results/2026_09_29_multi_capture/enclosure_on/calibration.json",
       "capture_count": 12,
       "captures": [
         {
