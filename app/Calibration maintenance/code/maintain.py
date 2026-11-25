@@ -405,7 +405,7 @@ def run(calibration, data, name, mode=None, device=None, starts=(), cloud_units=
     summary = dict(run=name, device=device or "", date=datetime.now().isoformat(timespec="seconds"), existing=str(calibration),
                    data=str(data), mode=mode, requested_mode=requested_mode, strategy_comparison=strategy_comparison,
                    cloud_units=cloud_units, allow_unusual_units=allow_unusual_units,
-                   captures=[c.name for c in caps], verdict=verdict, reason=reason,
+                   captures=[c.name for c in caps], image_circle=circle, verdict=verdict, reason=reason,
                    shift_median_px=shift, shift_p90_px=float(np.percentile(d[ok], 90)), shift_by_range_px=bands,
                    shift_uncertainty_px=sd_shift, uncertainty_captures_px=sd_cap, uncertainty_regions_px=sd_blk,
                    uncertainty_method="jackknife, the larger of leave-one-capture-out and leave-one-image-region-out",

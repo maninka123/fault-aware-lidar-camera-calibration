@@ -13,7 +13,7 @@ import appcore as core
 from pose_view import CalibrationPosePanel, ComparisonColumns
 from ui_common import (BAD, BAD_SOFT, BLUE, BLUE_SOFT, GOOD, GOOD_SOFT, INFO_SOFT, INK, INK2, MUTED, ORANGE, PARAMS,
                        WARN, WARN_SOFT, Gauge, ImageView, button, card, hbox, img_label, label, table)
-from ui_widgets import MODE_NAMES, EvidenceColumns
+from ui_widgets import MODE_NAMES, EvidenceColumns, action_flow
 from update_options import rmse_changes
 
 RMSE_TIP = ('Held-out nearest-image-edge RMSE over all tested visible edge points, including unmatched '
@@ -132,17 +132,22 @@ def parameter_card(s, cmp_):
 class CaptureComparison(QtWidgets.QFrame):
     """Images: previous vs refined, with capture selection, side by side / alternating views and enlargement."""
 
+    MAX_PREVIEW_HEIGHT = 420
+
     def __init__(self, info):
         super().__init__()
         self.setObjectName("card")
         self.info = info
+        self.viewport = None
         lay = QtWidgets.QVBoxLayout(self)
         lay.setContentsMargins(20, 16, 20, 18)
         lay.setSpacing(10)
-        lay.addWidget(label("Images: previous vs refined", "h2"))
-        self.views = [(core.capture_display_name(x['name'], index), x['image'], x['flicker'] if x['flicker'].exists() else None)
+        self.heading = label("Images: previous vs refined", "h2", wrap=True)
+        lay.addWidget(self.heading)
+        self.views = [(core.capture_display_name(x['name'], index), x['image'], x.get('flicker'))
                       for index, x in enumerate(info['captures'], 1)]
-        self.views += [(img_label(p), p, None) for p in info["extra"]]
+        titles = {'regions': 'Held-out regions', 'shift_by_range': 'Shift by distance'}
+        self.views += [(titles.get(p.stem, img_label(p)), p, None) for p in info["extra"]]
         self.sel = QtWidgets.QComboBox()
         self.sel.setObjectName('resultCaptureSelector')
         for name, *_ in self.views:
@@ -158,31 +163,94 @@ class CaptureComparison(QtWidgets.QFrame):
         self.grp.addButton(self.b_side)
         self.grp.addButton(self.b_flick)
         self.b_side.setChecked(True)
-        lay.addWidget(hbox(self.sel, self.b_side, self.b_flick, stretch_at=3))
-        self.view = ImageView(self.views[0][1] if self.views else None, caption=self.views[0][0] if self.views else "")
+        self.view = ImageView(max_height=self.MAX_PREVIEW_HEIGHT)
+        self.enlarge = button("Enlarge", slot=self.view.open_enlarged)
+        self.toolbar = action_flow([self.sel, self.b_side, self.b_flick, self.enlarge])
+        lay.addWidget(self.toolbar)
+        self.status = label('', 'muted', wrap=True)
+        self.status.hide()
+        lay.addWidget(self.status)
         lay.addWidget(self.view)
-        self.legend = label(f"<span style='color:#2fb84f'>●</span> LiDAR edge on an image edge &nbsp; <span style='color:#e8c21e'>●</span> 1-3 px off "
-                            f"&nbsp; <span style='color:#d94040'>●</span> further off &nbsp; <span style='color:{BLUE}'>●</span> previous &nbsp; "
+        self.legend = label(f"<span style='color:#2fb84f'>●</span> LiDAR edge on an image edge · <span style='color:#e8c21e'>●</span> 1-3 px off "
+                            f"· <span style='color:#d94040'>●</span> further off · <span style='color:{BLUE}'>●</span> previous · "
                             f"<span style='color:{ORANGE}'>●</span> refined<br>Top: LiDAR edges on image edges with the previous and the refined "
                             "calibration. Bottom: how far the refinement moves each LiDAR point, and zooms. Click the image to enlarge.",
                             "muted", wrap=True, rich=True)
         lay.addWidget(self.legend)
         self.sel.currentIndexChanged.connect(self.show_view)
         self.grp.buttonClicked.connect(lambda *_: self.show_view())
-        if self.views:
-            self.show_view(0)
+        self.show_view()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        parent = self.parentWidget()
+        while parent is not None and not isinstance(parent, QtWidgets.QScrollArea):
+            parent = parent.parentWidget()
+        viewport = parent.viewport() if parent is not None else None
+        if viewport is not self.viewport:
+            if self.viewport is not None:
+                self.viewport.removeEventFilter(self)
+            self.viewport = viewport
+            if viewport is not None:
+                viewport.installEventFilter(self)
+        self.fit_height()
+
+    def eventFilter(self, watched, event):
+        if watched is self.viewport and event.type() == QtCore.QEvent.Resize:
+            self.fit_height()
+        return super().eventFilter(watched, event)
+
+    def fit_height(self):
+        if self.viewport is None:
+            return
+        size = self.viewport.size()
+        layout = self.layout()
+        margins = layout.contentsMargins()
+        width = max(1, size.width() - margins.left() - margins.right())
+        chrome = margins.top() + margins.bottom()
+        for widget in (self.heading, self.toolbar, self.status, self.legend):
+            if not widget.isHidden():
+                height = widget.heightForWidth(width) if widget.hasHeightForWidth() else widget.sizeHint().height()
+                chrome += height + layout.spacing()
+        # Very short panes can scroll past the controls while still showing a whole image.
+        limit = min(self.MAX_PREVIEW_HEIGHT, int(size.height() * .65), max(80, size.height() - chrome))
+        self.view.setMaximumHeight(max(0, limit))
 
     def show_view(self, k=None):
         k = self.sel.currentIndex() if k is None else k
         if k < 0:
+            self.toolbar.hide()
+            self.view.hide()
+            self.legend.hide()
+            self.status.setText('No comparison images were saved for this result.')
+            self.status.show()
             return
         name, img, gif = self.views[k]
-        self.b_flick.setEnabled(gif is not None)
-        if gif is None:
-            self.b_side.setChecked(True)
+        gif = gif if gif and gif.is_file() else None
         self.view.caption = name
-        self.view.set_source(gif if self.b_flick.isChecked() and gif else img)
-        self.legend.setVisible(k < len(self.info["captures"]))
+        animated = gif is not None and self.b_flick.isChecked()
+        self.view.set_source(gif if animated else img)
+        message = ''
+        if self.view.current().isNull() and gif:
+            if animated:
+                self.views[k] = (name, img, None)
+                gif = None
+                self.view.set_source(img)
+                message = 'Alternate views could not be opened. Showing the saved image.'
+            else:
+                self.view.set_source(gif)
+                animated = not self.view.current().isNull()
+                message = 'The saved image is unavailable. Showing alternate views.'
+        available = not self.view.current().isNull()
+        self.b_side.setVisible(gif is not None)
+        self.b_flick.setVisible(gif is not None)
+        (self.b_flick if animated else self.b_side).setChecked(True)
+        self.view.setVisible(available)
+        self.enlarge.setEnabled(available)
+        self.legend.setVisible(available and not animated and k < len(self.info["captures"]))
+        self.status.setText(message if available else 'This comparison image is missing or could not be opened.')
+        self.status.setVisible(bool(self.status.text()))
+        self.fit_height()
 
     def select_capture(self, name):
         """Show the capture whose id (e.g. '185316_547419') is `name`; False when there is no such image."""

@@ -18,7 +18,7 @@ SECTION = "pointcloud_colorizer"
 KEYS = ("camera_matrix", "dist_coeffs", "extrinsic_matrix")
 
 
-def read_params(text):
+def _colorizer_section(text):
     try:
         document = yaml.safe_load(text)
     except yaml.YAMLError as error:
@@ -26,6 +26,72 @@ def read_params(text):
     if not isinstance(document, dict) or not isinstance(document.get(SECTION), dict):
         raise ValueError(f"The calibration file needs a '{SECTION}:' mapping.")
     return document[SECTION]
+
+
+def read_params(text):
+    """Read calibration values from a ROS 1 or ROS 2 pipeline file."""
+    section = _colorizer_section(text)
+    if "ros__parameters" not in section:
+        return section
+    params = section["ros__parameters"]
+    if not isinstance(params, dict):
+        raise ValueError("The pointcloud_colorizer.ros__parameters section needs a mapping.")
+    return params
+
+
+def is_ros2(text):
+    return "ros__parameters" in _colorizer_section(text)
+
+
+def ros2_values(params):
+    """Normalize the three calibration arrays for exact comparisons."""
+    result = {}
+    for key, length in zip(KEYS, (9, 5, 16)):
+        values = np.asarray(params.get(key), dtype=float).ravel()
+        if len(values) != length or not np.isfinite(values).all():
+            raise ValueError(f"{key} needs {length} finite values.")
+        result[key] = values.tolist()
+    return result
+
+
+def update_ros2(text, params):
+    """Edit only numeric scalar tokens in the existing ROS 2 calibration arrays."""
+    def child(node, key):
+        matches = [value for name, value in node.value
+                   if isinstance(name, yaml.ScalarNode) and name.value == key] if isinstance(node, yaml.MappingNode) else []
+        if len(matches) != 1:
+            raise ValueError(f"Expected exactly one '{key}' entry in the ROS 2 calibration.")
+        return matches[0]
+
+    before = yaml.safe_load(text)
+    root = yaml.compose(text)
+    mapping = child(child(root, SECTION), "ros__parameters")
+    desired = ros2_values(params)
+    edits = []
+    for key, values in desired.items():
+        seq = child(mapping, key)
+        if not isinstance(seq, yaml.SequenceNode) or len(seq.value) != len(values):
+            raise ValueError(f"'{key}' must be a flat sequence of {len(values)} numbers.")
+        for node, old, value in zip(seq.value, before[SECTION]["ros__parameters"][key], values):
+            if not isinstance(node, yaml.ScalarNode) or type(old) not in (int, float) or not np.isfinite(old):
+                raise ValueError(f"'{key}' must contain finite numbers.")
+            if type(old) is float and old == value:
+                continue
+            literal = repr(value)
+            if "e" in literal:
+                mantissa, exponent = literal.split("e")
+                literal = (mantissa if "." in mantissa else mantissa + ".0") + "e" + exponent
+            edits.append((node.start_mark.index, node.end_mark.index, literal))
+    updated = text
+    for start, end, literal in sorted(edits, reverse=True):
+        updated = updated[:start] + literal + updated[end:]
+    for key, values in desired.items():
+        before[SECTION]["ros__parameters"][key] = values
+    actual = yaml.safe_load(updated)
+    loaded = actual[SECTION]["ros__parameters"]
+    if actual != before or any(any(type(value) is not float for value in loaded[key]) for key in KEYS):
+        raise ValueError("The ROS 2 edit would change other settings or produce an invalid parameter array.")
+    return updated
 
 
 def _section(lines):
@@ -68,6 +134,8 @@ def _fmt(key, values, indent):
 def update(text, params, note):
     """New pipeline.yaml text with the device parameters `params` (camera_matrix, dist_coeffs,
     extrinsic_matrix) written into the pointcloud_colorizer section."""
+    if "ros__parameters" in _colorizer_section(text):
+        raise ValueError("This app supports reviewing ROS 2 calibration files. Writing changes requires the ROS 2 deployment workflow.")
     nl = "\r\n" if "\r\n" in text else "\n"               # keep the file's line endings
     lines = text.splitlines()
     s, e = _section(lines)

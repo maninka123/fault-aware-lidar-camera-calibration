@@ -287,11 +287,13 @@ def np_to_pixmap(img):
 
 
 class ImageView(QtWidgets.QWidget):
-    """An image (or animated GIF) scaled to the width available; click to enlarge."""
+    """Fit an image or animated GIF into the available space, with click to enlarge."""
 
     def __init__(self, path=None, pixmap=None, caption="", max_height=None, clickable=True):
         super().__init__()
-        self.movie, self.pix, self.path, self.caption, self.max_height = None, QtGui.QPixmap(), None, caption, max_height
+        self.movie, self.pix, self.path, self.caption = None, QtGui.QPixmap(), None, caption
+        if max_height is not None:
+            self.setMaximumHeight(max_height)
         sp = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sp.setHeightForWidth(True)
         self.setSizePolicy(sp)
@@ -304,11 +306,12 @@ class ImageView(QtWidgets.QWidget):
     def set_source(self, path=None, pixmap=None):
         if self.movie:
             self.movie.stop()
+            self.movie.setFileName("")
             self.movie.deleteLater()
             self.movie = None
         self.path = str(path) if path else None
         if self.path and self.path.lower().endswith(".gif"):
-            self.movie = QtGui.QMovie(self.path)
+            self.movie = QtGui.QMovie(self.path, parent=self)
             self.movie.frameChanged.connect(lambda k: (self.updateGeometry() if k == 0 else None, self.update()))
             self.movie.start()
         else:
@@ -327,8 +330,7 @@ class ImageView(QtWidgets.QWidget):
         return True
 
     def heightForWidth(self, w):
-        h = int(w * self.ratio())
-        return min(h, self.max_height) if self.max_height else h
+        return min(int(w * self.ratio()), self.maximumHeight())
 
     def sizeHint(self):
         return QtCore.QSize(480, self.heightForWidth(480))
@@ -344,7 +346,11 @@ class ImageView(QtWidgets.QWidget):
         qp.drawPixmap(r, p)
 
     def mouseReleaseEvent(self, e):
-        if self.clickable and e.button() == Qt.LeftButton and not self.current().isNull():
+        if self.clickable and e.button() == Qt.LeftButton:
+            self.open_enlarged()
+
+    def open_enlarged(self):
+        if not self.current().isNull():
             ImageDialog(self.path, self.pix if not self.movie else None, self.caption, self.window()).exec_()
 
 
@@ -356,13 +362,16 @@ class ImageDialog(QtWidgets.QDialog):
         lay.setContentsMargins(10, 10, 10, 10)
         view = ImageView(path, pixmap, clickable=False)
         lay.addWidget(view, 1)
-        row = hbox(label(caption, "muted"), button("Open in viewer", slot=lambda: open_path(path)) if path else QtWidgets.QWidget(),
-                   button("Close", slot=self.accept), stretch_at=1)
+        controls = [button("Open in viewer", slot=lambda: open_path(path))] if path else []
+        controls.append(button("Close", slot=self.accept))
+        row = hbox(*controls, stretch_at=0)
         lay.addWidget(row)
-        scr = QtWidgets.QApplication.primaryScreen().availableGeometry()
+        screen = parent.screen() if parent is not None else QtWidgets.QApplication.primaryScreen()
+        scr = screen.availableGeometry()
         r = view.ratio()
-        w = min(int(scr.width() * 0.9), int((scr.height() * 0.85) / r))
-        self.resize(w, int(w * r) + 60)
+        height_limit = int(scr.height() * 0.9)
+        w = min(int(scr.width() * 0.9), max(360, int((height_limit - 60) / r)))
+        self.resize(w, min(height_limit, int(w * r) + 60))
 
 
 class Figure(QtWidgets.QWidget):

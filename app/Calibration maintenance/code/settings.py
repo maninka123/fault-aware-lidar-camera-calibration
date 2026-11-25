@@ -74,17 +74,20 @@ def load_calibration(path) -> Calibration:
                        c["intrinsics"].get("distortion_model", "k1-k2-k3-k4" if np.any(D[2:]) else "k1-k2" if D[1] else "k1"), str(path), c)
 
 
+def load_stacked_frame(path):
+    from common import Frame, short_name           # Targetless common (read-only)
+    path = Path(path)
+    with np.load(path) as z:
+        if "xyz_mm" not in z or "image" not in z:
+            return None
+        return Frame(path.stem, short_name(path.stem), z["image"], z["xyz_mm"].astype(np.float64) / 1000.0,
+                     z["intensity"].astype(np.float64), z["frame_time"][z["frame"].astype(int)])
+
+
 def load_stacked(folder):
     """Stacked captures (*.npz: median image + merged LiDAR cloud) as Targetless `Frame`s."""
-    from common import Frame, short_name           # Targetless common (read-only)
-    frames = []
-    for f in sorted(Path(folder).glob("*.npz")):
-        z = np.load(f)
-        if "xyz_mm" not in z or "image" not in z:
-            continue
-        frames.append(Frame(f.stem, short_name(f.stem), z["image"], z["xyz_mm"].astype(np.float64) / 1000.0,
-                            z["intensity"].astype(np.float64), z["frame_time"][z["frame"].astype(int)]))
-    return frames
+    return [frame for path in sorted(Path(folder).glob("*.npz"))
+            if (frame := load_stacked_frame(path)) is not None]
 
 
 def write_json(path: Path, obj):

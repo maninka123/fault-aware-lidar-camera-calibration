@@ -16,6 +16,7 @@ import device_ui
 import device_yaml
 import device_file
 import numpy as np
+import yaml
 from cloud_view import CloudView
 from capture_schedule import run_sequence
 from PyQt5 import QtWidgets, QtTest
@@ -70,9 +71,24 @@ class DeviceFileTests(unittest.TestCase):
         self.assertIn('received camera image', p['notes'][0])
 
     def test_yaml_errors_are_reported(self):
-        for text in ('', 'other: {}', 'pointcloud_colorizer: ['):
+        for text in ('', 'other: {}', 'pointcloud_colorizer: [',
+                     'pointcloud_colorizer:\n  ros__parameters: []'):
             with self.assertRaises(ValueError):
                 device_yaml.read_params(text)
+
+    def test_device_file_reader_accepts_ros1_and_ros2(self):
+        flat = dict(RAW, camera_matrix=np.ravel(RAW['camera_matrix']).tolist(),
+                    extrinsic_matrix=np.ravel(RAW['extrinsic_matrix']).tolist())
+        for section in (RAW, {'ros__parameters': flat}):
+            text = yaml.safe_dump({'pointcloud_colorizer': section})
+            with self.subTest(ros2='ros__parameters' in section):
+                params = dm.file_params(device_yaml.read_params(text))
+                self.assertEqual({key: params[key] for key in RAW}, RAW)
+
+    def test_ros2_file_cannot_use_the_ros1_writer(self):
+        text = yaml.safe_dump({'pointcloud_colorizer': {'ros__parameters': RAW}})
+        with self.assertRaisesRegex(ValueError, 'ROS 2 deployment'):
+            device_yaml.update(text, RAW, '')
 
     def test_view_contains_exact_matrices_and_source(self):
         view = device_ui.device_calibration_view(dm.file_params(RAW), 'rock@sensor — /config/pipeline.yaml')
@@ -83,6 +99,36 @@ class DeviceFileTests(unittest.TestCase):
         self.assertIn('-0.05', blocks[1].toPlainText())
         self.assertIn('/config/pipeline.yaml', ' '.join(w.text() for w in view.findChildren(QtWidgets.QLabel)))
         view.close()
+
+    def test_device_8_matrix_is_readable_at_wide_and_narrow_widths(self):
+        raw = dict(RAW, extrinsic_matrix=[
+            [0.0211139458, -0.999576985, -0.0200013204, -0.0117632719],
+            [0.0427803906, 0.0208907401, -0.998866065, -0.028017784],
+            [0.998861372, 0.0202343397, 0.0432033798, 0.247156238],
+            [0., 0., 0., 1.],
+        ])
+        view = device_ui.device_calibration_view(dm.file_params(raw), 'Device 8')
+        self.addCleanup(view.close)
+        view.resize(1200, 650)
+        view.show()
+        APP.processEvents()
+        matrix = view.findChildren(QtWidgets.QPlainTextEdit)[1]
+        scrollbar = matrix.horizontalScrollBar()
+        self.assertEqual(scrollbar.maximum(), 0)
+        self.assertEqual([row.split()[1] for row in matrix.toPlainText().splitlines()],
+                         ['0.0211', '0.0428', '0.9989', '0.0000'])
+
+        view.resize(650, 650)
+        APP.processEvents()
+        self.assertTrue(scrollbar.isVisible())
+        self.assertEqual(scrollbar.value(), 0)
+        first = matrix.textCursor()
+        first.setPosition(0)
+        self.assertGreaterEqual(matrix.cursorRect(first).left(), 0)
+        last = matrix.textCursor()
+        last.setPosition(len(matrix.document().firstBlock().text()))
+        scrollbar.setValue(scrollbar.maximum())
+        self.assertLessEqual(matrix.cursorRect(last).right(), matrix.viewport().width())
 
     def test_last_matrix_row_is_inside_the_visible_viewport(self):
         view = device_ui.device_calibration_view(dm.file_params(RAW), 'file source')

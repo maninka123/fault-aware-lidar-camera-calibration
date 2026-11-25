@@ -78,7 +78,8 @@ class ActionFlow(QtWidgets.QLayout):
     def minimumSize(self):
         size = QtCore.QSize()
         for item in self.items:
-            size = size.expandedTo(item.minimumSize())
+            if not item.isEmpty():
+                size = size.expandedTo(item.minimumSize())
         return size
 
     def sizeHint(self):
@@ -91,7 +92,10 @@ class ActionFlow(QtWidgets.QLayout):
     def arrange(self, rect, measure):
         x, y, row_height = rect.x(), rect.y(), 0
         for item in self.items:
+            if item.isEmpty():
+                continue
             size = item.sizeHint()
+            size.setWidth(min(size.width(), max(0, rect.width())))
             if x > rect.x() and x + size.width() > rect.right() + 1:
                 x = rect.x()
                 y += row_height + self.spacing()
@@ -223,9 +227,12 @@ class SourceStrip(QtWidgets.QWidget):
 class OptionsResults(QtWidgets.QWidget):
     mode_changed = QtCore.pyqtSignal(str)
 
-    def __init__(self, comparison):
+    def __init__(self, comparison, preview_info=None, preview_calibrations=None):
         super().__init__()
         self.comparison = comparison
+        self.preview_info = preview_info
+        self.preview_calibrations = (comparison.get('calibrations', {})
+                                     if preview_calibrations is None else preview_calibrations)
         self.detail_dialog = None
         self.tiles = {}
         self.help_buttons = {}
@@ -314,6 +321,14 @@ class OptionsResults(QtWidgets.QWidget):
             box.addWidget(label('Median projection shift: ' + movement_text, 'h3', wrap=True))
             if movement and movement.get('p90_px') is not None:
                 box.addWidget(label(f"90% of points move less than {movement['p90_px']:.2f} px", 'small', wrap=True))
+            if preview_info is not None:
+                preview = button('Preview…', 'link', lambda checked=False, mode=mode: self.show_preview(mode))
+                preview.setAccessibleName(f'Preview {title}')
+                preview.setEnabled(bool(self.preview_calibrations.get(mode)))
+                preview.setToolTip('Inspect the colourized point cloud and edges' if preview.isEnabled()
+                                   else 'No full-data calibration was saved for this option.')
+                box.addStretch(1)
+                box.addWidget(preview, 0, Qt.AlignLeft)
             help_button = QtWidgets.QToolButton()
             help_button.setText('i')
             help_button.clicked.connect(lambda checked=False, mode=mode: self.show_option(mode))
@@ -338,8 +353,10 @@ class OptionsResults(QtWidgets.QWidget):
                     child.installEventFilter(self)
                     child.setProperty('mode', mode)
         layout.addLayout(self.row)
+        instructions = ('Select a card to see its matrices. Open Preview to inspect the cloud and edges.'
+                        if preview_info is not None else 'Select a card to see its matrices.')
         layout.addWidget(label(f'{comparison["folds"]} held-out checks · percentages are edge-match scores. Higher is better. '
-                               'Click a card to preview matrices · the info icon explains the option.', 'small', wrap=True))
+                               + instructions, 'small', wrap=True))
         self.arrange_tiles()
         self.select_mode(selected or 'existing')
 
@@ -374,6 +391,14 @@ class OptionsResults(QtWidgets.QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.arrange_tiles()
+
+    def show_preview(self, mode):
+        from option_preview import OptionPreviewDialog
+
+        dialog = OptionPreviewDialog(self.preview_info, self.preview_calibrations, mode, self)
+        QtCore.QTimer.singleShot(0, dialog.refresh)
+        dialog.exec_()
+        dialog.deleteLater()
 
     def show_option(self, mode):
         if self.detail_dialog is None:

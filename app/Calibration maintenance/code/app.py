@@ -594,7 +594,7 @@ class RunPage(QtWidgets.QWidget):
             c, cl = card('What should you update?')
             comparison = s['strategy_comparison']
             self.matrix_preview.set_calibrations(comparison.get('calibrations', {}))
-            self.options_results = OptionsResults(comparison)
+            self.options_results = OptionsResults(comparison, preview_info=info)
             self.options_results.mode_changed.connect(self.preview_mode)
             self.preview_mode(self.options_results.active_mode)
             self.matrix_preview.show()
@@ -640,7 +640,8 @@ class RunPage(QtWidgets.QWidget):
         if extra:
             action_buttons.extend(extra)
             if info.get("device"):
-                writes = [w for w in info.get("device_writes") or [] if w.get("backup")]
+                writes = [w for w in info.get("device_writes") or []
+                          if w.get("backup") and w.get("file_verified") is not False]
                 cl.addWidget(label(("Last written to the device: " + writes[-1]["date"].replace("T", " ")
                                     + (" (pipeline restarted)" if writes[-1].get("restarted") else " (used after the next pipeline restart)"))
                                    if writes else

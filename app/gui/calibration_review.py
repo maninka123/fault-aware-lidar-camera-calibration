@@ -341,8 +341,9 @@ class CalibrationReview(QtWidgets.QWidget):
         card, cl = _frame("Update comparison", "The four things a calibration update could change, tested on captures left out of each fit.")
         self.sections["Compare"] = card
         if comparison:
-            self.matrices.set_calibrations(device_display.display_options(comparison.get("calibrations", {}), self.meta))
-            self.options = OptionsResults(comparison)
+            calibrations = device_display.display_options(comparison.get("calibrations", {}), self.meta)
+            self.matrices.set_calibrations(calibrations)
+            self.options = OptionsResults(comparison, preview_info=info, preview_calibrations=calibrations)
             self.options.mode_changed.connect(self.preview_mode)
             cl.addWidget(self.options)
         else:
@@ -404,7 +405,8 @@ class CalibrationReview(QtWidgets.QWidget):
         self.restore_device_button = _button("Restore previous device calibration…", lambda: self.device_action(info, restore=True))
         from device_update_review import SavedDeviceUpdateDialog
         self.saved_update_button = _button('View saved device update...', lambda: SavedDeviceUpdateDialog.open_saved(self, self.folder / use_result.USE_DIR))
-        self.saved_update_button.setEnabled(any(w.get('backup') for w in use_result.device_writes(self.folder)))
+        self.saved_update_button.setEnabled(any(w.get('backup') and w.get('file_verified') is not False
+                                               for w in use_result.device_writes(self.folder)))
         self.restore_device_button.setToolTip("Revert the device camera intrinsics and LiDAR-to-camera extrinsics to the backup made before the last update. Review and confirmation required.")
         has_device = use_result.device_dir(self.meta) is not None
         self.restore_device_button.setEnabled(has_device and any(w.get("backup") for w in use_result.device_writes(self.folder)))
@@ -442,7 +444,8 @@ class CalibrationReview(QtWidgets.QWidget):
                 actions.combo.setCurrentIndex(index)
                 actions.do_write()
             self.restore_device_button.setEnabled(any(w.get("backup") for w in use_result.device_writes(self.folder)))
-            self.saved_update_button.setEnabled(any(w.get('backup') for w in use_result.device_writes(self.folder)))
+            self.saved_update_button.setEnabled(any(w.get('backup') and w.get('file_verified') is not False
+                                                   for w in use_result.device_writes(self.folder)))
             self.changed.emit()
         finally:
             actions.deleteLater()

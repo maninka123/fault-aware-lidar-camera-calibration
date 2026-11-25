@@ -34,7 +34,12 @@ def saved_comparison(folder, record=None, written=None, backup=None):
     backup = Path(backup)
     if backup == written or not backup.is_file():
         raise ValueError('The original backup is needed to compare before and after.')
-    old, new = backup.read_text(encoding='utf-8'), written.read_text(encoding='utf-8')
+    def read_local(file):
+        # ROS 1 evidence was saved in text mode on Windows, while ROS 2 records exact bytes.
+        return (file.read_bytes().decode('utf-8') if record.get('ros_version') == 2
+                else file.read_text(encoding='utf-8'))
+
+    old, new = (read_local(file) for file in (backup, written))
     dimensions = record.get('previous') or {}
     def parameters(text):
         raw = dy.read_params(text)
@@ -46,10 +51,21 @@ def saved_comparison(folder, record=None, written=None, backup=None):
     readback_path = folder / record.get('local_readback', '')
     verified = None
     if readback_path.is_file() and record.get('readback_sha256'):
-        actual = readback_path.read_text(encoding='utf-8')
+        actual = read_local(readback_path)
         verified = digest(actual) == digest(new) == record['readback_sha256'] == record.get('written_sha256')
+    files = []
+    for entry in record.get('files', ()):
+        try:
+            content = {kind: (folder / entry[f'local_{kind}']).read_bytes().decode('utf-8')
+                       for kind in ('backup', 'written', 'readback')}
+            verified = (bool(verified) and digest(content['backup']) == entry['before_sha256']
+                        and digest(content['written']) == digest(content['readback'])
+                        == entry['written_sha256'] == entry['readback_sha256'])
+            files.append((entry['path'], content['backup'], content['written']))
+        except (OSError, KeyError, UnicodeError):
+            verified = False
     return dict(record=record, before=before, after=after, old=old, new=new,
-                written=written, backup=backup, verified=verified)
+                written=written, backup=backup, verified=verified, files=files)
 
 
 class SavedDeviceUpdateDialog(QtWidgets.QDialog):
@@ -63,7 +79,8 @@ class SavedDeviceUpdateDialog(QtWidgets.QDialog):
         record = self.data['record']
         layout.addWidget(ui.label(f"{record.get('device', 'Device')} | {record.get('date', '')} | {record.get('path', '')}", wrap=True))
         verified = self.data['verified']
-        text = ('Verified: the device file read back after writing matches this saved YAML.' if verified else
+        text = (('Verified: every deployed YAML read back after writing matches the saved update.' if self.data['files'] else
+                 'Verified: the device file read back after writing matches this saved YAML.') if verified else
                 'Mismatch: the saved YAML or recorded read-back differs from the verified update.' if verified is False else
                 'File comparison only: no captured device read-back is available for this file.')
         layout.addWidget(ui.label(text + ' This is the recorded write-time check, not a new live device check.', wrap=True))
@@ -113,7 +130,9 @@ class SavedDeviceUpdateDialog(QtWidgets.QDialog):
         from manual_device_calibration import parameter_change_rows
         values.addWidget(ui.table(['Parameter', 'Before on device', 'After on device', 'Change'], parameter_change_rows(self.data['before'], self.data['after']), numeric=[1, 2, 3], stretch=(1, 2, 3)))
         tabs.addTab(ui.scroll(body), 'Changed values')
-        difference = QtWidgets.QPlainTextEdit(dy.diff(self.data['old'], self.data['new'], self.data['written'].name) or 'No file changes.')
+        files = self.data['files'] or [(self.data['written'].name, self.data['old'], self.data['new'])]
+        difference = QtWidgets.QPlainTextEdit('\n'.join(dy.diff(old, new, name) or f'{name}\n  No file changes.\n'
+                                                         for name, old, new in files))
         difference.setReadOnly(True)
         tabs.addTab(difference, 'Exact YAML changes')
         layout.addWidget(tabs, 1)

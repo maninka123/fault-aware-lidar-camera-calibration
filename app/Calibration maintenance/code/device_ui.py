@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+from html import escape
 import shutil
 import threading
 from datetime import datetime
@@ -214,6 +215,8 @@ def device_calibration_view(params, source):
     lay.setContentsMargins(14, 10, 14, 12)
     matrices = QtWidgets.QGridLayout()
     matrices.setHorizontalSpacing(16)
+    matrices.setColumnStretch(0, 1)
+    matrices.setColumnStretch(1, 1)
     for column, (title, matrix) in enumerate((("Camera matrix K (pixels)", K),
                           ("LiDAR → camera transform T (translation in metres)", p["extrinsic_matrix"]))):
         matrices.addWidget(label(title, "caps", wrap=True), 0, column)
@@ -224,17 +227,17 @@ def device_calibration_view(params, source):
         panel_layout = QtWidgets.QVBoxLayout(matrix_panel)
         panel_layout.setContentsMargins(10, 8, 10, 10)
         panel_layout.setSpacing(4)
-        values = [[f"{v: .9g}" for v in row] for row in matrix]
+        values = [[f"{v: .4f}" for v in row] for row in matrix]
         widths = [max(len(row[j]) for row in values) for j in range(len(values[0]))]
-        block = QtWidgets.QPlainTextEdit("\n".join("[  " + "    ".join(value.rjust(widths[j]) for j, value in enumerate(row)) + "  ]" for row in values))
+        lines = ["[ " + "  ".join(value.rjust(widths[j]) for j, value in enumerate(row)) + " ]"
+                 for row in values]
+        block = QtWidgets.QPlainTextEdit("\n".join(lines))
         block.setReadOnly(True)
         block.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         block.setMinimumWidth(0)
-        option = block.document().defaultTextOption()
-        option.setAlignment(Qt.AlignHCenter)
-        block.document().setDefaultTextOption(option)
-        block.setStyleSheet(f"font-family: {MONO}; font-size: 18px; padding: 8px; border: none; background: transparent;")
+        block.setStyleSheet(f"font-family: {MONO}; font-size: 14px; padding: 6px; border: none; background: transparent;")
         block.ensurePolished()
+        block.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         block.setFixedHeight(int(block.fontMetrics().lineSpacing() * len(matrix)
                                  + 2 * block.document().documentMargin() + 40))
         block.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1145,6 +1148,7 @@ class WriteDialog(QtWidgets.QDialog):
         self.resize(900, 720)
         self.prev = self.dev["params"]
         self.written_record = None
+        self.ros2_plan = None
         if info.get('device_params_override') is not None:
             from manual_device_calibration import validate_values
             self.new = validate_values(info['device_params_override'], self.prev)
@@ -1210,7 +1214,7 @@ class WriteDialog(QtWidgets.QDialog):
         if self.prev.get("notes"):
             v.addWidget(note_label("On the device now: " + " ".join(self.prev["notes"]) + ". The new file writes camera_matrix as a flat "
                                    "list, so the colorizer reads it.", WARN, WARN_SOFT))
-        self.restart = QtWidgets.QCheckBox("Then restart the sensor pipeline (node-pc.service) so the new calibration is used. The device "
+        self.restart = QtWidgets.QCheckBox("Then restart the sensor pipeline so the new calibration is used. The device "
                                            "stops sending data for 1-2 minutes. You will be asked again before it restarts.")
         self.restart.setChecked(True)
         v.addWidget(self.restart)
@@ -1274,6 +1278,11 @@ class WriteDialog(QtWidgets.QDialog):
                 return
         try:
             self.path, self.old_text = read_device_yaml(self, self.ssh, self.device)
+            self.ros2_plan = None
+            self.p2_warn.hide()
+            if dy.is_ros2(self.old_text):
+                self.prepare_ros2()
+                return
             remote_params = dy.read_params(self.old_text)
             dm.file_params(remote_params, image_size=(self.prev['image_width'], self.prev['image_height']))
             self.stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -1295,7 +1304,31 @@ class WriteDialog(QtWidgets.QDialog):
         self.diff.setPlainText(dy.diff(self.old_text, self.new_text, Path(self.path).name))
         self.show_page(1)
 
+    def prepare_ros2(self):
+        import device_ros2 as ros2
+        import device_yaml as dy
+
+        mode = self.info['summary']['mode']
+        plan = busy(self, 'Finding the running ROS 2 calibration and its source …', ros2.prepare, self.ssh, self.new, mode)
+        active = plan['files'][-1]
+        previous = dm.file_params(dy.read_params(active['before']),
+                                  image_size=(self.prev['image_width'], self.prev['image_height']))
+        self.ros2_plan, self.ros2_previous = plan, previous
+        paths = '<br>'.join(escape(e['path']) for e in plan['files'])
+        self.p2_head.setText(f"<b>{escape(self.device['name'])} · ROS 2</b><br>{paths}<br>"
+                             "The pipeline loads the installed file at startup. A rebuild uses the source file. "
+                             "The app backs up and verifies every listed file.")
+        if not same_params(previous, self.prev):
+            self.p2_warn.setText('The deployed calibration differs from the values used to run this check. '
+                                 'Review the exact changes below before writing.')
+            self.p2_warn.show()
+        self.diff.setPlainText(ros2.plan_diff(plan))
+        self.show_page(1)
+
     def write(self):
+        if self.ros2_plan is not None:
+            self.write_ros2()
+            return
         name = self.device["name"]
         if not ask(self, "Write to the device?", f"Write the new calibration into {self.path} on {name} now?\n\n"
                    f"The current file is kept as {self.backup_name} on the device and a copy is saved with this check. "
@@ -1367,6 +1400,45 @@ class WriteDialog(QtWidgets.QDialog):
         from device_update_review import SavedDeviceUpdateDialog
         SavedDeviceUpdateDialog(self, out, record=record).exec_()
 
+    def write_ros2(self):
+        import device_ros2 as ros2
+        from device_update_review import SavedDeviceUpdateDialog
+
+        plan, out = self.ros2_plan, self.info['out']
+        name = self.device['name']
+        if not ask(self, 'Write to the device?',
+                   f"Back up and write the reviewed ROS 2 calibration files on {name} now? "
+                   "The pipeline will continue running until a restart is separately confirmed.", yes='Write'):
+            return
+        try:
+            record = busy(self, 'Backing up, writing and verifying ROS 2 files …', ros2.write_recorded,
+                          self.ssh, plan, out, self.device, self.ros2_previous, self.info['summary']['mode'])
+        except (RuntimeError, OSError) as error:
+            self.show_page(0)
+            warn(self, 'ROS 2 write failed', f"{error}\n\nThe app did not restart the pipeline. "
+                 "Reopen the review before retrying. Any verified device backups can be restored from this result.")
+            return
+        steps = [f"✓ {entry['path']} written and read back. Backup: {entry['backup']}" for entry in record['files']]
+        if self.restart.isChecked():
+            steps.extend(offer_ros2_restart(self, self.device, self.ssh, plan, out, record))
+        else:
+            steps.append('Pipeline still running with its loaded calibration. The files take effect after restart.')
+        self.written_record = record
+        try:
+            devreg.save_settings(self.device['key'], yaml_path=record['path'])
+            core.mark_history(self.info['name'], f"written to {name} {record['date']}")
+        except (OSError, ValueError) as error:
+            steps.append(f'Local settings or history could not be saved: {error}')
+        self.ssh.close()
+        self.ssh = None
+        self.log.setText('<br>'.join(map(escape, steps)) +
+                         '<br><br><b>Restore the previous calibration on the device…</b> is available in this result.')
+        self.show_page(2)
+        try:
+            SavedDeviceUpdateDialog(self, out, record=record).exec_()
+        except (ValueError, OSError, KeyError, TypeError) as error:
+            warn(self, 'Cannot open saved device update', str(error))
+
     def reject(self):
         if self.ssh is not None:
             self.ssh.close()
@@ -1390,6 +1462,30 @@ def verify_loaded(master_uri, new, wait_s=150):
     return False
 
 
+def offer_ros2_restart(parent, device, ssh, plan, out, record):
+    import device_ros2 as ros2
+
+    if not ask(parent, 'Restart the ROS 2 sensor pipeline?',
+               f"Restart {ros2.remote.UNIT} on {device['name']} now? "
+               "Camera and LiDAR streams will pause. The app will check the running colorizer after it returns.",
+               yes='Restart now', no='Not now'):
+        return ['Pipeline restart deferred. The files take effect after the next restart.']
+    restarted, verified, error = False, None, ''
+    try:
+        restarted, verified, error = busy(parent, 'Restarting the pipeline and checking the running ROS 2 colorizer …',
+                                          ros2.restart_and_verify, ssh, plan, device.get('bridge_url'))
+        steps = (['✓ The running ROS 2 colorizer matches all three written calibration parameters.'] if verified
+                 else [f'Restart requested. Runtime calibration could not be verified. {error}'])
+    except (RuntimeError, ValueError) as failure:
+        error = str(failure)
+        steps = [f'Restart failed or was not confirmed: {error}. The verified files and backups are still available.']
+    try:
+        ros2.record_restart(out, record, restarted, verified, error)
+    except (OSError, ValueError) as failure:
+        steps.append(f'Could not save restart status in this result: {failure}')
+    return steps
+
+
 class RestoreDialog:
     """Put the backup of the last write back on the device (confirmed), optionally restart."""
 
@@ -1403,6 +1499,7 @@ class RestoreDialog:
         if len(backups) > 1:
             ordered = list(reversed(backups))
             choices = [f"Before update {len(backups)-i} ({item.get('date', '')})" +
+                       (" - incomplete write" if item.get('file_verified') is False else "") +
                        (" - original before the first update" if i == len(backups)-1 else "") for i, item in enumerate(ordered)]
             selected, accepted = QtWidgets.QInputDialog.getItem(parent, "Restore device calibration", "Choose the previous or original values to restore:", choices, 0, False)
             if not accepted:
@@ -1412,6 +1509,8 @@ class RestoreDialog:
         s = ssh_session(parent, device)
         if s is None:
             return
+        if w.get('ros_version') == 2:
+            return RestoreDialog.ros2(parent, info, device, s, w)
         import device_yaml as dy
         try:
             cur = busy(parent, "Reading the current file …", s.read, w["path"])
@@ -1472,3 +1571,46 @@ class RestoreDialog:
             if key not in raw and key in previous:
                 raw[key] = previous[key]
         return dict(params=raw, text=old, path=w['path'])
+
+    @staticmethod
+    def ros2(parent, info, device, ssh, backup):
+        import device_ros2 as ros2
+        import device_yaml as dy
+
+        out = info['out']
+        try:
+            plan = busy(parent, 'Checking ROS 2 deployment and backups …',
+                        lambda: ros2.prepare(ssh, restore=backup))
+            dialog = QtWidgets.QDialog(parent)
+            dialog.setWindowTitle(f"Restore ROS 2 calibration on {device['name']}")
+            dialog.resize(900, 600)
+            layout = QtWidgets.QVBoxLayout(dialog)
+            layout.addWidget(label('Restore the three calibration arrays from the verified backups. '
+                                   'The app backs up both current copies before restoring.', wrap=True))
+            diff = QtWidgets.QPlainTextEdit(ros2.plan_diff(plan))
+            diff.setReadOnly(True)
+            diff.setStyleSheet(f'font-family: {MONO}; font-size: 9pt;')
+            layout.addWidget(diff, 1)
+            cancel = button('Cancel', slot=dialog.reject)
+            cancel.setDefault(True)
+            layout.addWidget(hbox(cancel, button('Restore…', 'primary', dialog.accept), stretch_at=0))
+            if dialog.exec_() != QtWidgets.QDialog.Accepted or not ask(
+                    parent, 'Restore calibration?', f"Write the reviewed calibration arrays back to {device['name']}?",
+                    yes='Restore'):
+                return
+            previous = backup.get('previous') or info['device']['params']
+            record = busy(parent, 'Restoring and verifying ROS 2 files …', ros2.write_recorded,
+                          ssh, plan, out, device, previous, 'restore', backup['backup'])
+            steps = ['✓ Calibration restored and verified in the source and installed YAML files.']
+            steps.extend(offer_ros2_restart(parent, device, ssh, plan, out, record))
+        except (RuntimeError, OSError, ValueError, KeyError) as error:
+            warn(parent, 'ROS 2 restore failed', str(error))
+            return
+        finally:
+            ssh.close()
+        try:
+            core.mark_history(info['name'], f"restored on {device['name']} {record['date']}")
+        except (OSError, ValueError) as error:
+            steps.append(f'Could not save history: {error}')
+        QtWidgets.QMessageBox.information(parent, 'ROS 2 restore', '\n'.join(steps))
+        return dict(params=record['new'], text=plan['files'][-1]['after'], path=record['path'])

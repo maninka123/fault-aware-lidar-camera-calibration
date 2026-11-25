@@ -80,5 +80,21 @@ class OutputCollectionTests(unittest.TestCase):
         channel.close.assert_called_once()
 
 
+class Ros1RestartTests(unittest.TestCase):
+    def test_legacy_service_restart_and_status_are_unchanged(self):
+        client = DeviceSSH('test')
+        with patch.object(client, 'run', side_effect=[(0, '', ''), (0, 'active\n', '')]) as run:
+            self.assertEqual(client.restart('password'), 'active')
+            self.assertEqual([c.args[0] for c in run.call_args_list],
+                             ['sudo -n systemctl restart node-pc.service', 'systemctl is-active node-pc.service'])
+
+    def test_rejected_legacy_restart_reports_failure(self):
+        client = DeviceSSH('test')
+        with patch.object(client, 'run', side_effect=[(1, '', 'password required'), (1, '', 'denied')]) as run:
+            with self.assertRaisesRegex(SSHError, 'restart refused: denied'):
+                client.restart('password')
+            self.assertEqual(run.call_count, 2)
+
+
 if __name__ == '__main__':
     unittest.main()

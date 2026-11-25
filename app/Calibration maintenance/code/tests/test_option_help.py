@@ -23,6 +23,19 @@ def comparison():
 
 
 class OptionHelpTests(unittest.TestCase):
+    def test_card_preview_button_opens_the_corresponding_option_without_selecting_it(self):
+        data = comparison()
+        data['calibrations'] = {mode: {'saved': True} for mode in data['scores']}
+        widget = OptionsResults(data, preview_info={})
+        self.addCleanup(widget.close)
+        with patch.object(widget, 'show_preview') as show:
+            for mode, tile in widget.tiles.items():
+                preview = next(b for b in tile.findChildren(QtWidgets.QPushButton)
+                               if b.text() == 'Preview…')
+                preview.click()
+                show.assert_called_with(mode)
+        self.assertEqual(widget.active_mode, 'extrinsic')
+
     def test_only_help_links_open_the_explanation_without_changing_results(self):
         data = comparison()
         original = copy.deepcopy(data)

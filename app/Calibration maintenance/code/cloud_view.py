@@ -8,6 +8,8 @@ from PyQt5.QtCore import Qt
 
 
 class CloudView(QtWidgets.QWidget):
+    view_changed = QtCore.pyqtSignal(float, float, float)
+
     def __init__(self, cloud, show_info=True):
         super().__init__()
         self.show_info = show_info
@@ -20,14 +22,17 @@ class CloudView(QtWidgets.QWidget):
         self.setCursor(Qt.OpenHandCursor)
         self.set_cloud(cloud)
 
-    def set_cloud(self, cloud):
+    def set_cloud(self, cloud, point_colors=None):
         xyz = np.asarray(cloud, dtype=float)
         xyz = xyz[:, :3] if xyz.ndim == 2 and xyz.shape[1] >= 3 else np.empty((0, 3))
-        self.xyz = xyz[np.isfinite(xyz).all(axis=1)]
-        self.total = len(self.xyz)
-        self.xyz = self.xyz[::max(1, math.ceil(len(self.xyz) / 60000))]
-        distance = np.linalg.norm(self.xyz, axis=1)
-        if len(distance):
+        valid = np.flatnonzero(np.isfinite(xyz).all(axis=1))
+        self.total = len(valid)
+        sample = valid[::max(1, math.ceil(self.total / 60000))]
+        self.xyz = xyz[sample]
+        if point_colors is not None:
+            self.colors = np.asarray(point_colors, dtype=np.uint8)[sample]
+        elif len(sample):
+            distance = np.linalg.norm(self.xyz, axis=1)
             low, high = np.percentile(distance, [2, 98])
             value = np.clip((distance - low) / max(high - low, 1e-6), 0, 1)
             self.colors = cv2.applyColorMap(np.uint8((1 - value) * 255), cv2.COLORMAP_TURBO).reshape(-1, 3)
@@ -36,8 +41,11 @@ class CloudView(QtWidgets.QWidget):
         self.update()
 
     def reset_view(self):
-        self.yaw = self.pitch = 0.0
-        self.zoom = 1.0
+        self.set_view(0.0, 0.0, 1.0)
+        self.view_changed.emit(self.yaw, self.pitch, self.zoom)
+
+    def set_view(self, yaw, pitch, zoom):
+        self.yaw, self.pitch, self.zoom = yaw, pitch, zoom
         self.update()
 
     def render_cloud(self, width, height):
@@ -91,6 +99,7 @@ class CloudView(QtWidgets.QWidget):
             self.pitch = float(np.clip(self.pitch + delta.y() * .008, -1.5, 1.5))
             self.last_pos = event.pos()
             self.update()
+            self.view_changed.emit(self.yaw, self.pitch, self.zoom)
 
     def mouseReleaseEvent(self, event):
         self.last_pos = None
@@ -99,6 +108,7 @@ class CloudView(QtWidgets.QWidget):
     def wheelEvent(self, event):
         self.zoom = float(np.clip(self.zoom * 1.15 ** (event.angleDelta().y() / 120), .2, 20))
         self.update()
+        self.view_changed.emit(self.yaw, self.pitch, self.zoom)
         event.accept()
 
     def mouseDoubleClickEvent(self, event):

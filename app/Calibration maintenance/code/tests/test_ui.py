@@ -9,11 +9,12 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import appcore
-from PyQt5 import QtCore, QtWidgets, QtSvg, QtTest
-from ui_common import QSS, CHEVRON_DOWN, table
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSvg, QtTest
+from ui_common import QSS, CHEVRON_DOWN, scroll, table
 from ui_widgets import SourceStrip, UpdateChoice
 from pose_view import ComparisonColumns, CalibrationPosePanel
 from capture_help import CaptureFormatDialog
+from result_sections import CaptureComparison
 import numpy as np
 
 APP = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -22,6 +23,55 @@ APP.setStyleSheet(QSS)
 
 
 class InterfaceTests(unittest.TestCase):
+    def test_tall_result_figure_fits_short_viewport_and_can_be_enlarged(self):
+        with TemporaryDirectory() as temp:
+            image = Path(temp) / 'regions.png'
+            pixmap = QtGui.QPixmap(1200, 1600)
+            pixmap.fill(QtGui.QColor('white'))
+            self.assertTrue(pixmap.save(str(image)))
+            card = CaptureComparison(dict(captures=[], extra=[image]))
+            window = scroll(card)
+            self.addCleanup(window.close)
+            window.resize(1500, 620)
+            window.show()
+            APP.processEvents()
+            tall_height = card.view.height()
+            self.assertLessEqual(tall_height, int(window.viewport().height() * .65))
+            window.resize(1500, 420)
+            APP.processEvents()
+            self.assertLess(card.view.height(), tall_height)
+            self.assertLessEqual(card.view.height(), int(window.viewport().height() * .65))
+            self.assertEqual(card.view.current().size(), pixmap.size())
+            with patch('ui_common.ImageDialog') as dialog:
+                card.enlarge.click()
+                self.assertEqual(dialog.call_args.args[0], str(image))
+                dialog.return_value.exec_.assert_called_once()
+
+    def test_comparison_controls_wrap_and_unavailable_images_have_a_message(self):
+        with TemporaryDirectory() as temp:
+            image, gif, missing = (Path(temp) / name for name in ('comparison.png', 'preview.gif', 'missing.png'))
+            pixmap = QtGui.QPixmap(200, 200)
+            pixmap.fill(QtGui.QColor('white'))
+            self.assertTrue(pixmap.save(str(image)))
+            gif.write_bytes(b'broken image')
+            card = CaptureComparison(dict(captures=[dict(name='capture', image=image, flicker=gif)], extra=[missing]))
+            window = scroll(card)
+            self.addCleanup(window.close)
+            window.resize(470, 340)
+            window.show()
+            APP.processEvents()
+            self.assertEqual(window.horizontalScrollBar().maximum(), 0)
+            self.assertTrue(card.b_flick.isVisible())
+            card.b_flick.click()
+            self.assertTrue(card.status.isVisible())
+            self.assertIn('Showing the saved image', card.status.text())
+            self.assertTrue(card.b_flick.isHidden())
+            self.assertTrue(card.enlarge.isEnabled())
+            card.sel.setCurrentIndex(1)
+            self.assertIn('missing', card.status.text())
+            self.assertTrue(card.view.isHidden())
+            self.assertFalse(card.enlarge.isEnabled())
+
     def test_capture_help_tab_labels_fit(self):
         dialog = CaptureFormatDialog()
         dialog.show()
