@@ -87,6 +87,7 @@ class SavedDeviceUpdateDialog(QtWidgets.QDialog):
         runtime = record.get('verified')
         runtime_text = ('The recorded runtime parameter check also matched.' if runtime is True else
                         'The runtime parameter check did not match; check the device pipeline.' if runtime is False else
+                        'Pending restart. Both deployed ROS 2 files were verified on disk.' if record.get('ros_version') == 2 and not record.get('restarted') else
                         'Runtime loading was not verified. A pipeline restart may still be required to use the saved values.')
         layout.addWidget(ui.label(runtime_text, wrap=True))
         layout.addWidget(ui.label(f"Before: {self.data['backup']}\nAfter: {self.data['written']}\nDevice projection: OpenCV pinhole. Translation differences below are in millimetres.", wrap=True))

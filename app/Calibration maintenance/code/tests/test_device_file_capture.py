@@ -62,6 +62,41 @@ class DeviceFileTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, key):
                 dm.file_params(raw)
 
+    def test_legacy_four_distortion_coefficients_use_the_colourizer_zero_k3(self):
+        raw = dict(RAW, dist_coeffs=[-.10360109, .31921842, 0., 0.])
+        flat = dict(raw, camera_matrix=np.ravel(raw['camera_matrix']).tolist(),
+                    extrinsic_matrix=np.ravel(raw['extrinsic_matrix']).tolist())
+        text = yaml.safe_dump({'pointcloud_colorizer': flat}, default_flow_style=None)
+        result = dm.file_params(device_yaml.read_params(text))
+        self.assertEqual(result['dist_coeffs'], raw['dist_coeffs'] + [0.])
+        self.assertIn('k3 = 0', result['notes'][0])
+        self.assertEqual(len(raw['dist_coeffs']), 4)
+        rewritten = device_yaml.read_params(device_yaml.update(text, result, ''))
+        np.testing.assert_allclose(rewritten['dist_coeffs'], raw['dist_coeffs'])
+        result['dist_coeffs'][4] = .001
+        rewritten = device_yaml.read_params(device_yaml.update(text, result, ''))
+        np.testing.assert_allclose(rewritten['dist_coeffs'], result['dist_coeffs'])
+        with self.assertRaisesRegex(ValueError, 'one to five distortion coefficients'):
+            dm.file_params(dict(raw, dist_coeffs=[0.] * 8))
+
+    def test_colourizer_short_arrays_and_invalid_calibration_fields(self):
+        distortion = RAW['dist_coeffs']
+        for length in range(1, 6):
+            with self.subTest(length=length):
+                raw = dict(RAW, dist_coeffs=distortion[:length])
+                self.assertEqual(dm.file_params(raw)['dist_coeffs'], distortion[:length] + [0.] * (5 - length))
+        for key, malformed in (
+            ('camera_matrix', np.zeros((1, 3, 3))),
+            ('extrinsic_matrix', np.zeros((2, 8))),
+            ('dist_coeffs', []), ('dist_coeffs', [True, 0., 0., 0.]),
+            ('dist_coeffs', ['not a number']), ('image_width', 366.5), ('image_height', 0),
+        ):
+            with self.subTest(key=key, malformed=malformed), self.assertRaisesRegex(ValueError, key):
+                dm.file_params(dict(RAW, **{key: malformed}), image_size=(640, 480))
+        partial = {key: value for key, value in RAW.items() if key != 'image_height'}
+        params = dm.file_params(partial, image_size=(640, 480))
+        self.assertEqual((params['image_width'], params['image_height']), (366, 480))
+
     def test_resolution_requires_file_or_explicit_live_image(self):
         raw = {k: v for k, v in RAW.items() if not k.startswith('image_')}
         with self.assertRaisesRegex(ValueError, 'dimensions'):
@@ -74,6 +109,10 @@ class DeviceFileTests(unittest.TestCase):
         for text in ('', 'other: {}', 'pointcloud_colorizer: [',
                      'pointcloud_colorizer:\n  ros__parameters: []'):
             with self.assertRaises(ValueError):
+                device_yaml.read_params(text)
+        for text in ('pointcloud_colorizer:\n  dist_coeffs: [0]\n  dist_coeffs: [1]\n',
+                     'pointcloud_colorizer:\n  ros__parameters:\n    camera_matrix: []\n    camera_matrix: []\n'):
+            with self.assertRaisesRegex(ValueError, 'more than once.*line'):
                 device_yaml.read_params(text)
 
     def test_device_file_reader_accepts_ros1_and_ros2(self):
@@ -89,6 +128,76 @@ class DeviceFileTests(unittest.TestCase):
         text = yaml.safe_dump({'pointcloud_colorizer': {'ros__parameters': RAW}})
         with self.assertRaisesRegex(ValueError, 'ROS 2 deployment'):
             device_yaml.update(text, RAW, '')
+
+    def test_ros1_reader_keeps_the_file_picker_for_native_and_bridge_devices(self):
+        old = '/legacy/pipeline.yaml'
+        text = yaml.safe_dump({'pointcloud_colorizer': RAW})
+        for via_bridge in (False, True):
+            with self.subTest(via_bridge=via_bridge), \
+                    patch('device_ros2.read_active', return_value=None) as active, \
+                    patch.object(device_ui, 'busy', side_effect=lambda parent, message, fn, *args: fn(*args)), \
+                    patch.object(QtWidgets.QInputDialog, 'getText', return_value=(old, True)) as picker, \
+                    patch.object(device_ui.devreg, 'save_settings') as save:
+                ssh = Mock(find_yaml=Mock(return_value=old), read=Mock(return_value=text))
+                profile = dict(key='legacy', yaml_path=old)
+                self.assertEqual(device_ui.read_device_yaml(None, ssh, profile, choose_path=True,
+                                                            prefer_active=via_bridge), (old, text))
+                self.assertEqual(active.call_count, int(via_bridge))
+                picker.assert_called_once()
+                save.assert_called_once_with('legacy', yaml_path=old)
+
+    def test_connected_ros2_panel_reads_active_path_and_uses_running_values_while_pending(self):
+        stale = '/home/rock/Sensor_Computer_ROS2/ros2/src/node_pc/config/pipeline.yaml'
+        active = '/home/rock/Sensor_Computer/ros2/install/node_pc/share/node_pc/config/pipeline.yaml'
+        values = device_yaml.ros2_values(RAW)
+        values['camera_matrix'][0], values['camera_matrix'][4] = 235.5668, 229.5212
+        values['extrinsic_matrix'][11] = .0385
+        values['dist_coeffs'][4] = 0.
+        raw = dict(RAW, **values)
+        raw['dist_coeffs'] = values['dist_coeffs'][:4]
+        text = yaml.safe_dump({'pointcloud_colorizer': {'ros__parameters': raw}})
+        with patch.object(device_ui.devreg, 'load', return_value=[]), patch.object(device_ui.DevicePage, 'probe_all'):
+            page = device_ui.DevicePage(None, choose_mode=False)
+        self.addCleanup(page.close)
+        self.addCleanup(page.shutdown)
+        page.current = dict(key='sensor', name='Device', yaml_path=stale,
+                            image_topic='/camera/image_raw', cloud_topic='/livox/lidar')
+        page.link = Mock(kind='bridge')
+        page.link.describe.return_value = 'ROSBridge'
+        page.show_connected()
+        ssh = Mock(user='rock', host='sensor', port=22)
+        with patch.object(device_ui, 'ssh_session', return_value=ssh), \
+                patch.object(device_ui, 'busy', side_effect=lambda parent, message, fn, *args: fn(*args)), \
+                patch.object(QtWidgets.QInputDialog, 'getText') as picker, \
+                patch('device_ros2.read_active', return_value=(active, text)), \
+                patch('device_ros2.query_runtime', side_effect=[device_yaml.ros2_values(RAW), values]):
+            page.read_cal_btn.click()
+            self.assertEqual(page.params['camera_matrix'][0][0], RAW['camera_matrix'][0][0])
+            self.assertIn('Pending restart', page.calibration_status)
+            self.assertIsNone(page.calibration_file_text)
+            self.assertIn(active, page.params_source)
+            page.read_from_file()
+            self.assertEqual(page.calibration_status, '')
+            self.assertEqual(page.calibration_file_text, text)
+            self.assertIn(active, page.params_source)
+            self.assertNotIn(stale, page.params_source)
+            matrices = page.cal_box.itemAt(1).widget().findChildren(QtWidgets.QPlainTextEdit)
+            self.assertIn('235.5668', matrices[0].toPlainText())
+            self.assertIn('229.5212', matrices[0].toPlainText())
+            self.assertIn('0.0385', matrices[1].toPlainText())
+            picker.assert_not_called()
+            ssh.find_yaml.assert_not_called()
+        invalid = yaml.safe_dump({'pointcloud_colorizer': {'ros__parameters': dict(raw, dist_coeffs=[])}})
+        with patch.object(device_ui, 'ssh_session', return_value=ssh), \
+                patch.object(device_ui, 'busy', side_effect=lambda parent, message, fn, *args: fn(*args)), \
+                patch('device_ros2.read_active', return_value=(active, invalid)), \
+                patch('device_ros2.query_runtime', return_value=values), patch.object(device_ui, 'warn') as warning:
+            page.read_cal_btn.click()
+            self.assertIsNone(page.params)
+            self.assertIn(active, page.calibration_status)
+            self.assertIn('dist_coeffs', page.calibration_status)
+            self.assertIn(active, warning.call_args.args[2])
+            self.assertIn('dist_coeffs', page.cal_box.itemAt(0).widget().text())
 
     def test_view_contains_exact_matrices_and_source(self):
         view = device_ui.device_calibration_view(dm.file_params(RAW), 'rock@sensor — /config/pipeline.yaml')

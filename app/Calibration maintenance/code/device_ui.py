@@ -174,8 +174,14 @@ def ssh_session(parent, device):
     return s
 
 
-def read_device_yaml(parent, s, device, choose_path=False):
-    """(path, text) of the device's pipeline.yaml."""
+def read_device_yaml(parent, s, device, choose_path=False, prefer_active=False):
+    """Return the deployed ROS 2 file for live reads, or use the legacy path flow."""
+    if prefer_active:
+        from device_ros2 import read_active
+
+        active = busy(parent, "Reading the active ROS 2 calibration …", read_active, s)
+        if active is not None:
+            return active
     try:
         path = busy(parent, "Looking for pipeline.yaml …", s.find_yaml, device.get("yaml_path"))
     except RuntimeError:
@@ -191,6 +197,21 @@ def read_device_yaml(parent, s, device, choose_path=False):
         if not path.startswith("/"):
             raise ValueError("Enter an absolute path on the selected device, starting with /.")
     text = busy(parent, f"Reading {path} …", s.read, path)
+    if choose_path:
+        import device_yaml as dy
+
+        try:
+            is_ros2 = dy.is_ros2(text)
+        except ValueError as error:
+            raise ValueError(f"{path}\n{error}") from error
+        if is_ros2:
+            if not prefer_active:
+                from device_ros2 import read_active
+
+                active = busy(parent, "Reading the active ROS 2 calibration …", read_active, s)
+                if active is not None:
+                    return active
+            raise ValueError("Could not identify the running ROS 2 pipeline's calibration file.")
     devreg.save_settings(device["key"], yaml_path=path)
     device["yaml_path"] = path
     return path, text
@@ -252,7 +273,9 @@ def device_calibration_view(params, source):
         matrices.setColumnStretch(column, 1)
     lay.addLayout(matrices)
     lay.addWidget(label("Device projector: OpenCV pinhole (pointcloud_colorizer). This identifies the software model, not the physical lens type.", "small", wrap=True))
-    lay.addWidget(label(f"Source: {source} · OpenCV pinhole model · values read from the calibration file", "small", wrap=True))
+    lay.addWidget(label(f"Source: {source} · OpenCV pinhole model", "small", wrap=True))
+    for note in params.get("notes", ()):
+        lay.addWidget(label(note, "small", wrap=True))
     cols = QtWidgets.QHBoxLayout()
     cols.setSpacing(16)
     left = QtWidgets.QVBoxLayout()
@@ -302,6 +325,7 @@ class DevicePage(QtWidgets.QWidget):
         self.capture_goal = None
         self.delete_after_stop = set()
         self.calibration_file_text = None
+        self.calibration_status = ""
         lay = QtWidgets.QHBoxLayout(self)
         lay.setContentsMargins(24, 20, 24, 16)
         lay.setSpacing(16)
@@ -545,6 +569,7 @@ class DevicePage(QtWidgets.QWidget):
         self.params = self.params_raw = None
         self.params_source = ""
         self.calibration_file_text = None
+        self.calibration_status = ""
         self.refresh_list()
         self.show_connected()
         self.read_from_file()
@@ -567,10 +592,16 @@ class DevicePage(QtWidgets.QWidget):
         try:
             image = (self.snap or {}).get("image")
             size = tuple(image.shape[1::-1]) if image is not None else None
-            self.params = dm.file_params(raw, image_size=size) if raw else None
+            self.params = dm.file_params(raw, image_size=size) if raw is not None else None
         except (ValueError, KeyError, TypeError) as e:
             self.params = None
-            warn(self, "Calibration not readable", str(e))
+            self.show_calibration_error(e, source)
+
+    def show_calibration_error(self, error, source=None):
+        message = f"{source}\n{error}" if source else str(error)
+        self.calibration_status = message
+        self.render_params()
+        warn(self, "Calibration not readable", message)
 
     # ---- connected view
     def show_connected(self):
@@ -882,13 +913,15 @@ class DevicePage(QtWidgets.QWidget):
         clear(self.cal_box)
         if self.params is None:
             method = "Read the configured file from WSL." if device_file.uses_wsl(self.current or {}) else "Connect over SSH and select the calibration file on this device."
-            self.cal_box.addWidget(note_label("Device calibration file has not been read. " + method +
-                                              " Calibration values stay empty until the file is read.", WARN, WARN_SOFT))
+            message = self.calibration_status or ("Device calibration file has not been read. " + method)
+            self.cal_box.addWidget(note_label(message, WARN, WARN_SOFT))
         else:
             self.manual_edit_button = button("Edit manually...", "link", self.edit_manually)
             self.manual_edit_button.setEnabled(not self.capture_running)
             self.cal_box.addWidget(hbox(self.manual_edit_button, stretch_at=1))
             self.cal_box.addWidget(device_calibration_view(self.params, self.params_source))
+            if self.calibration_status:
+                self.cal_box.addWidget(note_label(self.calibration_status, WARN, WARN_SOFT))
         if getattr(self, "go", None) is not None:
             self.update_go()
 
@@ -898,22 +931,24 @@ class DevicePage(QtWidgets.QWidget):
         from manual_device_calibration import ManualDeviceCalibrationDialog
         ManualDeviceCalibrationDialog(self, allow_write=True).exec_()
 
-    def read_from_file(self):
+    def read_from_file(self, *, session=None):
         if self.capture_running or self.pending_capture is not None:
             return
         import device_yaml as dy
         self.params = self.params_raw = None
         self.params_source = ""
         self.calibration_file_text = None
+        self.calibration_status = ""
         self.render_params()
         self.render_snapshot()
         if device_file.uses_wsl(self.current):
+            source = self.current.get("yaml_path")
             try:
                 path, text, source = busy(self, "Reading the device calibration file from WSL…",
                                           device_file.read_wsl, self.current)
                 raw = dy.read_params(text)
             except (RuntimeError, ValueError, KeyError) as error:
-                warn(self, "Could not read the calibration file", str(error))
+                self.show_calibration_error(error, source)
                 return
             self.set_params(raw, f"{source}, read {datetime.now():%Y-%m-%d %H:%M:%S}")
             if self.params is not None:
@@ -921,20 +956,41 @@ class DevicePage(QtWidgets.QWidget):
             self.render_params()
             self.render_snapshot()
             return
-        s = ssh_session(self, self.current)
+        s = session if session is not None else ssh_session(self, self.current)
         if s is None:
             return
+        path = None
         try:
-            path, text = read_device_yaml(self, s, self.current, choose_path=True)
+            path, text = read_device_yaml(self, s, self.current, choose_path=True,
+                                          prefer_active=getattr(self.link, "kind", None) == "bridge")
             raw = dy.read_params(text)
+            is_ros2 = dy.is_ros2(text)
         except InterruptedError:
             return
         except (RuntimeError, ValueError, KeyError) as e:
-            warn(self, "Could not read the calibration", str(e))
+            self.show_calibration_error(e, path)
             return
         finally:
-            s.close()
-        self.set_params(raw, f"{s.user}@{s.host}:{s.port} — {path} (SSH), read {datetime.now():%Y-%m-%d %H:%M:%S}")
+            if session is None:
+                s.close()
+        source = f"{s.user}@{s.host}:{s.port} — {path} (SSH)"
+        if is_ros2:
+            from device_ros2 import query_runtime
+
+            source += " · Active ROS 2 YAML"
+            try:
+                running = busy(self, "Checking the running ROS 2 colourizer …", query_runtime, self.link)
+                active = dm.device_params(running)
+                installed = dm.device_params(dm.file_arrays(raw))
+                if any(active[key] != installed[key] for key in dy.KEYS):
+                    raw = dict(raw, **running)
+                    text = None
+                    source = f"Running pointcloud_colorizer (ROSBridge) · Active YAML read at {path}"
+                    self.calibration_status = ("Pending restart · The installed calibration differs from the running "
+                                               "colourizer. The values shown are the running calibration.")
+            except (RuntimeError, ValueError) as error:
+                self.calibration_status = f"Showing the installed calibration. Running values could not be verified. {error}"
+        self.set_params(raw, f"{source}, read {datetime.now():%Y-%m-%d %H:%M:%S}")
         if self.params is not None:
             self.calibration_file_text = text
         self.render_params()
@@ -1277,9 +1333,13 @@ class WriteDialog(QtWidgets.QDialog):
             if self.ssh is None:
                 return
         try:
-            self.path, self.old_text = read_device_yaml(self, self.ssh, self.device)
             self.ros2_plan = None
             self.p2_warn.hide()
+            bridge = self.device.get('bridge_url')
+            via_bridge = (self.dev.get('transport') or '').startswith('ROSBridge')
+            if bridge and (via_bridge or not self.device.get('master_uri')) and self.prepare_ros2(optional=True):
+                return
+            self.path, self.old_text = read_device_yaml(self, self.ssh, self.device)
             if dy.is_ros2(self.old_text):
                 self.prepare_ros2()
                 return
@@ -1304,12 +1364,18 @@ class WriteDialog(QtWidgets.QDialog):
         self.diff.setPlainText(dy.diff(self.old_text, self.new_text, Path(self.path).name))
         self.show_page(1)
 
-    def prepare_ros2(self):
+    def prepare_ros2(self, optional=False):
         import device_ros2 as ros2
         import device_yaml as dy
 
         mode = self.info['summary']['mode']
-        plan = busy(self, 'Finding the running ROS 2 calibration and its source …', ros2.prepare, self.ssh, self.new, mode)
+        plan = busy(self, 'Finding the running ROS 2 calibration and its source …',
+                    lambda: ros2.prepare(self.ssh, self.new, mode, optional=optional,
+                                         bridge_url=self.device.get('bridge_url')))
+        if plan is None:
+            return False
+        if not self.device.get('bridge_url'):
+            raise ValueError('Configure this device’s ROSBridge URL so the app can verify the running ROS 2 calibration.')
         active = plan['files'][-1]
         previous = dm.file_params(dy.read_params(active['before']),
                                   image_size=(self.prev['image_width'], self.prev['image_height']))
@@ -1324,6 +1390,7 @@ class WriteDialog(QtWidgets.QDialog):
             self.p2_warn.show()
         self.diff.setPlainText(ros2.plan_diff(plan))
         self.show_page(1)
+        return True
 
     def write(self):
         if self.ros2_plan is not None:
@@ -1419,16 +1486,19 @@ class WriteDialog(QtWidgets.QDialog):
                  "Reopen the review before retrying. Any verified device backups can be restored from this result.")
             return
         steps = [f"✓ {entry['path']} written and read back. Backup: {entry['backup']}" for entry in record['files']]
+        self.written_record = record
+        self.log.setText('<b>Pending restart</b><br>' + '<br>'.join(map(escape, steps)))
+        self.show_page(2)
         if self.restart.isChecked():
             steps.extend(offer_ros2_restart(self, self.device, self.ssh, plan, out, record))
         else:
-            steps.append('Pipeline still running with its loaded calibration. The files take effect after restart.')
-        self.written_record = record
+            steps.append('Pending restart · The files take effect after restart.')
         try:
             devreg.save_settings(self.device['key'], yaml_path=record['path'])
             core.mark_history(self.info['name'], f"written to {name} {record['date']}")
         except (OSError, ValueError) as error:
             steps.append(f'Local settings or history could not be saved: {error}')
+        refresh_connected_ros2(self, self.device, self.ssh)
         self.ssh.close()
         self.ssh = None
         self.log.setText('<br>'.join(map(escape, steps)) +
@@ -1466,10 +1536,10 @@ def offer_ros2_restart(parent, device, ssh, plan, out, record):
     import device_ros2 as ros2
 
     if not ask(parent, 'Restart the ROS 2 sensor pipeline?',
-               f"Restart {ros2.remote.UNIT} on {device['name']} now? "
+               f"Restart {plan['deployment']['unit']} on {device['name']} now? "
                "Camera and LiDAR streams will pause. The app will check the running colorizer after it returns.",
                yes='Restart now', no='Not now'):
-        return ['Pipeline restart deferred. The files take effect after the next restart.']
+        return ['Pending restart · The files take effect after the next restart.']
     restarted, verified, error = False, None, ''
     try:
         restarted, verified, error = busy(parent, 'Restarting the pipeline and checking the running ROS 2 colorizer …',
@@ -1484,6 +1554,20 @@ def offer_ros2_restart(parent, device, ssh, plan, out, record):
     except (OSError, ValueError) as failure:
         steps.append(f'Could not save restart status in this result: {failure}')
     return steps
+
+
+def refresh_connected_ros2(parent, device, ssh):
+    if parent is None:
+        return
+    root = parent
+    while root.parentWidget() is not None:
+        root = root.parentWidget()
+    pages = [root] if isinstance(root, DevicePage) else root.findChildren(DevicePage)
+    for page in pages:
+        if page.link is None or not page.current:
+            continue
+        if all(page.current.get(key) == device.get(key) for key in ('key', 'ssh_host', 'ssh_port')):
+            page.read_from_file(session=ssh)
 
 
 class RestoreDialog:
@@ -1580,7 +1664,7 @@ class RestoreDialog:
         out = info['out']
         try:
             plan = busy(parent, 'Checking ROS 2 deployment and backups …',
-                        lambda: ros2.prepare(ssh, restore=backup))
+                        lambda: ros2.prepare(ssh, restore=backup, bridge_url=device.get('bridge_url')))
             dialog = QtWidgets.QDialog(parent)
             dialog.setWindowTitle(f"Restore ROS 2 calibration on {device['name']}")
             dialog.resize(900, 600)
@@ -1603,6 +1687,7 @@ class RestoreDialog:
                           ssh, plan, out, device, previous, 'restore', backup['backup'])
             steps = ['✓ Calibration restored and verified in the source and installed YAML files.']
             steps.extend(offer_ros2_restart(parent, device, ssh, plan, out, record))
+            refresh_connected_ros2(parent, device, ssh)
         except (RuntimeError, OSError, ValueError, KeyError) as error:
             warn(parent, 'ROS 2 restore failed', str(error))
             return
@@ -1613,4 +1698,4 @@ class RestoreDialog:
         except (OSError, ValueError) as error:
             steps.append(f'Could not save history: {error}')
         QtWidgets.QMessageBox.information(parent, 'ROS 2 restore', '\n'.join(steps))
-        return dict(params=record['new'], text=plan['files'][-1]['after'], path=record['path'])
+        return dict(params=record['new'], text=plan['files'][-1]['after'], path=record['path'], ros_version=2)

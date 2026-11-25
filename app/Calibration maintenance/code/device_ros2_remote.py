@@ -7,13 +7,14 @@ import stat
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 UNIT = 'sensor-computer-jazzy.service'
 CONTAINER = 'sensor-computer-jazzy'
 HOST_CONFIG = Path('/etc/sensor-computer/host.env')
-INSTALLED = '/workspace/ros2/install/node_pc/share/node_pc/config/pipeline.yaml'
-EXECUTABLE = '/workspace/ros2/install/node_pc/lib/node_pc/pointcloud_colorize_node'
+INSTALL_ROOT = PurePosixPath('/workspace/ros2/install')
+YAML_SUFFIX = ('share', 'node_pc', 'config', 'pipeline.yaml')
+COLORIZER_SUFFIX = ('lib', 'node_pc', 'pointcloud_colorize_node')
 
 
 def command(*args):
@@ -29,7 +30,34 @@ def service_info():
         'systemctl', 'show', UNIT, *(f'--property={p}' for p in properties)).splitlines())
 
 
-def discover(allow_inactive=False):
+def managed_unit_present():
+    init = Path('/proc/1/comm')
+    if init.is_file() and init.read_text().strip() != 'systemd':
+        return False
+    probe = subprocess.run(('systemctl', 'show', UNIT, '--property=LoadState', '--value'),
+                           capture_output=True, text=True, timeout=12)
+    if probe.stdout.strip() == 'not-found':
+        return False
+    if probe.returncode or probe.stdout.strip() != 'loaded':
+        raise RuntimeError(probe.stderr.strip() or f'Could not inspect {UNIT}.')
+    return True
+
+
+def package_path(path, suffix):
+    path = PurePosixPath(path)
+    return path.is_relative_to(INSTALL_ROOT) and '..' not in path.parts and path.parts[-len(suffix):] == suffix
+
+
+def installed_file(root, runtime_path):
+    if not package_path(runtime_path, YAML_SUFFIX):
+        raise RuntimeError('The running colorizer does not load an installed node_pc pipeline.yaml.')
+    path = (root / PurePosixPath(runtime_path).relative_to('/workspace').as_posix()).resolve(strict=True)
+    if not path.is_relative_to(root / 'ros2') or not path.is_file():
+        raise RuntimeError('The installed calibration must resolve inside the active ROS 2 workspace.')
+    return str(path)
+
+
+def discover(allow_inactive=False, require_source=True):
     unit = service_info()
     if ('/usr/local/lib/sensor-computer/run-container.sh' not in unit.get('ExecStart', '')
             or not unit.get('FragmentPath')):
@@ -41,43 +69,60 @@ def discover(allow_inactive=False):
         raise RuntimeError('Could not resolve the configured ROS 2 workspace.')
     root = Path(values[0]).resolve(strict=True)
     workspace = root / 'ros2'
-    cmake = (workspace / 'src/node_pc/CMakeLists.txt').read_text()
-    if not re.search(r'install\(\s*DIRECTORY\s+config\s+launch\s+DESTINATION\s+share/\$\{PROJECT_NAME\}\s*\)', cmake):
-        raise RuntimeError('The source package does not declare the expected installation of config/pipeline.yaml.')
-    source = (workspace / 'src/node_pc/config/pipeline.yaml').resolve(strict=True)
-    installed = (root / INSTALLED.removeprefix('/workspace/')).resolve(strict=True)
-    if any(not file.is_relative_to(workspace) or not file.is_file() for file in (source, installed)):
-        raise RuntimeError('The calibration files must resolve inside the active ROS 2 workspace.')
-    deployment = dict(source=str(source), installed=str(installed), workspace=str(workspace),
+    deployment = dict(unit=UNIT, workspace=str(workspace),
                       invocation=unit.get('InvocationID', ''), container=None, overrides=[])
+    if require_source:
+        cmake = (workspace / 'src/node_pc/CMakeLists.txt').read_text()
+        if not re.search(r'install\(\s*DIRECTORY\s+config\s+launch\s+DESTINATION\s+share/\$\{PROJECT_NAME\}\s*\)', cmake):
+            raise RuntimeError('The source package does not declare the expected installation of config/pipeline.yaml.')
+        source = (workspace / 'src/node_pc/config/pipeline.yaml').resolve(strict=True)
+        if not source.is_relative_to(workspace) or not source.is_file():
+            raise RuntimeError('The source calibration must resolve inside the active ROS 2 workspace.')
+        deployment['source'] = str(source)
     if unit.get('ActiveState') != 'active':
         if allow_inactive and not command('docker', 'ps', '--filter', f'name=^/{CONTAINER}$', '-q').strip():
-            return deployment
+            locations = [INSTALL_ROOT.joinpath(*prefix, *YAML_SUFFIX) for prefix in ((), ('node_pc',))]
+            available = [path for path in locations if (root / path.relative_to('/workspace').as_posix()).is_file()]
+            if len(available) != 1:
+                raise RuntimeError('Could not identify a single installed pipeline.yaml for recovery.')
+            return dict(deployment, installed=installed_file(root, available[0]))
         raise RuntimeError(f'The managed ROS 2 service {UNIT} is not active or is starting.')
     container, = json.loads(command('docker', 'inspect', '--type=container', CONTAINER))
     if not container['State']['Running'] or not deployment['invocation']:
         raise RuntimeError('The ROS 2 sensor container is not running under the managed service.')
-    mounts = [m for m in container['Mounts'] if INSTALLED.startswith(m['Destination'].rstrip('/') + '/')]
-    if (len(mounts) != 1 or mounts[0]['Type'] != 'bind' or mounts[0]['Destination'] != '/workspace'
-            or Path(mounts[0]['Source']).resolve(strict=True) != root):
-        raise RuntimeError('The installed YAML is not mounted from the configured ROS 2 workspace.')
-
     processes = []
     for line in command('docker', 'top', container['Id'], '-eo', 'pid,args').splitlines()[1:]:
         columns = line.split(None, 1)
-        if len(columns) == 2 and columns[1].split(None, 1)[0] == EXECUTABLE:
+        if len(columns) == 2 and package_path(columns[1].split(None, 1)[0], COLORIZER_SUFFIX):
             processes.append(columns[0])
     if len(processes) != 1 or not processes[0].isdigit():
         raise RuntimeError('Could not identify exactly one running pointcloud_colorizer process.')
-    args = Path(f'/proc/{processes[0]}/cmdline').read_bytes().decode().rstrip('\0').split('\0')[1:]
-    if args[:5] != ['--ros-args', '-r', '__node:=pointcloud_colorizer', '--params-file', INSTALLED]:
-        raise RuntimeError('The running colorizer does not load the expected installed pipeline.yaml.')
+    executable, *args = Path(f'/proc/{processes[0]}/cmdline').read_bytes().decode().rstrip('\0').split('\0')
+    if (not package_path(executable, COLORIZER_SUFFIX) or len(args) < 5
+            or args[:4] != ['--ros-args', '-r', '__node:=pointcloud_colorizer', '--params-file']):
+        raise RuntimeError('The running colorizer does not point to an installed pipeline.yaml.')
+    runtime_path = args[4]
+    for container_path in (runtime_path, executable):
+        mounts = [m for m in container['Mounts'] if container_path.startswith(m['Destination'].rstrip('/') + '/')]
+        if (len(mounts) != 1 or mounts[0]['Type'] != 'bind' or mounts[0]['Destination'] != '/workspace'
+                or Path(mounts[0]['Source']).resolve(strict=True) != root):
+            raise RuntimeError('The installed colorizer and YAML must be mounted from the configured ROS 2 workspace.')
     extra = args[5:]
     if len(extra) % 2 or any(flag != '--params-file' or not re.fullmatch(r'/tmp/launch_params_\w+', path)
                              for flag, path in zip(extra[::2], extra[1::2])):
         raise RuntimeError('The running colorizer has unsupported parameter arguments.')
     overrides = [command('docker', 'exec', container['Id'], 'cat', '--', path) for path in extra[1::2]]
-    return dict(deployment, container=container['Id'], overrides=overrides)
+    return dict(deployment, installed=installed_file(root, runtime_path),
+                container=container['Id'], overrides=overrides)
+
+
+def active_calibration():
+    """Read the installed file of the running deployment. Legacy hosts have no managed unit."""
+    if not managed_unit_present():
+        return None
+    deployment = discover(require_source=False)
+    path = deployment['installed']
+    return dict(path=path, text=Path(path).read_bytes().decode('utf-8'), overrides=deployment['overrides'])
 
 
 def stage(path, data, metadata):
@@ -185,6 +230,10 @@ if __name__ == '__main__':
         operation = sys.argv[1]
         if operation in ('discover', 'recover'):
             result = discover(allow_inactive=operation == 'recover')
+        elif operation == 'discover-managed':
+            result = discover() if managed_unit_present() else None
+        elif operation == 'active-calibration':
+            result = active_calibration()
         elif operation == 'apply':
             result = apply(json.load(sys.stdin))
         else:

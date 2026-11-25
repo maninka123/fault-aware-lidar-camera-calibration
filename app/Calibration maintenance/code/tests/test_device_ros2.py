@@ -52,7 +52,8 @@ class DeploymentTests(unittest.TestCase):
         for path in (self.source, self.installed):
             path.write_bytes(ROS2.encode())
         self.deployment = dict(source=str(self.source), installed=str(self.installed), workspace=str(self.folder),
-                               invocation='old', container='old-container', overrides=['/**: {ros__parameters: {}}'])
+                               unit=host.UNIT, invocation='old', container='old-container',
+                               overrides=['/**: {ros__parameters: {}}'])
         self.ssh = Mock(password='example')
         self.ssh.read.side_effect = lambda path: Path(path).read_bytes().decode()
         self.device = dict(key='example', name='Device 8', bridge_url='ws://example')
@@ -66,7 +67,7 @@ class DeploymentTests(unittest.TestCase):
         self.addCleanup(self.calls.stop)
 
     def local_deployment(self, _ssh, operation, payload=None):
-        if operation in ('discover', 'recover'):
+        if operation in ('discover', 'discover-managed', 'recover'):
             return self.deployment
         return host.commit(payload['files'], payload['stamp'])
 
@@ -99,6 +100,32 @@ class DeploymentTests(unittest.TestCase):
         self.deployment['overrides'] = ['/**: {ros__parameters: {camera_matrix: [9.0]}}']
         with self.assertRaisesRegex(ValueError, 'launch override'):
             ros2.prepare(self.ssh, self.new, 'full')
+
+    def test_short_distortion_is_readable_without_relaxing_exact_write_verification(self):
+        values = dict(self.new, dist_coeffs=self.new['dist_coeffs'][:4])
+        response = {'values': [{'type': 8, 'double_array_value': values[key]} for key in dy.KEYS]}
+        self.assertEqual(ros2.runtime_values(response, strict=False), values)
+        with self.assertRaisesRegex(ValueError, 'dist_coeffs'):
+            ros2.runtime_values(response)
+        response['values'][1] = {'type': 0}
+        with self.assertRaisesRegex(ValueError, 'dist_coeffs'):
+            ros2.runtime_values(response, strict=False)
+
+    def test_writer_checks_deployed_candidate_and_running_projection(self):
+        with self.assertRaisesRegex(ValueError, 'Unsupported camera_model'):
+            ros2.prepare(self.ssh, dict(self.new, camera_model='opencv_fisheye'), 'full')
+        self.source.write_bytes((ROS2 + '    distortion_model: equidistant\n').encode())
+        with self.assertRaisesRegex(ValueError, 'Unsupported distortion_model'):
+            ros2.prepare(self.ssh, self.new, 'full')
+        self.source.write_bytes(ROS2.encode())
+        arrays = {'values': [{'type': 8, 'double_array_value': self.new[k]} for k in dy.KEYS]}
+        fisheye = {'values': [{'type': 4, 'string_value': 'equidistant'}]}
+        with patch('ros_link.BridgeLink') as factory:
+            factory.return_value._service.side_effect = [arrays, {'values': []}, fisheye]
+            with self.assertRaisesRegex(ValueError, 'Unsupported distortion_model'):
+                ros2.prepare(self.ssh, self.new, 'full', bridge_url=self.device['bridge_url'])
+            self.assertEqual(factory.return_value._service.call_count, 3)
+        self.ssh.run.assert_not_called()
 
     def test_write_and_restore_use_both_backups_and_preserve_newer_unrelated_settings(self):
         plan = ros2.prepare(self.ssh, self.new, 'full')
@@ -155,6 +182,27 @@ class DeploymentTests(unittest.TestCase):
         self.assertEqual(backup.read_bytes(), b'existing backup')
         self.assertEqual([path.read_bytes() for path in (self.source, self.installed)], [ROS2.encode()] * 2)
 
+    def test_readback_failure_rolls_back_both_files(self):
+        plan = ros2.prepare(self.ssh, self.new, 'full')
+        real_read = Path.read_bytes
+        wanted = plan['files'][-1]['after'].encode()
+        failed = False
+
+        def fail_readback(path):
+            nonlocal failed
+            data = real_read(path)
+            if path == self.installed and data == wanted and not failed:
+                failed = True
+                return b'injected read-back error'
+            return data
+
+        with patch.object(Path, 'read_bytes', fail_readback):
+            with self.assertRaisesRegex(RuntimeError, 'did not match the reviewed update'):
+                ros2.apply(self.ssh, plan)
+        self.assertTrue(failed)
+        self.assertEqual([path.read_bytes() for path in (self.source, self.installed)], [ROS2.encode()] * 2)
+        self.assertEqual(len(list(self.folder.glob('*.calib_backup_*'))), 2)
+
     def test_restart_refusal_preserves_files_and_never_queries_runtime(self):
         plan = ros2.prepare(self.ssh, self.new, 'full')
         ros2.apply(self.ssh, plan)
@@ -208,7 +256,9 @@ class DeploymentTests(unittest.TestCase):
                     summary=dict(mode='full', verdict='UPDATE RECOMMENDED'), device_params_override=self.new)
         with patch.object(ui.devreg, 'load', return_value=[]), patch.object(ui.devreg, 'save_settings'), \
                 patch.object(ui, 'ssh_session', return_value=self.ssh), \
-                patch.object(ui, 'read_device_yaml', return_value=('/other-checkout/pipeline.yaml', ROS2)), \
+                patch.object(ui, 'read_device_yaml', return_value=('/other-checkout/pipeline.yaml', ROS2)) as legacy, \
+                patch.object(ros2, 'check_running_projection') as projection, \
+                patch.object(ui, 'refresh_connected_ros2') as refresh, \
                 patch.object(ui, 'busy', side_effect=lambda _parent, _text, fn, *args: fn(*args)), \
                 patch.object(ui, 'warn') as warn, patch.object(ui.core, 'mark_history'), \
                 patch.object(QtWidgets.QDialog, 'exec_', return_value=QtWidgets.QDialog.Accepted):
@@ -218,6 +268,8 @@ class DeploymentTests(unittest.TestCase):
             self.assertEqual(dialog.pages.currentIndex(), 1)
             self.assertIn(str(self.installed), dialog.diff.toPlainText())
             self.assertNotIn('/other-checkout', dialog.diff.toPlainText())
+            legacy.assert_not_called()
+            projection.assert_called_once_with(self.device['bridge_url'])
             with patch.object(ui, 'ask', return_value=False):
                 dialog.write()
                 self.assertFalse((self.folder / 'device_writes.json').exists())
@@ -226,11 +278,41 @@ class DeploymentTests(unittest.TestCase):
             self.assertEqual(ask.call_count, 2)
             self.assertTrue(dialog.written_record['file_verified'])
             self.assertFalse(dialog.written_record['restarted'])
+            self.assertIn('Pending restart', dialog.log.text())
+            refresh.assert_called_once_with(dialog, self.device, self.ssh)
             self.ssh.run.assert_not_called()
             warn.assert_not_called()
 
 
 class RecoveryDiscoveryTests(unittest.TestCase):
+    def test_read_uses_runtime_params_file_even_when_source_is_missing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            config = root / 'host.env'
+            config.write_text(f'WORKSPACE="{root.as_posix()}"\n')
+            install = root / 'ros2/install'
+            merged = install / 'share/node_pc/config/pipeline.yaml'
+            old = install / 'node_pc/share/node_pc/config/pipeline.yaml'
+            for path in (merged, old):
+                path.parent.mkdir(parents=True)
+            old.write_bytes(b'other installed file')
+            merged.write_bytes(ROS2.encode())
+            runtime_path = '/workspace/ros2/install/share/node_pc/config/pipeline.yaml'
+            executable = '/workspace/ros2/install/lib/node_pc/pointcloud_colorize_node'
+            cmdline = '\0'.join((executable, '--ros-args', '-r', '__node:=pointcloud_colorizer',
+                                 '--params-file', runtime_path, '')).encode()
+            service = dict(ActiveState='active', InvocationID='invocation', FragmentPath='/etc/test',
+                           ExecStart='/usr/local/lib/sensor-computer/run-container.sh')
+            container = dict(Id='container', State={'Running': True},
+                             Mounts=[{'Destination': '/workspace', 'Type': 'bind', 'Source': str(root)}])
+            real_read = Path.read_bytes
+            with patch.object(host, 'HOST_CONFIG', config), patch.object(host, 'service_info', return_value=service), \
+                    patch.object(host, 'managed_unit_present', return_value=True), \
+                    patch.object(host, 'command', side_effect=[json.dumps([container]), f'PID COMMAND\n42 {executable}']), \
+                    patch.object(Path, 'read_bytes', lambda path: cmdline if path.name == 'cmdline' else real_read(path)):
+                result = host.active_calibration()
+                self.assertEqual(result, dict(path=str(merged), text=ROS2, overrides=[]))
+
     def test_offline_restore_requires_configured_workspace_and_no_starting_container(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve()

@@ -353,8 +353,10 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
 
     def info(self):
         writes = json.loads((self.folder / 'device_writes.json').read_text(encoding='utf-8')) if (self.folder / 'device_writes.json').exists() else []
+        link = getattr(self.page, 'link', None)
         return dict(name='manual_' + datetime.now().strftime('%Y%m%d_%H%M%S'), out=self.folder,
-                    device=dict(device=dict(self.page.current), params=self.previous, theta_max_deg=55),
+                    device=dict(device=dict(self.page.current), params=self.previous, theta_max_deg=55,
+                                transport=link.describe() if link else ''),
                     summary=dict(mode=self.mode.currentData(), verdict='INCONCLUSIVE'),
                     device_writes=writes, tool='Manual device calibration', manual=True,
                     device_params_override=self.candidate, import_note=self.note.text(),
@@ -372,10 +374,13 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
         dialog = ui.WriteDialog(self, self.info())
         dialog.exec_()
         if getattr(dialog, 'written_record', None):
-            self.previous = copy.deepcopy(dialog.written_record['new'])
-            self.page.set_params(self.previous, f"{self.page.current['ssh_host']}:{dialog.path}, written {datetime.now():%Y-%m-%d %H:%M:%S}")
-            self.page.calibration_file_text = dialog.new_text
-            self.page.render_params()
+            if dialog.written_record.get('ros_version') == 2:
+                self.previous = copy.deepcopy(self.page.params or dialog.written_record['previous'])
+            else:
+                self.previous = copy.deepcopy(dialog.written_record['new'])
+                self.page.set_params(self.previous, f"{self.page.current['ssh_host']}:{dialog.path}, written {datetime.now():%Y-%m-%d %H:%M:%S}")
+                self.page.calibration_file_text = dialog.new_text
+                self.page.render_params()
             self.reset_edits()
         self.refresh_restore()
 
@@ -388,10 +393,11 @@ class ManualDeviceCalibrationDialog(QtWidgets.QDialog):
             return
         restored = ui.RestoreDialog.run(self, self.info())
         if restored:
-            raw = restored['params']
-            self.page.set_params(raw, f"Restored device file {restored['path']} at {datetime.now():%Y-%m-%d %H:%M:%S}")
-            self.page.calibration_file_text = restored['text']
-            self.page.render_params()
-            self.previous = copy.deepcopy(self.page.params)
+            if restored.get('ros_version') != 2:
+                self.page.set_params(restored['params'], f"Restored device file {restored['path']} at {datetime.now():%Y-%m-%d %H:%M:%S}")
+                self.page.calibration_file_text = restored['text']
+                self.page.render_params()
+            if self.page.params is not None:
+                self.previous = copy.deepcopy(self.page.params)
             self.reset_edits()
         self.refresh_restore()

@@ -34,28 +34,69 @@ def _flat(v, n=None):
 
 
 # ------------------------------------------------------------------ device parameters
-def file_params(raw, image_size=None):
-    """Read explicit file values, without emulating the colorizer's built-in defaults."""
+PINHOLE_MODELS = ('pinhole', 'opencv_pinhole', 'plumb_bob', 'brown_conrady')
+DISTORTION_TERMS = ('k1', 'k2', 'p1', 'p2', 'k3')
+
+
+def file_arrays(raw):
+    """Validate the explicit calibration sequences and return their flat values."""
     if not isinstance(raw, dict):
         raise ValueError("The calibration file needs a pointcloud_colorizer mapping.")
-    declared = raw.get('camera_model') or raw.get('distortion_model')
-    if declared and declared not in ('pinhole', 'opencv_pinhole', 'plumb_bob', 'brown_conrady'):
-        raise ValueError(f'The file declares camera model {declared}. This colorizer integration supports OpenCV pinhole; a matching projector integration is needed before writing another model.')
-    for key, size in (("camera_matrix", 9), ("dist_coeffs", 5), ("extrinsic_matrix", 16)):
+    arrays = {}
+    for key, matrix_size in (("camera_matrix", 3), ("dist_coeffs", None), ("extrinsic_matrix", 4)):
         if key not in raw:
             raise ValueError(f"The device calibration file is missing {key}.")
-        values = np.asarray(raw[key], dtype=float)
-        if values.size != size or not np.isfinite(values).all():
-            raise ValueError(f"{key} needs {size} finite numbers in the device calibration file.")
-    data = dict(raw)
+        expected = (f"a flat list of {matrix_size ** 2} numbers or a {matrix_size} × {matrix_size} matrix"
+                    if matrix_size else "one to five distortion coefficients")
+        try:
+            values = np.asarray(raw[key], dtype=object)
+            vector = values.ndim == 1 or (values.ndim == 2 and 1 in values.shape)
+            square = matrix_size is not None and values.shape == (matrix_size, matrix_size)
+            if not (vector or square):
+                raise ValueError
+            flat = values.ravel()
+            length_ok = len(flat) == matrix_size ** 2 if matrix_size else 1 <= len(flat) <= len(DISTORTION_TERMS)
+            if not length_ok or any(isinstance(v, (bool, np.bool_)) for v in flat):
+                raise ValueError
+            numbers = flat.astype(float)
+            if not np.isfinite(numbers).all():
+                raise ValueError
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError(f"{key} needs {expected} with finite numeric values.") from None
+        arrays[key] = numbers.tolist()
+    return arrays
+
+
+def file_params(raw, image_size=None):
+    """Read explicit file values and apply the colourizer's zero defaults for trailing distortion terms."""
+    arrays = file_arrays(raw)
+    for key in ('camera_model', 'distortion_model'):
+        declared = raw.get(key)
+        if declared and declared not in PINHOLE_MODELS:
+            raise ValueError(f"The file declares {key} = {declared}. This integration supports OpenCV pinhole. "
+                             "Use a matching projector for this calibration model.")
+    data = dict(raw, **arrays)
     notes = []
-    if not data.get("image_width") or not data.get("image_height"):
-        if image_size is None:
-            raise ValueError("Image dimensions are missing from the file; receive a camera image and read the file again.")
-        data["image_width"], data["image_height"] = image_size
-        notes.append("Image dimensions come from the received camera image; they are absent from the calibration file.")
-    if int(data["image_width"]) <= 0 or int(data["image_height"]) <= 0:
-        raise ValueError("Image dimensions must be positive.")
+    omitted = DISTORTION_TERMS[len(arrays["dist_coeffs"]):]
+    if omitted:
+        notes.append(f"The colourizer uses {' = 0, '.join(omitted)} = 0 for the omitted distortion terms.")
+    from_image = []
+    for index, key in enumerate(("image_width", "image_height")):
+        value = data.get(key)
+        if value is None:
+            if image_size is None:
+                raise ValueError(f"Image dimensions are incomplete. {key} is missing. Receive a camera image and read the file again.")
+            value = image_size[index]
+            from_image.append(key)
+        try:
+            number = float(value)
+            if isinstance(value, (bool, np.bool_)) or not number.is_integer() or number <= 0:
+                raise ValueError
+            data[key] = int(number)
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError(f"{key} needs a positive whole number.") from None
+    if from_image:
+        notes.append(f"Used the received camera image for {', '.join(from_image)}.")
     result = device_params(data)
     result["notes"] = notes
     return result

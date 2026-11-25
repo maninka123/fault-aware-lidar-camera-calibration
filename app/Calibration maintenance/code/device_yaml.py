@@ -21,11 +21,27 @@ KEYS = ("camera_matrix", "dist_coeffs", "extrinsic_matrix")
 def _colorizer_section(text):
     try:
         document = yaml.safe_load(text)
+        root = yaml.compose(text)
     except yaml.YAMLError as error:
         raise ValueError(f"Invalid calibration YAML: {error}") from error
     if not isinstance(document, dict) or not isinstance(document.get(SECTION), dict):
         raise ValueError(f"The calibration file needs a '{SECTION}:' mapping.")
+    node = _unique_fields(root, (SECTION,)).get(SECTION)
+    nested = _unique_fields(node, ("ros__parameters",)).get("ros__parameters")
+    _unique_fields(nested if nested is not None else node,
+                   KEYS + ("camera_model", "distortion_model", "image_width", "image_height"))
     return document[SECTION]
+
+
+def _unique_fields(node, fields):
+    found = {}
+    if isinstance(node, yaml.MappingNode):
+        for key, value in node.value:
+            if isinstance(key, yaml.ScalarNode) and key.value in fields:
+                if key.value in found:
+                    raise ValueError(f"'{key.value}' appears more than once in the device calibration at line {key.start_mark.line + 1}.")
+                found[key.value] = value
+    return found
 
 
 def read_params(text):
@@ -134,7 +150,8 @@ def _fmt(key, values, indent):
 def update(text, params, note):
     """New pipeline.yaml text with the device parameters `params` (camera_matrix, dist_coeffs,
     extrinsic_matrix) written into the pointcloud_colorizer section."""
-    if "ros__parameters" in _colorizer_section(text):
+    section = _colorizer_section(text)
+    if "ros__parameters" in section:
         raise ValueError("This app supports reviewing ROS 2 calibration files. Writing changes requires the ROS 2 deployment workflow.")
     nl = "\r\n" if "\r\n" in text else "\n"               # keep the file's line endings
     lines = text.splitlines()
@@ -143,6 +160,10 @@ def update(text, params, note):
     indent = next((len(l) - len(l.lstrip()) for l in body if l.strip() and not l.lstrip().startswith("#")), 2)
     new_vals = {"camera_matrix": np.ravel(params["camera_matrix"]), "dist_coeffs": np.ravel(params["dist_coeffs"]),
                 "extrinsic_matrix": np.ravel(params["extrinsic_matrix"])}
+    distortion = new_vals["dist_coeffs"]
+    stored_length = np.size(section.get("dist_coeffs")) if "dist_coeffs" in section else 0
+    if 0 < stored_length < 5 and len(distortion) == 5 and not np.any(distortion[stored_length:]):
+        new_vals["dist_coeffs"] = distortion[:stored_length]
     out = lines[:s + 1]
     i, done = s + 1, set()
     while i < e:
