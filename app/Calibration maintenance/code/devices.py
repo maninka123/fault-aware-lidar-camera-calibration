@@ -42,8 +42,12 @@ def cmp_devices(folder=CMP_DIR):
         env = _env(Path(folder) / f) if f and (Path(folder) / f).exists() else {}
         name = env.get("DEVICE_NAME") or entry.get("name") or f"Device {entry.get('id', len(out) + 1)}"
         master = env.get("ROS_MASTER_URI", "")
-        bridge = f"ws://{env['ROSBRIDGE_IP']}:{env.get('ROSBRIDGE_PORT') or 9090}{env.get('ROSBRIDGE_PATH', '')}" if env.get("ROSBRIDGE_IP") \
-            else entry.get("serverUrl", "")
+        bridge = env.get("ROSBRIDGE_URL")
+        if not bridge and env.get("ROSBRIDGE_IP"):
+            port = env.get("ROSBRIDGE_PORT") or "9090"
+            bridge = f"ws://{env['ROSBRIDGE_IP']}:{port}{env.get('ROSBRIDGE_PATH', '')}"
+        if not bridge:
+            bridge = entry.get("serverUrl", "")
         host = env.get("SSH_HOST") or urlparse(master).hostname or urlparse(bridge).hostname or ""
         out.append(dict(key=f"cmp:{env.get('DEVICE_ID') or entry.get('id') or name}", name=name, source="Central Monitoring Platform",
                         enabled=(env.get("DEVICE_ENABLED", str(entry.get("enabled", True))).lower() != "false"),

@@ -11,7 +11,7 @@ log, and leaves your calibration files untouched.
 | Problem | What to do |
 | --- | --- |
 | *"Windows stops at 260 characters"* when starting a check | The repository sits too deep. Move it to a short folder such as `C:\FaultAware`, or turn on long paths in Windows. The message appears before anything runs. |
-| The window does not start | Run `python app/gui/research_gui.py` in a terminal to see the error, and check that `pip install -r requirements.txt` finished. `launchers/start_research_gui.bat` looks for `.venv`, then Anaconda, then `pythonw` on the path. |
+| The window does not start | Run `Setup.bat` with 64-bit Python 3.10 or 3.11 and check for errors. Start the app with `Start.bat` after setup finishes. |
 | It restored the wrong calibration or captures | Choose the right ones (that replaces them), or press *Forget* on New check. To clear everything, delete `%LOCALAPPDATA%\FaultAwareCalibration\settings.json`. |
 
 ## Checks
@@ -36,7 +36,9 @@ log, and leaves your calibration files untouched.
 
 | Problem | What to do |
 | --- | --- |
-| A device shows *offline* | Check the address and that the device is on the network; use *Refresh*. Devices come from the Central Monitoring Platform folder (*Platform folder…*). |
+| A device is missing | Open **Platform folder…**, choose the main app's folder containing `config.json`, and click **Refresh**. |
+| A device shows *offline* | Check its configured address and network connection, then click **Refresh**. |
+| Device 8 times out on a WSL relay setup | Start the main app's Device 8 relay and check `ROSBRIDGE_URL` in `device_8.env`. If live previews load but calibration stays empty, check the SSH relay and login. See [device setup](DESKTOP_APP.md#7-devices). |
 | Writing failed | The dialog reports the step that failed. The device's file is either unchanged or the backup is in place. A failed write is not recorded as done. |
 | *Restore* is greyed out | Nothing has been written for this check yet. |
 

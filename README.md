@@ -21,6 +21,9 @@ A Windows desktop app for checking camera–LiDAR calibration on new captures. C
 3. Choose **Devices** to collect captures or **New check** to import them. Start with five varied captures.
 4. Open **Calibration review** to compare options and preview them against **Keep current**.
 
+For live captures, point **Devices → Platform folder…** at the main app's folder containing `config.json`.
+See [ROS 1 and ROS 2 device setup](docs/DESKTOP_APP.md#7-devices).
+
 ## Screenshots
 
 **Update comparison**
