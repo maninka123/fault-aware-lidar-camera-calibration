@@ -4,9 +4,8 @@ The app checks whether a camera–LiDAR calibration still holds, shows how it re
 result. This guide follows the order you meet things in: **New check → Processing → Result → Calibration review → Report →
 Use the result**, then **Devices**.
 
-Windows 10/11, Python 3.10/3.11. Start it with `launchers/start_research_gui.bat` (or `python app/gui/research_gui.py`). Other systems are
-untested. For a one-page list of everything the app can do, see [Features](FEATURES.md); if something goes wrong, see
-[Troubleshooting](TROUBLESHOOTING.md).
+On Windows 10 or 11 with 64-bit Python 3.10 or 3.11, run `Setup.bat` once and open the app with `Start.bat`.
+See [Features](FEATURES.md) and [Troubleshooting](TROUBLESHOOTING.md).
 
 ## 1. New check
 
@@ -137,10 +136,20 @@ is never changed. Writing and restoring work only for checks captured from a con
 
 ## 7. Devices
 
-**Devices** connects to a sensor device, shows what it sees, reads its calibration (over SSH, or from a file), and captures
-a short sample. When the capture finishes, the check runs on it automatically and the result can be written back to that
-same device from **Calibration review**. Devices come from the Central Monitoring Platform folder; *Add device…* adds more.
-Nothing is written until you choose Write and confirm.
+Open **Devices → Platform folder…** and select the Central Monitoring Platform folder containing `config.json` and
+`device_configs/`. If you run the main app from source, select that checkout. Use **Refresh** after changing device
+settings in the main app. Use **Add device…** for a standalone device.
+
+- **ROS 1.** The app tries `ROS_MASTER_URI` first. The PC needs to reach the master and the publisher addresses it
+  advertises. If the master is unavailable, the app tries the configured ROSBridge endpoint.
+- **ROS 2 (Device 8).** The calibration app connects through ROSBridge. With a WSL relay, start the bridge and SSH relay
+  first using the main app's Device 8 launcher if supplied. The app uses `ROSBRIDGE_URL` when set. For example, a relayed
+  setup can use `ws://127.0.0.1:9098` for ROSBridge and `127.0.0.1:2228` for SSH. Use the endpoints in your device profile.
+  The app reads the active ROS 2 `pipeline.yaml` using the configured SSH account.
+
+Select the device and click **Connect**. Check that the camera and LiDAR previews and the calibration panel all load.
+Click **Capture and check** to start collecting pairs, then **Finish capturing and process** to run the check.
+Writing calibration changes from **Calibration review** requires confirmation.
 
 ## Where things are saved
 

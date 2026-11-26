@@ -37,6 +37,19 @@ class DeviceConnectionTests(unittest.TestCase):
                 self.assertEqual(devices.load()[0]['master_uri'], 'http://10.20.0.22:11311')
                 self.assertEqual(devices.load()[1]['master_uri'], sim['master_uri'])
 
+    def test_platform_bridge_url_takes_precedence_over_the_sensor_address(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / 'device_8.env').write_text(
+                'DEVICE_ID=8\nROSBRIDGE_URL=ws://127.0.0.1:9098\n'
+                'ROSBRIDGE_IP=10.20.0.61\nROSBRIDGE_PORT=9090\n'
+                'SSH_HOST=127.0.0.1\nSSH_PORT=2228\n', encoding='utf-8')
+            (root / 'config.json').write_text(json.dumps({'devices': {'list': [
+                {'configFile': 'device_8.env'}]}}), encoding='utf-8')
+            device, = devices.cmp_devices(root)
+            self.assertEqual(device['bridge_url'], 'ws://127.0.0.1:9098')
+            self.assertEqual((device['ssh_host'], device['ssh_port']), ('127.0.0.1', 2228))
+
     def test_legacy_bridge_only_profile(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
